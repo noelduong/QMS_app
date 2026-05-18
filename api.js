@@ -130,6 +130,22 @@ const QMS_API = (() => {
      */
     async uploadImageBase64(payload) {
       return await post('uploadImageBase64', payload);
+    },
+
+    /**
+     * GET: Search master by style
+     * Returns { ok: true/false, po, supplier, unitPrice, matchedStyle, ... }
+     */
+    async getMasterInfoByStyle(style) {
+      return await get({ action: 'getMasterInfoByStyle', style });
+    },
+
+    /**
+     * POST: Submit return analysis batch
+     * payload: Array of return items
+     */
+    async submitReturnAnalysisBatch(payload) {
+      return await post('submitReturnAnalysisBatch', payload);
     }
   };
 })();
