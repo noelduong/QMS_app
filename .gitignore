@@ -1,0 +1,16 @@
+# Local data exports
+*.csv
+
+# System files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QC Inspection Form – Polo Manor</title>
+  <meta name="description" content="Ứng dụng kiểm hàng QC với AQL tự động, đo lường, ghi nhận lỗi và xuất PDF biên bản">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-screen overflow-y-auto">
+
+  <!-- Floating Pill Navigation (Apple Glassmorphism style) -->
+  <div class="no-print sticky top-4 z-50 mx-auto w-full max-w-6xl px-4 md:px-8 mb-6">
+    <div class="bg-white/60 backdrop-blur-2xl border border-white/60 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-full px-6 py-3 flex justify-between items-center transition-all">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+          <i data-feather="check-square" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="text-[17px] font-bold text-slate-800 tracking-tight leading-tight">QC Inspection</h1>
+          <p class="text-[11px] font-medium text-slate-500 uppercase tracking-[0.1em]">Polo Manor</p>
+        </div>
+      </div>
+      <div>
+        <button onclick="if(confirm('Xóa toàn bộ dữ liệu?')){location.reload()}" class="nav-btn nav-btn-secondary text-xs !py-2 !px-4 !rounded-full hover:bg-slate-200/50">
+          <i data-feather="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP AREA (hidden when printing) -->
+  <div class="no-print px-4 md:px-8 pb-12 flex flex-col h-full max-w-6xl mx-auto">
+    <!-- Main Card -->
+    <div class="main-card relative z-10">
+      
+      <!-- ===================== SECTION 1: GENERAL ===================== -->
+      <div id="section-1" class="section-container">
+        <h2 class="section-title">1. General Information</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label class="lbl">Nhà gia công (FOB Supplier)</label>
+            <input type="text" id="inp-supplier" class="inp" placeholder="VD: TALYNO">
+          </div>
+          <div>
+            <label class="lbl">Tên sản phẩm (Product)</label>
+            <input type="text" id="inp-product" class="inp" placeholder="VD: BASIC SYMBOL">
+          </div>
+          <div>
+            <label class="lbl">Mã sản phẩm (Code)</label>
+            <input type="text" id="inp-code" class="inp" placeholder="VD: PM-001">
+          </div>
+          <div>
+            <label class="lbl">Màu sắc (Color)</label>
+            <input type="text" id="inp-color" class="inp" placeholder="VD: ĐEN">
+          </div>
+          <div>
+            <label class="lbl">Ngày kiểm (Date)</label>
+            <input type="date" id="inp-date" class="inp">
+          </div>
+          <div>
+            <label class="lbl">Địa điểm (Location)</label>
+            <input type="text" id="inp-location" class="inp" placeholder="VD: Nhà Máy Talyno">
+          </div>
+          <div>
+            <label class="lbl">SL PO (PO Qty)</label>
+            <input type="number" id="inp-poqty" class="inp" placeholder="VD: 350" oninput="onQtyChange()">
+          </div>
+          <div>
+            <label class="lbl">Sample Size (auto)</label>
+            <input type="text" id="inp-samplesize" class="inp" readonly style="background:#f8fafc;cursor:not-allowed">
+          </div>
+          <div>
+            <label class="lbl">Category</label>
+            <select id="inp-category" class="inp" onchange="onCategoryChange()">
+              <option value="">-- Chọn loại sản phẩm --</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Size Range</label>
+            <input type="text" id="inp-sizes" class="inp" placeholder="VD: M, L, XL, 2XL">
+          </div>
+          <div>
+            <label class="lbl">PO Month</label>
+            <input type="text" id="inp-pomonth" class="inp" placeholder="VD: POT3">
+          </div>
+          <div>
+            <label class="lbl">Inspector</label>
+            <input type="text" id="inp-inspector" class="inp" placeholder="VD: BAONH">
+          </div>
+          <div>
+            <label class="lbl">Loại kiểm (Status)</label>
+            <select id="inp-status" class="inp">
+              <option value="Inline">Inline</option>
+              <option value="Final" selected>Final</option>
+            </select>
+          </div>
+        </div>
+        <div id="aql-info" class="aql-info" style="display:none"></div>
+      </div>
+
+      <!-- ===================== SECTION 2: MEASUREMENTS ===================== -->
+      <div id="section-2" class="section-container">
+        <h2 class="section-title">2. Measurements</h2>
+        <div class="flex justify-between items-center mb-3">
+          <p id="meas-summary" class="text-sm text-slate-500 mt-1">Chưa có dữ liệu đo</p>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-500">Số lượng sample/size:</label>
+            <select id="inp-meas-samples" class="inp py-1 px-2 text-xs w-20" onchange="buildMeasurementTable()">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="8">8</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+        </div>
+        <div id="meas-table-container" class="flex-1 overflow-auto" style="max-height: calc(100vh - 320px)">
+          <p class="text-center text-slate-400 py-10">Vui lòng chọn Category ở Step 1</p>
+        </div>
+      </div>
+
+      <!-- ===================== SECTION 3: DEFECTS & SUMMARY ===================== -->
+      <div id="section-3" class="section-container">
+        <h2 class="section-title">3. Appearance Defects & Summary</h2>
+        <div class="flex justify-between items-center">
+          <p id="defect-totals" class="text-sm text-slate-500">Chưa ghi nhận lỗi</p>
+        </div>
+        <div id="defect-rows"></div>
+        <button onclick="addDefectRow()" class="nav-btn nav-btn-add mb-6">
+          <i data-feather="plus-circle" class="w-4 h-4"></i> Thêm dòng lỗi
+        </button>
+
+        <hr class="border-slate-200 mb-6">
+        <h3 class="text-lg font-bold text-slate-700 mb-4">Summary & Impact</h3>
+
+        <div id="summary-content">
+          <p class="text-center text-slate-400 py-10">Đang tính toán...</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div>
+            <label class="lbl">Nguyên nhân lỗi đo (Measurement)</label>
+            <textarea id="sum-meas-cause" class="inp" rows="2" placeholder="Nhập nguyên nhân..."></textarea>
+            
+            <label class="lbl mt-2">Hướng xử lý (Measurement)</label>
+            <div class="flex gap-4 mb-2 text-sm text-slate-700">
+              <label class="flex items-center gap-1"><input type="checkbox" id="impact_yes_m"> YES</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="impact_no_m"> NO</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="impact_reinspect_m"> RE-INSPECT</label>
+            </div>
+            <input type="text" id="impact_time_m" class="inp" placeholder="Hạn xử lý...">
+          </div>
+          <div>
+            <label class="lbl">Nguyên nhân lỗi ngoại quan (Appearance)</label>
+            <textarea id="sum-app-cause" class="inp" rows="2" placeholder="Nhập nguyên nhân..."></textarea>
+            
+            <label class="lbl mt-2">Hướng xử lý (Appearance)</label>
+            <div class="flex gap-4 mb-2 text-sm text-slate-700">
+              <label class="flex items-center gap-1"><input type="checkbox" id="impact_yes_a"> YES</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="impact_no_a"> NO</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="impact_reinspect_a"> RE-INSPECT</label>
+            </div>
+            <input type="text" id="impact_time_a" class="inp" placeholder="Hạn xử lý...">
+          </div>
+          <div class="md:col-span-2">
+            <label class="lbl">Ghi chú / Remark</label>
+            <textarea id="sum-remark" class="inp" rows="2" placeholder="Nhập ghi chú..."></textarea>
+          </div>
+          <div>
+            <label class="lbl">Xác nhận</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input id="sum-ack-factory" class="inp" placeholder="Đại diện nhà máy">
+              <input id="sum-ack-qc" class="inp" placeholder="Đại diện QC">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SECTION 4: EXPORT ===================== -->
+      <div id="section-4" class="section-container mt-8 pt-8 border-t border-slate-200">
+        <div class="flex justify-center gap-4 py-6 flex-wrap">
+          <button onclick="exportInspectionPDF()" class="nav-btn nav-btn-secondary text-base px-8 py-3">
+            <i data-feather="printer" class="w-5 h-5"></i> Lưu PDF Biên Bản
+          </button>
+          <button onclick="submitToDatabase()" id="btn-submit" class="nav-btn nav-btn-primary text-base px-8 py-3">
+            <i data-feather="upload-cloud" class="w-5 h-5"></i> Submit to Database
+          </button>
+        </div>
+        <p id="submit-status" class="text-center text-sm text-slate-400 mt-2"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all duration-300 translate-y-20 opacity-0 pointer-events-none"></div>
+
+  <!-- Submit Loading Overlay -->
+  <div id="submit-loader" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+    <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
+      <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <p class="text-sm font-medium text-slate-600">Đang gửi dữ liệu lên database...</p>
+    </div>
+  </div>
+
+  <script src="../api.js"></script>
+  <script src="specs.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
