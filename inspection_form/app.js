@@ -16,6 +16,7 @@ let defectRows = [
   {section:'II - WORKMANSHIP',point:'',desc:'',qty:0,critical:0,major:0,minor:0,action:''},
   {section:'III - DEFECT & FINISHING',point:'',desc:'',qty:0,critical:0,major:0,minor:0,action:''}
 ];
+let overallDefectImages = [];
 
 function getAqlRule(qty) {
   return AQL_RULES.find(r => qty >= r.min && qty <= r.max) || null;
@@ -194,7 +195,6 @@ function renderDefectRows() {
             <th class="px-2 py-3 border-b border-black/5 w-16 text-center" title="Major">Maj</th>
             <th class="px-2 py-3 border-b border-black/5 w-16 text-center" title="Minor">Min</th>
             <th class="px-2 py-3 border-b border-black/5 w-16 text-center">Qty</th>
-            <th class="px-4 py-3 border-b border-black/5 w-32 text-center">Hình ảnh</th>
             <th class="px-4 py-3 border-b border-black/5 min-w-[200px]">Hành động khắc phục</th>
             <th class="px-3 py-3 border-b border-black/5 w-10 text-center"></th>
           </tr>
@@ -203,63 +203,6 @@ function renderDefectRows() {
   `;
 
   defectRows.forEach((row, i) => {
-    // Ensure row.images is initialized safely
-    if (!row.images) {
-      row.images = [];
-      if (row.image && typeof row.image === 'string' && row.image.includes(',')) {
-        row.image.split(',').forEach(url => {
-          const trimmed = url.trim();
-          if (trimmed) row.images.push({ image: trimmed, previewUrl: trimmed, localImageBase64: null });
-        });
-      } else if (row.previewUrl || row.image || row.localImageBase64) {
-        row.images.push({
-          image: row.image || "",
-          previewUrl: row.previewUrl || "",
-          localImageBase64: row.localImageBase64 || null
-        });
-      }
-    }
-
-    let imageCellHtml = '';
-    if (row.images.length > 0) {
-      let thumbsHtml = '';
-      row.images.forEach((img, imgIndex) => {
-        const src = img.previewUrl || img.image;
-        if (src) {
-          thumbsHtml += `
-            <div class="relative inline-block group/img w-10 h-10">
-              <img src="${src}" class="w-10 h-10 object-cover rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:scale-105 transition-transform" onclick="window.open('${src}', '_blank')">
-              <button onclick="removeDefectImage(${i}, ${imgIndex})" class="absolute -top-1.5 -right-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] shadow-md transition-colors" title="Xóa ảnh">✕</button>
-            </div>
-          `;
-        }
-      });
-      imageCellHtml = `
-        <td class="p-2 border-r border-black/5 text-center">
-          <div class="flex flex-wrap items-center justify-center gap-1.5">
-            ${thumbsHtml}
-            <div class="relative inline-block w-10 h-10">
-              <input type="file" accept="image/*" multiple id="def-img-input-${i}" class="hidden" onchange="handleDefectImageChange(${i}, this)">
-              <label for="def-img-input-${i}" class="cursor-pointer flex items-center justify-center w-10 h-10 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors border border-dashed border-slate-300" title="Thêm ảnh">
-                <i data-feather="plus" class="w-4 h-4"></i>
-              </label>
-            </div>
-          </div>
-        </td>
-      `;
-    } else {
-      imageCellHtml = `
-        <td class="p-2 border-r border-black/5 text-center">
-          <div class="flex flex-col items-center justify-center">
-            <input type="file" accept="image/*" multiple id="def-img-input-${i}" class="hidden" onchange="handleDefectImageChange(${i}, this)">
-            <label for="def-img-input-${i}" class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors border border-slate-200 shadow-sm">
-              <i data-feather="image" class="w-3.5 h-3.5"></i> Chọn ảnh
-            </label>
-          </div>
-        </td>
-      `;
-    }
-
     html += `
       <tr class="hover:bg-white/60 transition-colors group">
         <td class="p-2 border-r border-black/5">
@@ -284,7 +227,6 @@ function renderDefectRows() {
         <td class="p-2 border-r border-black/5 text-center bg-white/20">
           <span class="font-semibold text-slate-700" id="def-qty-${i}">${row.qty || 0}</span>
         </td>
-        ${imageCellHtml}
         <td class="p-2 border-r border-black/5">
           <input type="text" class="w-full bg-transparent border-0 text-sm p-1 outline-none focus:ring-2 focus:ring-blue-500/30 rounded" placeholder="Khắc phục..." value="${row.action}" oninput="defectRows[${i}].action=this.value">
         </td>
@@ -302,11 +244,12 @@ function renderDefectRows() {
   `;
   container.innerHTML = html;
   updateDefectTotals();
+  renderOverallDefectImages();
   if (typeof feather !== 'undefined') feather.replace();
 }
 
 function addDefectRow() {
-  defectRows.push({section:'I – APPEARANCE',point:'',desc:'',qty:0,critical:0,major:0,minor:0,action:''});
+  defectRows.push({section:'I - APPEARANCE',point:'',desc:'',qty:0,critical:0,major:0,minor:0,action:''});
   renderDefectRows();
 }
 
@@ -315,58 +258,66 @@ function removeDefectRow(i) {
   renderDefectRows();
 }
 
-window.handleDefectImageChange = function(index, input) {
+function renderOverallDefectImages() {
+  const listEl = document.getElementById('overall-defect-images-list');
+  if (!listEl) return;
+
+  let html = '';
+  overallDefectImages.forEach((img, idx) => {
+    const src = img.previewUrl || img.image;
+    if (src) {
+      html += `
+        <div class="relative w-16 h-16 group">
+          <img src="${src}" class="w-16 h-16 object-cover rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:scale-105 transition-all" onclick="window.open('${src}', '_blank')">
+          <button onclick="removeOverallDefectImage(${idx})" class="absolute -top-1.5 -right-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full w-4.5 h-4.5 flex items-center justify-center text-[10px] shadow-md transition-colors" title="Xóa ảnh">✕</button>
+        </div>
+      `;
+    }
+  });
+
+  // Dash add button at the end
+  html += `
+    <div class="relative w-16 h-16">
+      <input type="file" accept="image/*" multiple id="overall-img-input" class="hidden" onchange="handleOverallDefectImageChange(this)">
+      <label for="overall-img-input" class="cursor-pointer flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors border border-dashed border-slate-300 shadow-sm" title="Thêm ảnh">
+        <i data-feather="plus" class="w-5 h-5"></i>
+        <span class="text-[9px] font-medium mt-0.5">Thêm ảnh</span>
+      </label>
+    </div>
+  `;
+
+  listEl.innerHTML = html;
+  if (typeof feather !== 'undefined') feather.replace();
+}
+
+window.handleOverallDefectImageChange = function(input) {
   const files = input.files;
   if (!files || files.length === 0) return;
-
-  const row = defectRows[index];
-  if (!row.images) {
-    row.images = [];
-  }
 
   let loadedCount = 0;
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     const reader = new FileReader();
     reader.onload = function(e) {
-      row.images.push({
+      overallDefectImages.push({
         localImageBase64: e.target.result,
         previewUrl: e.target.result,
         image: null
       });
       loadedCount++;
       if (loadedCount === files.length) {
-        // Sync first image for backward compatibility
-        row.localImageBase64 = row.images[0].localImageBase64;
-        row.previewUrl = row.images[0].previewUrl;
-        row.image = row.images.map(img => img.image).filter(url => url).join(', ');
-        
-        renderDefectRows();
+        renderOverallDefectImages();
       }
     };
     reader.readAsDataURL(file);
   }
+  // Clear input so selecting the same files again triggers change event
+  input.value = '';
 };
 
-window.removeDefectImage = function(index, imgIndex) {
-  if (defectRows[index]) {
-    const row = defectRows[index];
-    if (row.images && row.images[imgIndex] !== undefined) {
-      row.images.splice(imgIndex, 1);
-      
-      // Sync legacy fields
-      if (row.images.length === 0) {
-        row.localImageBase64 = null;
-        row.previewUrl = null;
-        row.image = null;
-      } else {
-        row.localImageBase64 = row.images[0].localImageBase64 || null;
-        row.previewUrl = row.images[0].previewUrl || null;
-        row.image = row.images.map(img => img.image).filter(url => url).join(', ');
-      }
-      renderDefectRows();
-    }
-  }
+window.removeOverallDefectImage = function(index) {
+  overallDefectImages.splice(index, 1);
+  renderOverallDefectImages();
 };
 
 function updateRowQty(i) {
@@ -619,24 +570,6 @@ function exportInspectionPDF() {
   };
 
   const detailRows = defectRows.map(r => {
-    // Ensure r.images is initialized safely
-    if (!r.images) {
-      r.images = [];
-      if (r.image && typeof r.image === 'string' && r.image.includes(',')) {
-        r.image.split(',').forEach(url => {
-          const trimmed = url.trim();
-          if (trimmed) r.images.push({ image: trimmed, previewUrl: trimmed, localImageBase64: null });
-        });
-      } else if (r.previewUrl || r.image || r.localImageBase64) {
-        r.images.push({
-          image: r.image || "",
-          previewUrl: r.previewUrl || "",
-          localImageBase64: r.localImageBase64 || null
-        });
-      }
-    }
-    const currentImagesStr = r.images.map(img => img.previewUrl || img.image).filter(url => url).join(', ');
-
     return {
       section: r.section,
       point: r.point || r.section,
@@ -645,10 +578,9 @@ function exportInspectionPDF() {
       critical: r.critical,
       major: r.major,
       minor: r.minor,
-      corrective: r.action,
-      image: currentImagesStr
+      corrective: r.action
     };
-  }).filter(r => r.description || r.quantity > 0 || r.critical > 0 || r.major > 0 || r.minor > 0 || r.corrective || r.image);
+  }).filter(r => r.description || r.quantity > 0 || r.critical > 0 || r.major > 0 || r.minor > 0 || r.corrective);
 
   const summary = {
     meas_qty: meas.fail,
@@ -675,36 +607,17 @@ function exportInspectionPDF() {
     ack_date: new Date().toLocaleDateString('vi-VN')
   };
 
-  const thumbs = defectRows
-    .filter(r => (r.images && r.images.length) || r.previewUrl || r.image)
-    .flatMap(r => {
-      // Ensure r.images is initialized safely
-      if (!r.images) {
-        r.images = [];
-        if (r.image && typeof r.image === 'string' && r.image.includes(',')) {
-          r.image.split(',').forEach(url => {
-            const trimmed = url.trim();
-            if (trimmed) r.images.push({ image: trimmed, previewUrl: trimmed, localImageBase64: null });
-          });
-        } else if (r.previewUrl || r.image || r.localImageBase64) {
-          r.images.push({
-            image: r.image || "",
-            previewUrl: r.previewUrl || "",
-            localImageBase64: r.localImageBase64 || null
-          });
-        }
-      }
-      return r.images.map(img => {
-        const src = img.previewUrl || img.image;
-        if (!src) return '';
-        return `
-          <div style="display:inline-block;margin:8px;text-align:center;border:1px solid #ddd;padding:6px;border-radius:8px;background:#fcfcfc;page-break-inside:avoid;">
-            <img src="${src}" style="width:120px;height:120px;object-fit:cover;border-radius:6px;display:block;margin-bottom:4px;">
-            <div style="font-size:10px;color:#666;max-width:120px;word-break:break-all;">${escapeHtml(r.desc || r.section)}</div>
-          </div>
-        `;
-      }).filter(h => h !== '');
-    }).join("");
+  const thumbs = overallDefectImages
+    .map((img, idx) => {
+      const src = img.previewUrl || img.image;
+      if (!src) return '';
+      return `
+        <div style="display:inline-block;margin:8px;text-align:center;border:1px solid #ddd;padding:6px;border-radius:8px;background:#fcfcfc;page-break-inside:avoid;">
+          <img src="${src}" style="width:120px;height:120px;object-fit:cover;border-radius:6px;display:block;margin-bottom:4px;">
+          <div style="font-size:10px;color:#666;max-width:120px;word-break:break-all;">Defect Photo ${idx + 1}</div>
+        </div>
+      `;
+    }).filter(h => h !== '').join("");
 
   const measurementHtml = (() => {
     if (!measurementDataPdf || !measurementDataPdf.points || !measurementDataPdf.points.length || !measurementDataPdf.sizes || !measurementDataPdf.sizes.length) {
@@ -777,10 +690,9 @@ function exportInspectionPDF() {
       <td>${escapeHtml(row.major)}</td>
       <td>${escapeHtml(row.minor)}</td>
       <td class="pdf-note">${escapeHtml(row.corrective)}</td>
-      <td>${row.image ? row.image.split(',').map(url => `<img src="${url.trim()}" style="max-width:80px;max-height:80px;border-radius:4px;object-fit:cover;margin:2px;display:inline-block;">`).join("") : "—"}</td>
     </tr>
       `).join("")
-      : `<tr><td colspan="8">No appearance/detail data</td></tr>`;
+      : `<tr><td colspan="7">No appearance/detail data</td></tr>`;
 
   const finalClass = summary.final_result === "PASS" ? "pdf-result-pass" : "pdf-result-fail";
   const gid = "N/A";
@@ -1087,14 +999,13 @@ function exportInspectionPDF() {
         <table class="pdf-detail-table">
           <thead>
             <tr>
-              <th style="width:14%">Inspection Point</th>
-              <th style="width:22%">Detailed Description</th>
-              <th style="width:6%">Qty</th>
-              <th style="width:6%">Critical</th>
-              <th style="width:6%">Major</th>
-              <th style="width:6%">Minor</th>
-              <th style="width:18%">Corrective Action</th>
-              <th style="width:15%">Hình ảnh</th>
+              <th style="width:16%">Inspection Point</th>
+              <th style="width:28%">Detailed Description</th>
+              <th style="width:8%">Qty</th>
+              <th style="width:8%">Critical</th>
+              <th style="width:8%">Major</th>
+              <th style="width:8%">Minor</th>
+              <th style="width:24%">Corrective Action</th>
             </tr>
           </thead>
           <tbody>
@@ -1346,59 +1257,35 @@ async function submitToDatabase() {
     }
 
     // ========== STEP 3: Submit Inspection Details (Defects) ==========
-    // First, upload all local images in bulk
-    for (let i = 0; i < defectRows.length; i++) {
-      const r = defectRows[i];
-      // Ensure r.images is initialized safely
-      if (!r.images) {
-        r.images = [];
-        if (r.image && typeof r.image === 'string' && r.image.includes(',')) {
-          r.image.split(',').forEach(url => {
-            const trimmed = url.trim();
-            if (trimmed) r.images.push({ image: trimmed, previewUrl: trimmed, localImageBase64: null });
+    // First, upload all local overall defect images in bulk
+    for (let j = 0; j < overallDefectImages.length; j++) {
+      const img = overallDefectImages[j];
+      if (img.localImageBase64 && !img.image) {
+        console.log(`[QMS] Uploading overall defect image ${j + 1}...`);
+        const statusEl = document.getElementById('submit-status');
+        if (statusEl) {
+          statusEl.innerHTML = `<span class="text-indigo-600 font-semibold">Đang tải ảnh lỗi đính kèm (${j + 1}/${overallDefectImages.length}) lên Drive...</span>`;
+        }
+        try {
+          const imgResult = await QMS_API.uploadImageBase64({
+            general_id: generalId,
+            fileName: `defect_${Date.now()}_overall_${j}.jpg`,
+            contentBase64: img.localImageBase64
           });
-        } else if (r.previewUrl || r.image || r.localImageBase64) {
-          r.images.push({
-            image: r.image || "",
-            previewUrl: r.previewUrl || "",
-            localImageBase64: r.localImageBase64 || null
-          });
+          if (imgResult.ok && imgResult.url) {
+            img.image = imgResult.url;
+            console.log(`[QMS] Uploaded image successfully: ${img.image}`);
+          } else {
+            console.warn(`[QMS] Image upload failed:`, imgResult.err);
+          }
+        } catch (imgErr) {
+          console.error(`[QMS] Image upload error:`, imgErr);
         }
       }
-
-      for (let j = 0; j < r.images.length; j++) {
-        const img = r.images[j];
-        if (img.localImageBase64 && !img.image) {
-          console.log(`[QMS] Uploading defect image ${j + 1} for row ${i}...`);
-          const statusEl = document.getElementById('submit-status');
-          if (statusEl) {
-            statusEl.innerHTML = `<span class="text-indigo-600 font-semibold">Đang tải ảnh lỗi dòng ${i + 1} (ảnh ${j + 1}/${r.images.length}) lên Drive...</span>`;
-          }
-          try {
-            const imgResult = await QMS_API.uploadImageBase64({
-              general_id: generalId,
-              fileName: `defect_${Date.now()}_${i}_${j}.jpg`,
-              contentBase64: img.localImageBase64
-            });
-            if (imgResult.ok && imgResult.url) {
-              img.image = imgResult.url;
-              console.log(`[QMS] Uploaded image successfully: ${img.image}`);
-            } else {
-              console.warn(`[QMS] Image upload failed:`, imgResult.err);
-            }
-          } catch (imgErr) {
-            console.error(`[QMS] Image upload error:`, imgErr);
-          }
-        }
-      }
-
-      // Sync back to r.image as a comma-separated string of non-empty URLs
-      const uploadedUrls = r.images.map(img => img.image).filter(url => url);
-      r.image = uploadedUrls.join(', ');
     }
 
     const detailRows = defectRows
-      .filter(r => r.desc || r.qty > 0 || r.critical > 0 || r.major > 0 || r.minor > 0 || r.action || r.image)
+      .filter(r => r.desc || r.qty > 0 || r.critical > 0 || r.major > 0 || r.minor > 0 || r.action)
       .map(r => ({
         section: r.section,
         point: r.point || r.section,
@@ -1408,8 +1295,27 @@ async function submitToDatabase() {
         major: r.major,
         minor: r.minor,
         corrective_action: r.action,
-        image: r.image || ""
+        image: ""
       }));
+
+    if (detailRows.length === 0 && overallDefectImages.length > 0) {
+      detailRows.push({
+        section: 'I - APPEARANCE',
+        point: 'I - APPEARANCE',
+        description: 'Đính kèm hình ảnh lỗi',
+        quantity: 0,
+        critical: 0,
+        major: 0,
+        minor: 0,
+        corrective_action: '',
+        image: ''
+      });
+    }
+
+    if (detailRows.length > 0) {
+      const uploadedUrls = overallDefectImages.map(img => img.image).filter(url => url);
+      detailRows[0].image = uploadedUrls.join(', ');
+    }
 
     if (detailRows.length > 0) {
       await QMS_API.submitInspectionDetails({ general_id: generalId, rows: detailRows });
