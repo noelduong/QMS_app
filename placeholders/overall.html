@@ -747,88 +747,81 @@
       calculateAndRender(filteredInspections, filteredPlans, selectedFactory);
     }
 
+    // Helper: extract Art Code from a plan record
+    function getPlanArtCode(p) {
+      return String(p["art code"] || p.art_code || p.order_no || "").trim().toUpperCase();
+    }
+
     function calculateAndRender(dataList, planList, factoryFilter) {
-      // 1. Total planned POs from Order Numbers
+      // 1. Total planned POs — unique Art Codes from Plan sheet
       const plannedSet = new Set();
       planList.forEach(p => {
-        const key = String(p.order_no || p.po || p.po_number || p["po number"] || p["mã po"] || p.style || p.product_code || p.product_name || "").trim().toUpperCase();
+        const key = getPlanArtCode(p);
         if (key && key !== "-" && key !== "0") {
           plannedSet.add(key);
         }
       });
-      const totalPlanned = plannedSet.size > 0 ? plannedSet.size : planList.length;
+      const totalPlanned = plannedSet.size;
       document.getElementById('kpi-plans').textContent = totalPlanned;
 
       // 2. Total actual inspection runs
       document.getElementById('kpi-inspections').textContent = dataList.length;
 
-      // 3. Inspected POs
-      const inspectedMap = {};
+      // 3. Build inspection results per Art Code (product_name)
+      const inspectedMap = {}; // key: product_name upper → { pass, fail, total }
 
       dataList.forEach(row => {
-        // Build robust key to represent PO / Product Style
         const key = String(row.product_name || "Unknown").trim().toUpperCase();
         const sum = allSummaryMap[row.general_id] || {};
-        
-        let verdict = 'PENDING';
+
+        if (!inspectedMap[key]) {
+          inspectedMap[key] = { pass: 0, fail: 0, pending: 0 };
+        }
+
         if (sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true) {
-          verdict = 'PASS';
+          inspectedMap[key].pass++;
         } else if (sum.final_fail === '1' || sum.final_fail === 'TRUE' || sum.final_fail === true) {
-          verdict = 'FAIL';
-        }
-
-        // Store best result for the PO
-        if (!inspectedMap[key] || inspectedMap[key] === 'PENDING' || (inspectedMap[key] === 'FAIL' && verdict === 'PASS')) {
-          inspectedMap[key] = verdict;
+          inspectedMap[key].fail++;
+        } else {
+          inspectedMap[key].pending++;
         }
       });
 
-      // Count PO states
       const inspectedSet = new Set(Object.keys(inspectedMap));
-      let poPassCount = 0;
-      let poFailCount = 0;
 
-      inspectedSet.forEach(poKey => {
-        const verd = inspectedMap[poKey];
-        if (verd === 'PASS') poPassCount++;
-        else if (verd === 'FAIL') poFailCount++;
+      // 4. Coverage = unique Art Codes inspected (matching Plan) / total planned
+      let matchCount = 0;
+      plannedSet.forEach(pk => {
+        if (inspectedSet.has(pk)) {
+          matchCount++;
+        }
       });
 
-      const actualInspectedCount = inspectedSet.size;
-
-      // 4. Inspection Coverage %
-      let coveragePct = 0;
-      if (totalPlanned > 0) {
-        let matchCount = 0;
-        plannedSet.forEach(pk => {
-          let matched = false;
-          inspectedSet.forEach(ik => {
-            if (ik.includes(pk) || pk.includes(ik)) {
-              matched = true;
-            }
-          });
-          if (matched) matchCount++;
-        });
-
-        const successCount = matchCount > 0 ? matchCount : actualInspectedCount;
-        coveragePct = Math.min(Math.round((successCount / totalPlanned) * 100), 100);
-      } else {
-        coveragePct = allFinalGens.length > 0 ? Math.round((dataList.length / allFinalGens.length) * 100) : 0;
-      }
-
+      let coveragePct = totalPlanned > 0 ? Math.min(Math.round((matchCount / totalPlanned) * 100), 100) : 0;
       document.getElementById('kpi-coverage').textContent = `${coveragePct}%`;
-      document.getElementById('kpi-coverage-sub').textContent = `${actualInspectedCount}/${totalPlanned} PO đã kiểm (Kế hoạch)`;
+      document.getElementById('kpi-coverage-sub').textContent = `${matchCount}/${totalPlanned} Art Code đã kiểm (Kế hoạch)`;
 
-      // 5. Overall Pass Rate %
+      // 5. Pass / Fail / Pending counts — per inspection run (general_id)
+      let totalPass = 0;
+      let totalFail = 0;
+      dataList.forEach(row => {
+        const sum = allSummaryMap[row.general_id] || {};
+        if (sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true) {
+          totalPass++;
+        } else if (sum.final_fail === '1' || sum.final_fail === 'TRUE' || sum.final_fail === true) {
+          totalFail++;
+        }
+      });
+
+      const totalRated = totalPass + totalFail;
       let overallPassRate = 0;
-      const totalRatedInspections = poPassCount + poFailCount;
-      if (totalRatedInspections > 0) {
-        overallPassRate = Math.round((poPassCount / totalRatedInspections) * 100);
-      } else if (actualInspectedCount > 0) {
-        overallPassRate = 100; // default to 100% if no fail
+      if (totalRated > 0) {
+        overallPassRate = Math.round((totalPass / totalRated) * 100);
+      } else if (dataList.length > 0) {
+        overallPassRate = 100;
       }
       document.getElementById('kpi-passrate').textContent = `${overallPassRate}%`;
-      
+
       const passRateSub = document.getElementById('kpi-passrate-sub');
       if (overallPassRate >= 90) {
         passRateSub.textContent = "✓ Hiệu suất chất lượng rất tốt";
@@ -841,14 +834,21 @@
         passRateSub.className = "text-[10px] font-bold leading-none text-rose-600 animate-pulse";
       }
 
-      // Legend setup
-      const pendingPos = Math.max(0, totalPlanned - actualInspectedCount);
-      document.getElementById('legend-pass-count').textContent = `${poPassCount} PO`;
-      document.getElementById('legend-fail-count').textContent = `${poFailCount} PO`;
-      document.getElementById('legend-pending-count').textContent = `${pendingPos} PO`;
+      // 6. Donut chart — Art Code level: PASS / FAIL / PENDING(chưa kiểm)
+      let poPass = 0, poFail = 0;
+      inspectedSet.forEach(artCode => {
+        const stats = inspectedMap[artCode];
+        if (stats.fail > 0) poFail++;
+        else if (stats.pass > 0) poPass++;
+      });
+      const pendingPos = Math.max(0, totalPlanned - matchCount);
+
+      document.getElementById('legend-pass-count').textContent = `${poPass} Art Code`;
+      document.getElementById('legend-fail-count').textContent = `${poFail} Art Code`;
+      document.getElementById('legend-pending-count').textContent = `${pendingPos} Art Code`;
 
       // Render Charts & Factory List
-      renderDonutChart(poPassCount, poFailCount, pendingPos);
+      renderDonutChart(poPass, poFail, pendingPos);
       renderFactoryQualityBarChart(dataList);
       renderFactoryProgressList(factoryFilter, planList, dataList);
 
@@ -1012,7 +1012,7 @@
         if (!factoryMap[fac]) {
           factoryMap[fac] = { planned: new Set(), inspected: new Set(), passCount: 0, failCount: 0 };
         }
-        const key = String(p.order_no || p.po || p.po_number || p["po number"] || p["mã po"] || p.style || p.product_code || p.product_name || "").trim().toUpperCase();
+        const key = getPlanArtCode(p);
         if (key && key !== "-" && key !== "0") {
           factoryMap[fac].planned.add(key);
         }
@@ -1057,19 +1057,13 @@
         const stats = factoryMap[name];
         const totalPlanned = stats.planned.size > 0 ? stats.planned.size : 1; // avoid division by 0
         
-        // Match inspected items to planned items
+        // Match inspected Art Codes to planned Art Codes (exact match)
         let matchCount = 0;
         stats.planned.forEach(pk => {
-          let matched = false;
-          stats.inspected.forEach(ik => {
-            if (ik.includes(pk) || pk.includes(ik)) {
-              matched = true;
-            }
-          });
-          if (matched) matchCount++;
+          if (stats.inspected.has(pk)) matchCount++;
         });
 
-        const successCount = matchCount > 0 ? matchCount : stats.inspected.size;
+        const successCount = matchCount;
         const progressPct = Math.min(Math.round((successCount / totalPlanned) * 100), 100);
 
         let colorClass = "bg-slate-200";
@@ -1148,10 +1142,10 @@
       // Calculate Modal Stats
       const plannedSet = new Set();
       facPlans.forEach(p => {
-        const key = String(p.order_no || p.po || p.po_number || "").trim().toUpperCase();
+        const key = getPlanArtCode(p);
         if (key && key !== "-" && key !== "0") plannedSet.add(key);
       });
-      const totalPlanned = plannedSet.size > 0 ? plannedSet.size : facPlans.length;
+      const totalPlanned = plannedSet.size;
 
       const inspectedSet = new Set();
       let passCount = 0;
@@ -1170,11 +1164,7 @@
       if (totalPlanned > 0) {
         let matchCount = 0;
         plannedSet.forEach(pk => {
-          let matched = false;
-          inspectedSet.forEach(ik => {
-            if (ik.includes(pk) || pk.includes(ik)) matched = true;
-          });
-          if (matched) matchCount++;
+          if (inspectedSet.has(pk)) matchCount++;
         });
         coveragePct = Math.min(Math.round((matchCount / totalPlanned) * 100), 100);
       } else {
@@ -1287,7 +1277,7 @@
         if (!factoryMap[fac]) {
           factoryMap[fac] = { planned: new Set(), inspected: new Set(), passCount: 0, failCount: 0 };
         }
-        const key = String(p.order_no || p.po || p.po_number || "").trim().toUpperCase();
+        const key = getPlanArtCode(p);
         if (key && key !== "-" && key !== "0") factoryMap[fac].planned.add(key);
       });
 
@@ -1319,14 +1309,10 @@
         
         let matchCount = 0;
         stats.planned.forEach(pk => {
-          let matched = false;
-          stats.inspected.forEach(ik => {
-            if (ik.includes(pk) || pk.includes(ik)) matched = true;
-          });
-          if (matched) matchCount++;
+          if (stats.inspected.has(pk)) matchCount++;
         });
 
-        const successCount = matchCount > 0 ? matchCount : stats.inspected.size;
+        const successCount = matchCount;
         const progressPct = Math.min(Math.round((successCount / totalPlanned) * 100), 100);
 
         const totalRated = stats.passCount + stats.failCount;
