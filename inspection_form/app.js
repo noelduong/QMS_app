@@ -74,12 +74,16 @@ function buildMeasurementTable() {
 
   let html = '<div class="overflow-x-auto"><table class="meas-tbl"><thead><tr><th class="sticky-col">Điểm đo</th><th>Tol</th>';
   sizes.forEach(sz => {
-    html += `<th colspan="${numSamples}" class="text-center">${sz}<br><span class="text-[10px] text-slate-400">Spec</span></th>`;
+    html += `<th colspan="${numSamples}" class="text-center size-divider">${sz}<br><span class="text-[10px] text-slate-400">Spec</span></th>`;
   });
   html += '<th>Kết quả</th></tr>';
   html += '<tr><th class="sticky-col"></th><th></th>';
   sizes.forEach(sz => {
-    for (let i = 1; i <= numSamples; i++) html += `<th class="text-center text-xs text-slate-400">${i}</th>`;
+    for (let i = 1; i <= numSamples; i++) {
+      const isLast = i === numSamples;
+      const cls = isLast ? 'text-center text-xs text-slate-400 size-divider' : 'text-center text-xs text-slate-400';
+      html += `<th class="${cls}">${i}</th>`;
+    }
   });
   html += '<th></th></tr></thead><tbody>';
 
@@ -90,9 +94,11 @@ function buildMeasurementTable() {
     sizes.forEach(sz => {
       const spec = specs[pt] && specs[pt][sz] ? specs[pt][sz].s : '';
       for (let i = 0; i < numSamples; i++) {
+        const isLast = i === numSamples - 1;
+        const cls = isLast ? 'p-0 size-divider' : 'p-0';
         const key = `${pt}|${sz}|${i}`;
         const val = measurementData[key] || '';
-        html += `<td class="p-0"><div class="text-[9px] text-slate-400 text-center">${spec}</div><input type="number" step="0.1" class="meas-input" data-key="${key}" data-spec="${spec}" data-tol="${tol}" value="${val}" oninput="onMeasInput(this)"></td>`;
+        html += `<td class="${cls}"><div class="text-[9px] text-slate-400 text-center">${spec}</div><input type="number" step="0.1" class="meas-input" data-key="${key}" data-spec="${spec}" data-tol="${tol}" value="${val}" oninput="onMeasInput(this)"></td>`;
       }
     });
     html += '<td class="text-center" id="result-' + CSS.escape(pt) + '">–</td></tr>';
@@ -623,7 +629,9 @@ function exportInspectionPDF() {
     const headerSizes = measurementDataPdf.sizes.map(size => {
       let html = `<th class="m-size">${escapeHtml(size)}</th>`;
       for (let i = 1; i <= measurementDataPdf.sampleCount; i++) {
-        html += `<th class="m-sample">${i}</th>`;
+        const isLastSample = i === measurementDataPdf.sampleCount;
+        const cls = isLastSample ? "m-sample size-divider" : "m-sample";
+        html += `<th class="${cls}">${i}</th>`;
       }
       return html;
     }).join("");
@@ -646,10 +654,13 @@ function exportInspectionPDF() {
 
         for (let i = 0; i < measurementDataPdf.sampleCount; i++) {
           const sample = item.samples[i] || { value:"", result:"" };
-          const cls = sample.result === "Đạt"
+          const resultCls = sample.result === "Đạt"
             ? "m-pass"
             : (sample.result === "Không đạt" ? "m-fail" : "");
-          rowHtml += `<td class="m-value ${cls}">${escapeHtml(sample.value)}</td>`;
+          const isLastSample = i === measurementDataPdf.sampleCount - 1;
+          const dividerCls = isLastSample ? "size-divider" : "";
+          const combinedCls = `m-value ${resultCls} ${dividerCls}`.trim();
+          rowHtml += `<td class="${combinedCls}">${escapeHtml(sample.value)}</td>`;
         }
       });
 
@@ -856,6 +867,9 @@ function exportInspectionPDF() {
         width:28px;
         background:#efefef;
         font-size:8.5px;
+      }
+      .measurement-pdf-table .size-divider{
+        border-right: 2.5px solid #4a5568 !important;
       }
       .measurement-pdf-table .m-value{
         background:#fff;
