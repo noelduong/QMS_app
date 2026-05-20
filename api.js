@@ -8,7 +8,7 @@
 
 const QMS_API = (() => {
 
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxGqsxP0OXpFiA8SqZjNlZzuL44JylF16vfnsAB4HPNkOpPpe37fUxrc2SuTDf58pdO/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyejn5_G0VOsEeXzM0-2ZwmAk0bYAsId965f3bsv-XC4injPTYx1vAUtIdQD_x4HBOS/exec';
 
   /* ---- Helper: GET request ---- */
   async function get(params = {}) {
@@ -213,6 +213,14 @@ const QMS_API = (() => {
      */
     async submitReturnAnalysisBatch(payload) {
       return await post('submitReturnAnalysisBatch', payload);
+    },
+
+    /**
+     * POST: Delete a specific record by general_id across all relevant sheets
+     * payload: { general_id }
+     */
+    async deleteRecord(generalId) {
+      return await post('deleteRecord', { general_id: generalId });
     }
   };
 })();

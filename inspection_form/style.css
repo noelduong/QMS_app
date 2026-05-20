@@ -63,7 +63,9 @@ select.inp {
 .meas-tbl th, .meas-tbl td { border: 1px solid rgba(0,0,0,0.05); padding: 8px; white-space: nowrap; }
 .meas-tbl th { background: rgba(245, 245, 247, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-weight: 600; font-size: 12px; color: #86868b; position: sticky; top: 0; z-index: 2; border-bottom: 1px solid rgba(0,0,0,0.1); }
 .sticky-col { position: sticky; left: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 3; min-width: 180px; max-width: 220px; white-space: normal !important; border-right: 1px solid rgba(0,0,0,0.06) !important; color: #1d1d1f; font-weight: 500; }
-.size-divider { border-right: 2.5px solid rgba(71, 85, 105, 0.5) !important; }
+.size-divider { border-right: 2px solid rgba(15, 41, 66, 0.15) !important; }
+.bg-stripe-even { background-color: rgba(100, 116, 139, 0.05) !important; }
+.bg-stripe-odd { background-color: rgba(255, 255, 255, 0.25) !important; }
 
 .meas-input { 
   width: 56px; 

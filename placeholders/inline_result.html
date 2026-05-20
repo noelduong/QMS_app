@@ -101,6 +101,7 @@
               <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Mã báo cáo</th>
               <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Nhà gia công</th>
               <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Sản phẩm</th>
+              <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Màu sắc</th>
               <th class="px-5 py-4 tracking-wide uppercase text-[11px]">PO Qty</th>
               <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Kết quả</th>
               <th class="px-5 py-4 text-right tracking-wide uppercase text-[11px]">Thao tác</th>
@@ -109,7 +110,7 @@
           <tbody id="table-body" class="divide-y divide-black/5">
             <!-- Loading State -->
             <tr id="loading">
-              <td colspan="7" class="p-12 text-center text-slate-500">
+              <td colspan="8" class="p-12 text-center text-slate-500">
                 <div class="flex flex-col items-center justify-center">
                   <i data-feather="loader" class="w-6 h-6 animate-spin mb-3 text-blue-500"></i>
                   <p class="font-medium">Đang tải dữ liệu kiểm tra Inline...</p>
@@ -157,7 +158,7 @@
       } catch (e) {
         console.error(e);
         document.getElementById('loading').innerHTML = `
-          <td colspan="7" class="p-12 text-center text-rose-500">
+          <td colspan="8" class="p-12 text-center text-rose-500">
             <div class="flex flex-col items-center justify-center">
               <i data-feather="alert-triangle" class="w-6 h-6 mb-3"></i>
               <p class="font-medium">Lỗi khi tải dữ liệu từ Google Sheets.</p>
@@ -219,11 +220,15 @@
             <td class="px-5 py-4 text-sm font-semibold text-slate-800">${row.general_id}</td>
             <td class="px-5 py-4 text-sm text-slate-600">${row.fob_supplier || ''}</td>
             <td class="px-5 py-4 text-sm text-slate-800 font-medium">${row.product_name || ''}</td>
+            <td class="px-5 py-4 text-sm text-slate-600">${row.color || ''}</td>
             <td class="px-5 py-4 text-sm text-slate-600">${row.po_qty || 0}</td>
             <td class="px-5 py-4">${verdictHTML}</td>
             <td class="px-5 py-4 text-right">
               <button onclick="viewReportDetail('${row.general_id}', this)" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100">
                 Xem chi tiết
+              </button>
+              <button onclick="confirmDeleteRecord('${row.general_id}')" class="text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 p-1.5 rounded-lg transition-colors ml-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100" title="Xóa đơn hàng">
+                <i data-feather="trash-2" class="w-4 h-4 inline-block align-middle"></i>
               </button>
             </td>
           </tr>
@@ -231,7 +236,7 @@
       });
 
       if (dataList.length === 0) {
-        html = '<tr><td colspan="7" class="p-12 text-center text-slate-500 font-medium">Không tìm thấy báo cáo kiểm tra Inline nào phù hợp với bộ lọc.</td></tr>';
+        html = '<tr><td colspan="8" class="p-12 text-center text-slate-500 font-medium">Không tìm thấy báo cáo kiểm tra Inline nào phù hợp với bộ lọc.</td></tr>';
       }
 
       tableBody.innerHTML = html;
@@ -1094,6 +1099,40 @@
       } finally {
         btn.disabled = false;
         btn.textContent = originalText;
+      }
+    }
+
+    async function confirmDeleteRecord(generalId) {
+      if (!generalId) return;
+      const text = `Bạn có chắc chắn muốn xóa đơn hàng "${generalId}"?\n\nCẢNH BÁO: Thao tác này sẽ xóa sạch hoàn toàn mọi dữ liệu liên quan đến đơn hàng này khỏi Google Sheets (General, Measurements, InspectionDetails, Summary) và KHÔNG THỂ KHÔI PHỤC!`;
+      if (!confirm(text)) return;
+      
+      try {
+        // Show indicator in table body
+        const tbody = document.getElementById('table-body');
+        if (tbody) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="py-20 text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-rose-500 border-t-transparent mb-3"></div>
+                <div class="text-xs text-rose-500 font-semibold">Đang thực hiện xóa báo cáo ${generalId}...</div>
+              </td>
+            </tr>
+          `;
+        }
+        
+        const res = await QMS_API.deleteRecord(generalId);
+        if (res && res.ok) {
+          alert(`Đã xóa thành công đơn hàng ${generalId}!`);
+        } else {
+          alert(`Lỗi khi xóa: ${res.err || "Lỗi không xác định"}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert(`Lỗi hệ thống khi xóa: ${err.message}`);
+      } finally {
+        // Reload data to refresh dashboard
+        await loadData();
       }
     }
   </script>

@@ -143,6 +143,7 @@ function doPost(e) {
     else if (action === "previewAqlResult") result = previewAqlResult(payload);
     else if (action === "uploadImageBase64") result = uploadImageBase64(payload);
     else if (action === "submitReturnAnalysisBatch") result = submitReturnAnalysisBatch(payload);
+    else if (action === "deleteRecord") result = deleteRecord(payload);
 
     return ContentService.createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
@@ -1653,5 +1654,51 @@ function getPlanData() {
     return { ok: true, data: planData };
   } catch (e) {
     return { ok: false, err: e.message };
+  }
+}
+
+/* =====================================================
+   DELETE RECORD
+   ===================================================== */
+function deleteRecord(payload) {
+  try {
+    if (!payload || !payload.general_id) {
+      return { ok: false, err: "general_id is required" };
+    }
+    const generalId = String(payload.general_id).trim();
+    if (!generalId) {
+      return { ok: false, err: "general_id cannot be empty" };
+    }
+
+    const ss = SpreadsheetApp.getActive();
+    const sheets = ["General", "Measurements", "InspectionDetails", "Summary"];
+    let totalDeleted = 0;
+    
+    sheets.forEach(sheetName => {
+      const sh = ss.getSheetByName(sheetName);
+      if (!sh) return;
+      const data = sh.getDataRange().getValues();
+      if (data.length <= 1) return;
+      
+      const headers = data[0].map(h => String(h).trim().toLowerCase());
+      let colIdx = headers.indexOf("general_id");
+      if (colIdx === -1) colIdx = headers.indexOf("general id");
+      if (colIdx === -1) colIdx = headers.indexOf("mã báo cáo");
+      if (colIdx === -1) colIdx = 1; // Fallback to 2nd column
+      
+      let count = 0;
+      // Delete rows backwards to avoid indexing issues
+      for (let r = data.length - 1; r >= 1; r--) {
+        if (String(data[r][colIdx]).trim() === generalId) {
+          sh.deleteRow(r + 1);
+          count++;
+        }
+      }
+      totalDeleted += count;
+    });
+
+    return { ok: true, general_id: generalId, totalDeleted: totalDeleted };
+  } catch (err) {
+    return { ok: false, err: err.message };
   }
 }

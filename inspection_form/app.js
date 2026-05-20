@@ -73,15 +73,18 @@ function buildMeasurementTable() {
   const numSamples = measSamplesEl ? (parseInt(measSamplesEl.value) || 3) : 3;
 
   let html = '<div class="overflow-x-auto"><table class="meas-tbl"><thead><tr><th class="sticky-col">Điểm đo</th><th>Tol</th>';
-  sizes.forEach(sz => {
-    html += `<th colspan="${numSamples}" class="text-center size-divider">${sz}<br><span class="text-[10px] text-slate-400">Spec</span></th>`;
+  sizes.forEach((sz, sIdx) => {
+    const bgCls = sIdx % 2 === 0 ? 'bg-stripe-even' : 'bg-stripe-odd';
+    html += `<th colspan="${numSamples}" class="text-center size-divider ${bgCls}">${sz}<br><span class="text-[10px] text-slate-400">Spec</span></th>`;
   });
   html += '<th>Kết quả</th></tr>';
   html += '<tr><th class="sticky-col"></th><th></th>';
-  sizes.forEach(sz => {
+  sizes.forEach((sz, sIdx) => {
+    const bgCls = sIdx % 2 === 0 ? 'bg-stripe-even' : 'bg-stripe-odd';
     for (let i = 1; i <= numSamples; i++) {
       const isLast = i === numSamples;
-      const cls = isLast ? 'text-center text-xs text-slate-400 size-divider' : 'text-center text-xs text-slate-400';
+      const borderCls = isLast ? 'size-divider' : '';
+      const cls = `text-center text-xs text-slate-400 ${bgCls} ${borderCls}`.trim();
       html += `<th class="${cls}">${i}</th>`;
     }
   });
@@ -91,11 +94,13 @@ function buildMeasurementTable() {
     const firstSize = sizes[0];
     const tol = specs[pt] && specs[pt][firstSize] ? specs[pt][firstSize].t : '';
     html += `<tr><td class="sticky-col font-medium text-xs">${pt}</td><td class="text-center text-xs">±${tol}</td>`;
-    sizes.forEach(sz => {
+    sizes.forEach((sz, sIdx) => {
+      const bgCls = sIdx % 2 === 0 ? 'bg-stripe-even' : 'bg-stripe-odd';
       const spec = specs[pt] && specs[pt][sz] ? specs[pt][sz].s : '';
       for (let i = 0; i < numSamples; i++) {
         const isLast = i === numSamples - 1;
-        const cls = isLast ? 'p-0 size-divider' : 'p-0';
+        const borderCls = isLast ? 'size-divider' : '';
+        const cls = `p-0 ${bgCls} ${borderCls}`.trim();
         const key = `${pt}|${sz}|${i}`;
         const val = measurementData[key] || '';
         html += `<td class="${cls}"><div class="text-[9px] text-slate-400 text-center">${spec}</div><input type="number" step="0.1" class="meas-input" data-key="${key}" data-spec="${spec}" data-tol="${tol}" value="${val}" oninput="onMeasInput(this)"></td>`;
@@ -626,11 +631,13 @@ function exportInspectionPDF() {
       return `<div style="font-size:11px;color:#666;padding:8px 0">No measurement data</div>`;
     }
 
-    const headerSizes = measurementDataPdf.sizes.map(size => {
-      let html = `<th class="m-size">${escapeHtml(size)}</th>`;
+    const headerSizes = measurementDataPdf.sizes.map((size, sIdx) => {
+      const bgCls = sIdx % 2 === 0 ? "bg-stripe-even" : "bg-stripe-odd";
+      let html = `<th class="m-size ${bgCls}">${escapeHtml(size)}</th>`;
       for (let i = 1; i <= measurementDataPdf.sampleCount; i++) {
         const isLastSample = i === measurementDataPdf.sampleCount;
-        const cls = isLastSample ? "m-sample size-divider" : "m-sample";
+        const dividerCls = isLastSample ? "size-divider" : "";
+        const cls = `m-sample ${bgCls} ${dividerCls}`.trim();
         html += `<th class="${cls}">${i}</th>`;
       }
       return html;
@@ -647,10 +654,11 @@ function exportInspectionPDF() {
           <td class="m-tol">${escapeHtml(firstTol)}</td>
       `;
 
-      measurementDataPdf.sizes.forEach(size => {
+      measurementDataPdf.sizes.forEach((size, sIdx) => {
+        const bgCls = sIdx % 2 === 0 ? "bg-stripe-even" : "bg-stripe-odd";
         const item = measurementDataPdf.rows?.[point]?.[size] || { spec:"", tol:"", samples:[] };
 
-        rowHtml += `<td class="m-spec">${escapeHtml(item.spec)}</td>`;
+        rowHtml += `<td class="m-spec ${bgCls}">${escapeHtml(item.spec)}</td>`;
 
         for (let i = 0; i < measurementDataPdf.sampleCount; i++) {
           const sample = item.samples[i] || { value:"", result:"" };
@@ -659,7 +667,7 @@ function exportInspectionPDF() {
             : (sample.result === "Không đạt" ? "m-fail" : "");
           const isLastSample = i === measurementDataPdf.sampleCount - 1;
           const dividerCls = isLastSample ? "size-divider" : "";
-          const combinedCls = `m-value ${resultCls} ${dividerCls}`.trim();
+          const combinedCls = `m-value ${resultCls} ${bgCls} ${dividerCls}`.trim();
           rowHtml += `<td class="${combinedCls}">${escapeHtml(sample.value)}</td>`;
         }
       });
@@ -870,6 +878,12 @@ function exportInspectionPDF() {
       }
       .measurement-pdf-table .size-divider{
         border-right: 2.5px solid #4a5568 !important;
+      }
+      .measurement-pdf-table .bg-stripe-even{
+        background:#f8fafc !important;
+      }
+      .measurement-pdf-table .bg-stripe-odd{
+        background:#ffffff !important;
       }
       .measurement-pdf-table .m-value{
         background:#fff;
