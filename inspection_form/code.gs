@@ -107,6 +107,18 @@ function doGet(e) {
         return ContentService.createTextOutput(JSON.stringify(getMasterInfoByStyle(e.parameter.style)))
           .setMimeType(ContentService.MimeType.JSON);
       }
+      if (action === "getReturnRows") {
+        return ContentService.createTextOutput(JSON.stringify(getReturnRows()))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (action === "getCustomerFeedback") {
+        return ContentService.createTextOutput(JSON.stringify(getCustomerFeedbackRows()))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (action === "getPlanData") {
+        return ContentService.createTextOutput(JSON.stringify(getPlanData()))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
     } catch(err) {
       return ContentService.createTextOutput(JSON.stringify({ ok: false, err: err.message }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -1038,11 +1050,11 @@ function submitOverallSummary(payload) {
    ===================================================== */
 const RETURN_CFG = {
   TARGET_SHEET_NAME: "Return Analysis",
-  DATA_START_ROW: 179,
-  DATA_START_COL: 3, // cột C
+  DATA_START_ROW: 2,
+  DATA_START_COL: 1, // cột A
 
-  MASTER_SPREADSHEET_ID: "1Y3dy0A0-nKqlz8youz49z6atoIXpqwiHB_kEFp1iYs4",
-  MASTER_SHEET_GID: 572432584,
+  MASTER_SPREADSHEET_ID: "1M4COiy0LqbZnFEwGy4gWJ9hyzZpNapWK2HLefFvt0gw",
+  MASTER_SHEET_GID: 1971227034,
 
   // Master mapping
   MASTER_COL_STYLE: 3,      // C = Tên sản phẩm
@@ -1111,7 +1123,12 @@ function getMasterInfoByStyle(styleInput) {
     return {
       ok: true,
       po: bestHit.po,
-      supplier: bestHit.supplier,
+      supplier: (() => {
+        const s = String(bestHit.supplier || "").trim().toUpperCase();
+        if (s === "A THANH") return "TALYNO";
+        if (s === "A BẢO" || s === "A BAO") return "ANH THƯ";
+        return bestHit.supplier || "";
+      })(),
       unitPrice: bestHit.unitPrice,
       matchedStyle: bestHit.matchedStyle,
       rowNumber: bestHit.rowNumber,
@@ -1243,10 +1260,10 @@ function submitReturnAnalysisBatch(items) {
       .getRange(startRow, RETURN_CFG.DATA_START_COL, outputRows.length, outputRows[0].length)
       .setValues(outputRows);
 
-    // format Inspection Date = cột M = start col 3 + index 10 => 13
-    ctx.sheet.getRange(startRow, 13, outputRows.length, 1).setNumberFormat("dd/MM/yyyy");
-    // format Unit Price = cột P = 16
-    ctx.sheet.getRange(startRow, 16, outputRows.length, 1).setNumberFormat("#,##0.00");
+    // format Inspection Date = cột K = start col 1 + index 10 => 11
+    ctx.sheet.getRange(startRow, 11, outputRows.length, 1).setNumberFormat("dd/MM/yyyy");
+    // format Unit Price = cột N = start col 1 + index 13 => 14
+    ctx.sheet.getRange(startRow, 14, outputRows.length, 1).setNumberFormat("#,##0.00");
 
     return {
       ok: true,
@@ -1261,14 +1278,228 @@ function submitReturnAnalysisBatch(items) {
   }
 }
 
+/**
+ * Lấy danh sách toàn bộ dòng dữ liệu hàng lỗi trả về để hiển thị báo cáo
+ */
+function getReturnRows() {
+  try {
+    const ctx = getReturnContext_();
+    const lastRow = ctx.sheet.getLastRow();
+    if (lastRow < RETURN_CFG.DATA_START_ROW) {
+      return { ok: true, rows: [] };
+    }
+
+    const numRows = lastRow - RETURN_CFG.DATA_START_ROW + 1;
+    const values = ctx.sheet.getRange(RETURN_CFG.DATA_START_ROW, RETURN_CFG.DATA_START_COL, numRows, 14).getValues();
+
+    // Map từng dòng thành object để frontend dễ sử dụng
+    const rows = [];
+    for (let i = 0; i < values.length; i++) {
+      const row = values[i];
+      const hasData = row.some(cell => cell !== "" && cell !== null);
+      if (hasData) {
+        rows.push({
+          id: row[0],
+          po: row[1],
+          style: row[2],
+          size: row[3],
+          art: row[4],
+          supplier: (() => {
+            const s = String(row[5] || "").trim().toUpperCase();
+            if (s === "A THANH") return "TALYNO";
+            if (s === "A BẢO" || s === "A BAO") return "ANH THƯ";
+            return row[5] || "";
+          })(),
+          fabric: row[6],
+          defectType: row[7],
+          quantity: row[8],
+          description: row[9],
+          inspectionDate: row[10],
+          week: row[11],
+          month: row[12],
+          unitPrice: row[13]
+        });
+      }
+    }
+
+    return { ok: true, rows: rows.reverse() }; // đảo ngược để bản ghi mới nhất ở trên cùng
+  } catch (e) {
+    return { ok: false, message: String(e && e.message ? e.message : e) };
+  }
+}
+
+/**
+ * Lấy danh sách đánh giá khách hàng (Customer Feedback) liên quan đến phòng R&D
+ */
+function getCustomerFeedbackRows() {
+  try {
+    const ss = SpreadsheetApp.openById("1M4COiy0LqbZnFEwGy4gWJ9hyzZpNapWK2HLefFvt0gw");
+    const sheets = ss.getSheets();
+    let targetSheet = null;
+    for (let i = 0; i < sheets.length; i++) {
+      if (sheets[i].getSheetId() === 1599526268) {
+        targetSheet = sheets[i];
+        break;
+      }
+    }
+    if (!targetSheet) {
+      targetSheet = ss.getSheetByName("Customer_feedback");
+    }
+    if (!targetSheet) {
+      throw new Error("Không tìm thấy sheet Customer_feedback.");
+    }
+
+    const vals = targetSheet.getDataRange().getDisplayValues();
+    if (vals.length < 2) return { ok: true, rows: [] };
+
+    // Tìm hàng chứa header (thường nằm ở hàng 1 hoặc hàng 3)
+    let headerRowIndex = 0;
+    for (let r = 0; r < Math.min(vals.length, 10); r++) {
+      const rowNorm = vals[r].map(h => normalizeHeader_(h));
+      if (rowNorm.indexOf("phongban") >= 0 || rowNorm.indexOf("department") >= 0 || rowNorm.indexOf("thang") >= 0) {
+        headerRowIndex = r;
+        break;
+      }
+    }
+
+    const rawHeaders = vals[headerRowIndex];
+    const headers = rawHeaders.map(h => normalizeHeader_(h));
+
+    // Tìm vị trí các cột quan trọng
+    const idxMonth = findHeaderIndex_(headers, ["thang", "month"]);
+    const idxYear = findHeaderIndex_(headers, ["nam", "year"]);
+    const idxDate = findHeaderIndex_(headers, ["ngayghinhan", "ngaytao", "ngay", "date"]);
+    const idxTime = findHeaderIndex_(headers, ["thoidiem", "time"]);
+    const idxOrder = findHeaderIndex_(headers, ["iddon", "orderid"]);
+    const idxChannel = findHeaderIndex_(headers, ["kenh", "platform", "channel", "nguon"]);
+    const idxRating = findHeaderIndex_(headers, ["danhgia", "rating", "star"]);
+    const idxQty = findHeaderIndex_(headers, ["slg", "soluong", "quantity"]);
+    const idxReason = findHeaderIndex_(headers, ["nguyennhandanhgia", "nguyennhan", "description", "reason", "ghichuchitiet", "ghichu"]);
+    const idxStatus = findHeaderIndex_(headers, ["trangthai", "status"]);
+    const idxProduct = findHeaderIndex_(headers, ["sanpham", "product", "style"]);
+    const idxIssue = findHeaderIndex_(headers, ["vande", "vane", "issue", "defect"]);
+    const idxCondition = findHeaderIndex_(headers, ["tinhtrang", "condition"]);
+    const idxDept = findHeaderIndex_(headers, ["phongban", "department", "dept"]);
+
+    const rows = [];
+    for (let i = headerRowIndex + 1; i < vals.length; i++) {
+      const row = vals[i];
+      const dept = idxDept >= 0 ? String(row[idxDept] || "").trim().toUpperCase() : "";
+      
+      // Chỉ lấy phòng R&D
+      if (dept === "R&D" || dept.includes("R&D")) {
+        // Parse rating
+        let ratingVal = 1; // Mặc định là đánh giá tiêu cực (1-3 sao) cho các ca khiếu nại
+        if (idxRating >= 0 && row[idxRating]) {
+          const rStr = String(row[idxRating] || "").trim();
+          const match = rStr.match(/(\d+)/);
+          if (match) ratingVal = parseInt(match[1], 10);
+        } else if (idxStatus >= 0) {
+          const statusStr = String(row[idxStatus] || "").trim().toLowerCase();
+          if (statusStr.includes("5*") || statusStr.includes("5 sao")) {
+            ratingVal = 5;
+          } else if (statusStr.includes("4*") || statusStr.includes("4 sao")) {
+            ratingVal = 4;
+          }
+        }
+
+        // Xử lý Ngày ghi nhận
+        let dateVal = "";
+        if (idxDate >= 0 && row[idxDate]) {
+          dateVal = row[idxDate];
+        } else if (idxTime >= 0 && row[idxTime]) {
+          dateVal = row[idxTime];
+        }
+
+        rows.push({
+          rowNumber: i + 1,
+          month: idxMonth >= 0 ? row[idxMonth] : "",
+          year: idxYear >= 0 ? row[idxYear] : "",
+          date: dateVal,
+          orderId: idxOrder >= 0 ? row[idxOrder] : "",
+          channel: idxChannel >= 0 ? row[idxChannel] : "",
+          rating: ratingVal,
+          qty: idxQty >= 0 ? Number(String(row[idxQty]).replace(/[^\d]/g, "")) || 1 : 1,
+          reason: idxReason >= 0 ? row[idxReason] : "",
+          status: idxStatus >= 0 ? row[idxStatus] : "",
+          product: idxProduct >= 0 ? row[idxProduct] : "",
+          issue: idxIssue >= 0 ? row[idxIssue] : "",
+          condition: idxCondition >= 0 ? row[idxCondition] : "",
+          dept: dept
+        });
+      }
+    }
+
+    return { ok: true, rows: rows.reverse() }; // mới nhất lên đầu
+  } catch (e) {
+    return { ok: false, err: e.message };
+  }
+}
+function dummy() {
+  // disabled
+}
+
+function normalizeHeader_(str) {
+  return String(str || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function findHeaderIndex_(headers, candidates) {
+  for (const c of candidates) {
+    const normCand = normalizeHeader_(c);
+    const idx = headers.indexOf(normCand);
+    if (idx >= 0) return idx;
+    
+    // Tìm kiếm tương đối nếu không tìm thấy exact
+    const partialIdx = headers.findIndex(h => h.includes(normCand));
+    if (partialIdx >= 0) return partialIdx;
+  }
+  return -1;
+}
+
 /* ================= HELPERS ================= */
 
 function getReturnContext_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.getActive();
   if (!ss) throw new Error("Script chưa gắn với file spreadsheet hiện tại.");
 
-  const sh = ss.getSheetByName(RETURN_CFG.TARGET_SHEET_NAME);
-  if (!sh) throw new Error("Không tìm thấy sheet: " + RETURN_CFG.TARGET_SHEET_NAME);
+  const headers = [
+    "Mã Lỗi (ID)",
+    "Mã PO",
+    "Tên sản phẩm (Style)",
+    "Size",
+    "Art",
+    "Nhà cung cấp (Supplier)",
+    "Chất liệu (Fabric)",
+    "Loại lỗi (Defect Type)",
+    "Số lượng (Quantity)",
+    "Mô tả chi tiết (Description)",
+    "Ngày kiểm tra (Inspection Date)",
+    "Tuần (Week)",
+    "Tháng (Month)",
+    "Đơn giá (Unit Price)"
+  ];
+
+  let sh = ss.getSheetByName(RETURN_CFG.TARGET_SHEET_NAME);
+  if (!sh) {
+    // Tự động tạo sheet "Return Analysis" nếu chưa có
+    sh = ss.insertSheet(RETURN_CFG.TARGET_SHEET_NAME);
+    
+    sh.getRange(RETURN_CFG.DATA_START_ROW - 1, RETURN_CFG.DATA_START_COL, 1, headers.length)
+      .setValues([headers])
+      .setFontWeight("bold")
+      .setBackground("#e2e8f0") // Slate-200
+      .setHorizontalAlignment("center");
+  } else {
+    // Đảm bảo đủ ít nhất 14 cột để không bị lỗi Range
+    const maxCols = sh.getMaxColumns();
+    if (maxCols < headers.length) {
+      sh.insertColumnsAfter(maxCols, headers.length - maxCols);
+    }
+  }
 
   return { spreadsheet: ss, sheet: sh };
 }
@@ -1386,4 +1617,41 @@ function toNumber_(value) {
 
   const n = Number(cleaned);
   return isNaN(n) ? 0 : n;
+}
+
+function getPlanData() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    let planSheet = null;
+    for (let i = 0; i < sheets.length; i++) {
+      if (sheets[i].getSheetId().toString() === "1924232854") {
+        planSheet = sheets[i];
+        break;
+      }
+    }
+    
+    if (!planSheet) {
+      planSheet = ss.getSheetByName("Plan") || ss.getSheetByName("Planning") || ss.getSheetByName("Schedule");
+    }
+    
+    let planData = [];
+    if (planSheet) {
+      const vals = planSheet.getDataRange().getDisplayValues();
+      if (vals.length >= 2) {
+        const headers = vals[0].map(h => String(h || "").trim().toLowerCase());
+        const rows = vals.slice(1);
+        planData = rows.map(r => {
+          const obj = {};
+          headers.forEach((h, i) => {
+            obj[h] = r[i];
+          });
+          return obj;
+        });
+      }
+    }
+    return { ok: true, data: planData };
+  } catch (e) {
+    return { ok: false, err: e.message };
+  }
 }

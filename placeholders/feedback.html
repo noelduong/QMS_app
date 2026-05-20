@@ -3,23 +3,1055 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Feedback Rate</title>
+  <title>Customer Feedback Rate Analytics</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Google Sans', sans-serif; background: transparent; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- QMS API Client -->
+  <script src="../api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: transparent;
+      -webkit-font-smoothing: antialiased;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.03);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(31, 38, 135, 0.05);
+    }
+    .table-container {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    /* Star styling */
+    .star-icon {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      fill: #f59e0b;
+      stroke: #f59e0b;
+      margin-right: 2px;
+    }
+    .star-icon.empty {
+      fill: none;
+      stroke: #cbd5e1;
+    }
+    /* Hide scrollbar but keep functionality */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.01);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.22);
+    }
+  </style>
 </head>
-<body class="p-8">
-  <div class="h-full flex flex-col items-center justify-center text-center p-10 bg-white rounded-2xl shadow-sm border border-slate-100 max-w-2xl mx-auto mt-20">
-    <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mb-6">
-      <i data-feather="message-square" class="w-8 h-8"></i>
+<body class="p-4 md:p-8 text-slate-700 min-h-screen bg-slate-50/50">
+
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Customer Review Analytics (R&D)</h2>
+        <p class="text-xs text-slate-500 mt-1 font-medium tracking-wide">Phân tích phản hồi khách hàng mua sản phẩm - Giám sát chất lượng & lỗi kỹ thuật R&D</p>
+      </div>
+      
+      <!-- Date Sync Indicator -->
+      <div id="sync-indicator" class="flex items-center text-xs font-semibold text-slate-400 bg-white/60 px-3.5 py-1.5 rounded-full border border-slate-100 shadow-sm">
+        <div class="w-1.5 h-1.5 rounded-full bg-indigo-400 mr-2 animate-pulse"></div>
+        <span>Đồng bộ từ Google Sheets</span>
+      </div>
     </div>
-    <h2 class="text-2xl font-bold text-slate-800 mb-2">Feedback Rate</h2>
-    <p class="text-slate-500 mb-6 max-w-md">Phân tích tỷ lệ phản hồi của khách hàng. Module đang trong quá trình tích hợp dữ liệu và thiết kế biểu đồ trực quan.</p>
-    <div class="inline-flex items-center justify-center px-4 py-2 border border-slate-200 shadow-sm rounded-lg text-sm font-medium text-slate-600 bg-slate-50">
-      <div class="w-2 h-2 bg-amber-400 rounded-full mr-2 animate-pulse"></div> Coming Soon
+
+    <!-- Filters Panel -->
+    <div class="glass-card rounded-3xl p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Kênh filter -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Kênh Bán Hàng</label>
+          <div class="relative">
+            <select id="filter-channel" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
+              <option value="">Tất cả kênh</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <i data-feather="chevron-down" class="w-4 h-4"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tình trạng filter -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tình Trạng Sử Dụng</label>
+          <div class="relative">
+            <select id="filter-condition" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
+              <option value="">Tất cả tình trạng</option>
+              <option value="Đã giặt">Đã giặt / Đã sử dụng</option>
+              <option value="Mới">Mới / Chưa sử dụng</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <i data-feather="chevron-down" class="w-4 h-4"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter theo Thời gian -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Khoảng thời gian</label>
+          <div class="relative">
+            <select id="filter-time-preset" onchange="onTimePresetChange()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
+              <option value="all" selected>Tất cả thời gian</option>
+              <option value="today">Hôm nay</option>
+              <option value="this-week">Tuần này</option>
+              <option value="this-month">Tháng này</option>
+              <option value="last-month">Tháng trước</option>
+              <option value="custom">Tùy chọn ngày...</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <i data-feather="chevron-down" class="w-4 h-4"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ngày bắt đầu & kết thúc (Cho Custom) -->
+        <div id="custom-date-container" class="hidden sm:col-span-2 lg:col-span-1 grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Từ ngày</label>
+            <input type="date" id="filter-date-start" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Đến ngày</label>
+            <input type="date" id="filter-date-end" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Total Reviews KPI -->
+      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
+        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
+        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng Đánh Giá R&D</span>
+          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-total">0</div>
+          <div class="min-h-[18px] flex items-end">
+            <span class="text-[11px] text-indigo-500 font-semibold leading-none">Toàn bộ phản hồi thuộc R&D</span>
+          </div>
+        </div>
+        <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm shrink-0">
+          <i data-feather="message-circle" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Positive Reviews KPI -->
+      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
+        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Đánh Giá Tích Cực</span>
+          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-positive">0</div>
+          <div class="min-h-[18px] flex items-end">
+            <span class="text-[11px] text-emerald-600 font-semibold leading-none" id="kpi-positive-pct">0% tổng số</span>
+          </div>
+        </div>
+        <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0">
+          <i data-feather="smile" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Negative Reviews KPI -->
+      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-negative-card">
+        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-negative-glow"></div>
+        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Đánh Giá Tiêu Cực</span>
+          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-negative">0</div>
+          <div class="min-h-[18px] flex items-end">
+            <span class="text-[11px] text-slate-400 font-semibold leading-none" id="kpi-negative-pct">0% tổng số</span>
+          </div>
+        </div>
+        <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0" id="kpi-negative-icon-container">
+          <i data-feather="frown" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Positive Feedback Rate KPI -->
+      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-rate-card">
+        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-rate-glow"></div>
+        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tỷ Lệ Tích Cực</span>
+          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-rate">0%</div>
+          <div class="min-h-[18px] flex items-end">
+            <span class="text-[10px] font-black tracking-wide leading-none" id="kpi-rate-sub">Đang tính toán...</span>
+          </div>
+        </div>
+        <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0" id="kpi-rate-icon-container">
+          <i data-feather="award" id="kpi-rate-icon" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Issue Breakdown progress bars -->
+      <div class="glass-card rounded-3xl p-6 space-y-6">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Phân Loại Vấn Đề Chất Lượng</h3>
+          <p class="text-xs text-slate-400 font-medium">Xếp hạng tần suất lỗi sản phẩm từ phản hồi khách hàng</p>
+        </div>
+
+        <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="issue-bars-container">
+          <div class="text-center py-10 text-sm text-slate-400">Đang thống kê dữ liệu...</div>
+        </div>
+      </div>
+
+      <!-- Product reviews comparison -->
+      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6 flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Tỷ Lệ Đánh Giá Theo Sản Phẩm (Style)</h3>
+          <p class="text-xs text-slate-400 font-medium">So sánh tỷ lệ Đánh giá Tích cực (5★) vs Tiêu cực (1-3★) của từng sản phẩm</p>
+        </div>
+
+        <div class="space-y-5 overflow-y-auto pr-1 flex-1 max-h-[290px]" id="product-sentiment-container">
+          <div class="text-center py-10 text-sm text-slate-400">Đang thống kê dữ liệu...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Donut Chart & Channel distribution row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Donut Chart -->
+      <div class="glass-card rounded-3xl p-6 flex flex-col justify-between min-h-[320px]">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Cơ Cấu Điểm Đánh Giá (Sao)</h3>
+          <p class="text-xs text-slate-400 font-medium">Tỷ lệ phân bố số sao đánh giá của khách hàng</p>
+        </div>
+
+        <div class="relative w-44 h-44 mx-auto my-2 flex items-center justify-center">
+          <canvas id="donut-chart" class="z-10"></canvas>
+        </div>
+
+        <div class="flex justify-center items-center gap-4 text-[11px] font-bold">
+          <div class="flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#a7f3d0] mr-1.5"></span>
+            <span>Tích cực (5★)</span>
+          </div>
+          <div class="flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#fca5a5] mr-1.5"></span>
+            <span>Tiêu cực (1-3★)</span>
+          </div>
+          <div class="flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#cbd5e1] mr-1.5"></span>
+            <span>Khác (4★)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channel & Platform performance -->
+      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6 flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Hiệu Suất Chất Lượng Theo Kênh Bán</h3>
+          <p class="text-xs text-slate-400 font-medium">Đo lường mức độ phản hồi tiêu cực trên từng nền tảng</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="channel-cards-container">
+          <!-- Channel stats populated dynamically -->
+        </div>
+
+        <div class="text-xs text-slate-400 font-medium bg-slate-50 p-3 rounded-2xl border border-slate-100 leading-relaxed">
+          💡 <strong>Tip của R&D:</strong> Các kênh TMĐT như Shopee/Tiktok thường ghi nhận đánh giá co rút, phai màu nhanh hơn do thói quen giặt giũ của khách hàng online. Hãy điều chỉnh kỹ thuật bo thun và kiểm tra độ bền màu sớm hơn.
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-container rounded-3xl overflow-hidden shadow-sm">
+      <div class="p-6 border-b border-black/5 bg-white/40">
+        <h3 class="text-base font-bold text-slate-800 tracking-tight">Nhật Ký Đánh Giá Khách Hàng (Phòng R&D)</h3>
+        <p class="text-xs text-slate-400 font-medium">Danh sách toàn bộ các phản hồi, khiếu nại của khách hàng liên quan đến chất lượng sản phẩm</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead class="bg-slate-50/70 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-black/5">
+            <tr>
+              <th class="px-6 py-4">STT</th>
+              <th class="px-6 py-4">Ngày ghi nhận</th>
+              <th class="px-6 py-4">ID Đơn Hàng</th>
+              <th class="px-6 py-4">Kênh</th>
+              <th class="px-6 py-4">Đánh giá</th>
+              <th class="px-6 py-4">Sản phẩm (Style)</th>
+              <th class="px-6 py-4">Vấn đề kỹ thuật</th>
+              <th class="px-6 py-4">Tình trạng</th>
+              <th class="px-6 py-4 text-right">Ý kiến khách hàng</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-black/5">
+            <!-- Loading Row -->
+            <tr id="loading-row">
+              <td colspan="9" class="p-12 text-center text-slate-400">
+                <div class="flex flex-col items-center justify-center">
+                  <i data-feather="loader" class="w-6 h-6 animate-spin mb-3 text-indigo-500"></i>
+                  <p class="font-medium">Đang tải dữ liệu từ Google Sheets...</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Detail Dialog / Modal -->
+  <div id="detail-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-3xl max-w-lg w-full mx-4 overflow-hidden shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300" id="modal-card">
+      <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-100 uppercase" id="modal-channel">TIKTOK</span>
+          <h3 class="text-base font-bold text-slate-800 mt-1" id="modal-title">Chi Tiết Khiếu Nại Đơn Hàng</h3>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center bg-white rounded-full border border-slate-200 text-slate-400 hover:text-slate-600 hover:shadow-sm transition-all">
+          <i data-feather="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Star rating & status -->
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div class="flex flex-col">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đánh giá sao</span>
+            <div class="flex mt-0.5" id="modal-stars"></div>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái xử lý</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-0.5" id="modal-status">Chưa xử lý</span>
+          </div>
+        </div>
+
+        <!-- Product details -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Sản phẩm</span>
+            <span class="text-sm font-bold text-slate-800" id="modal-product">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Lỗi kỹ thuật</span>
+            <span class="text-sm font-bold text-rose-600" id="modal-issue">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tình trạng giặt ủi</span>
+            <span class="text-xs font-semibold text-slate-600" id="modal-condition">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Ngày ghi nhận</span>
+            <span class="text-xs font-semibold text-slate-600" id="modal-date">-</span>
+          </div>
+        </div>
+
+        <!-- Customer raw comments -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1.5">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Ý kiến phản hồi từ khách hàng</span>
+          <p class="text-xs text-slate-700 font-medium italic leading-relaxed" id="modal-reason">"..."</p>
+        </div>
+      </div>
+      
+      <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 transition-colors shadow-sm">
+          Đóng cửa sổ
+        </button>
+      </div>
     </div>
   </div>
-  <script>feather.replace();</script>
+
+  <script>
+    let allReviews = [];
+    let filteredReviews = [];
+    let donutChartInstance = null;
+
+    async function loadData() {
+      try {
+        if (!QMS_API.isConfigured()) {
+          throw new Error('API chưa được cấu hình. Vui lòng kiểm tra api.js');
+        }
+
+        const res = await QMS_API.getCustomerFeedback();
+        if (!res || !res.ok) {
+          throw new Error(res.err || 'Lỗi không xác định khi tải dữ liệu.');
+        }
+
+        allReviews = res.rows || [];
+
+        // Nạp danh sách kênh vào bộ lọc
+        populateChannelFilter();
+
+        // Áp dụng bộ lọc mặc định (Tất cả thời gian)
+        applyFilters();
+
+      } catch (e) {
+        console.error(e);
+        document.getElementById('table-body').innerHTML = `
+          <tr>
+            <td colspan="9" class="p-12 text-center text-rose-500">
+              <div class="flex flex-col items-center justify-center">
+                <i data-feather="alert-triangle" class="w-6 h-6 mb-3"></i>
+                <p class="font-medium">Lỗi khi tải dữ liệu phản hồi.</p>
+                <p class="text-xs mt-1 text-rose-400">${e.message}</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        feather.replace();
+      }
+    }
+
+    function populateChannelFilter() {
+      const select = document.getElementById('filter-channel');
+      if (!select) return;
+
+      const channels = new Set();
+      allReviews.forEach(row => {
+        const ch = String(row.channel || "").trim();
+        if (ch) {
+          // Chuẩn hóa tên kênh viết hoa chữ đầu
+          const standardized = ch.charAt(0).toUpperCase() + ch.slice(1).toLowerCase();
+          channels.add(standardized);
+        }
+      });
+
+      select.innerHTML = '<option value="">Tất cả kênh</option>';
+      [...channels].sort().forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.toUpperCase();
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
+    }
+
+    function onTimePresetChange() {
+      const preset = document.getElementById('filter-time-preset').value;
+      const dateCont = document.getElementById('custom-date-container');
+
+      if (preset === 'custom') {
+        dateCont.classList.remove('hidden');
+      } else {
+        dateCont.classList.add('hidden');
+        applyFilters();
+      }
+    }
+
+    function getPresetDateRange(preset) {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      switch (preset) {
+        case 'today':
+          return { start: todayStart, end: new Date(todayStart.getTime() + 86400000 - 1) };
+          
+        case 'this-week': {
+          const day = todayStart.getDay();
+          const diff = todayStart.getDate() - day + (day === 0 ? -6 : 1);
+          const start = new Date(todayStart.setDate(diff));
+          const end = new Date(start.getTime() + 7 * 86400000 - 1);
+          return { start, end };
+        }
+        
+        case 'this-month': {
+          const start = new Date(now.getFullYear(), now.getMonth(), 1);
+          const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+          return { start, end };
+        }
+        
+        case 'last-month': {
+          const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+          return { start, end };
+        }
+        
+        default:
+          return { start: null, end: null };
+      }
+    }
+
+    function parseDate(str) {
+      if (!str) return null;
+      const dateOnly = String(str).trim().split(' ')[0];
+      
+      const dmyMatch = dateOnly.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      if (dmyMatch) {
+        return new Date(parseInt(dmyMatch[3], 10), parseInt(dmyMatch[2], 10) - 1, parseInt(dmyMatch[1], 10), 12, 0, 0);
+      }
+      
+      const ymdMatch = dateOnly.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+      if (ymdMatch) {
+        return new Date(parseInt(ymdMatch[1], 10), parseInt(ymdMatch[2], 10) - 1, parseInt(ymdMatch[3], 10), 12, 0, 0);
+      }
+      
+      const d = new Date(dateOnly + 'T12:00:00');
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function applyFilters() {
+      const channel = document.getElementById('filter-channel').value;
+      const condition = document.getElementById('filter-condition').value;
+      const preset = document.getElementById('filter-time-preset').value;
+
+      let startDate = null;
+      let endDate = null;
+
+      if (preset === 'custom') {
+        const startVal = document.getElementById('filter-date-start').value;
+        const endVal = document.getElementById('filter-date-end').value;
+        if (startVal) startDate = new Date(startVal + 'T00:00:00');
+        if (endVal) endDate = new Date(endVal + 'T23:59:59');
+      } else if (preset !== 'all') {
+        const range = getPresetDateRange(preset);
+        startDate = range.start;
+        endDate = range.end;
+      }
+
+      filteredReviews = allReviews.filter(row => {
+        // Lọc theo Kênh
+        if (channel) {
+          const rowCh = String(row.channel || "").trim().toUpperCase();
+          if (rowCh !== channel) return false;
+        }
+
+        // Lọc theo Tình trạng
+        if (condition) {
+          const cond = String(row.condition || "").trim().toLowerCase();
+          if (condition === "Đã giặt") {
+            if (!cond.includes("giat") && !cond.includes("sd") && !cond.includes("dung") && !cond.includes("mac")) return false;
+          } else if (condition === "Mới") {
+            if (cond.includes("giat") || cond.includes("sd") || cond.includes("dung") || cond.includes("mac")) return false;
+          }
+        }
+
+        // Lọc theo Thời gian
+        if (startDate || endDate) {
+          const insDate = parseDate(row.date);
+          if (!insDate) return false;
+          if (startDate && insDate < startDate) return false;
+          if (endDate && insDate > endDate) return false;
+        }
+
+        return true;
+      });
+
+      calculateAndRender();
+    }
+
+    function calculateAndRender() {
+      const totalCount = filteredReviews.length;
+      
+      // Tách bạch theo định nghĩa của User
+      // Tích cực: 5 sao
+      // Tiêu cực: 1 - 3 sao
+      let positiveCount = 0;
+      let negativeCount = 0;
+      let neutralCount = 0; // Thường là 4 sao hoặc chưa đánh giá
+
+      const issueStats = {};
+      const productStats = {};
+      const channelStats = {};
+
+      filteredReviews.forEach(row => {
+        const rating = Number(row.rating) || 0;
+        
+        // Sentiment counting
+        if (rating === 5) {
+          positiveCount++;
+        } else if (rating >= 1 && rating <= 3) {
+          negativeCount++;
+        } else {
+          neutralCount++;
+        }
+
+        // Lỗi kỹ thuật R&D (Vấn đề)
+        const issue = String(row.issue || "").trim();
+        if (issue && issue !== "-") {
+          issueStats[issue] = (issueStats[issue] || 0) + 1;
+        }
+
+        // Sentiment theo sản phẩm (Style)
+        const prod = String(row.product || "").trim().toUpperCase();
+        if (prod && prod !== "-") {
+          if (!productStats[prod]) {
+            productStats[prod] = { positive: 0, negative: 0, total: 0 };
+          }
+          productStats[prod].total++;
+          if (rating === 5) {
+            productStats[prod].positive++;
+          } else if (rating >= 1 && rating <= 3) {
+            productStats[prod].negative++;
+          }
+        }
+
+        // Kênh bán hàng
+        const chRaw = String(row.channel || "Khác").trim().toUpperCase();
+        if (!channelStats[chRaw]) {
+          channelStats[chRaw] = { total: 0, negative: 0 };
+        }
+        channelStats[chRaw].total++;
+        if (rating >= 1 && rating <= 3) {
+          channelStats[chRaw].negative++;
+        }
+      });
+
+      const positivePct = totalCount > 0 ? Math.round((positiveCount / totalCount) * 100) : 0;
+      const negativePct = totalCount > 0 ? Math.round((negativeCount / totalCount) * 100) : 0;
+
+      // Cập nhật thẻ KPI
+      document.getElementById('kpi-total').textContent = totalCount;
+      document.getElementById('kpi-positive').textContent = positiveCount;
+      document.getElementById('kpi-positive-pct').textContent = `${positivePct}% tổng số`;
+      document.getElementById('kpi-negative').textContent = negativeCount;
+      document.getElementById('kpi-negative-pct').textContent = `${negativePct}% tổng số`;
+      document.getElementById('kpi-rate').textContent = `${positivePct}%`;
+
+      // Cập nhật card trạng thái KPI Đánh Giá Tiêu Cực
+      const negCardEl = document.getElementById('kpi-negative-card');
+      const negGlowEl = document.getElementById('kpi-negative-glow');
+      const negSubEl = document.getElementById('kpi-negative-pct');
+      const negIconContainerEl = document.getElementById('kpi-negative-icon-container');
+      const negValEl = document.getElementById('kpi-negative');
+
+      if (totalCount === 0 || negativeCount === 0) {
+        if (negValEl) negValEl.className = "text-3xl font-extrabold text-slate-900 leading-none";
+        if (negSubEl) {
+          negSubEl.className = "text-[11px] text-slate-400 font-semibold leading-none";
+          negSubEl.textContent = "0% tổng số";
+        }
+        if (negCardEl) negCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (negGlowEl) negGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
+        if (negIconContainerEl) negIconContainerEl.className = "p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0";
+      } else {
+        if (negSubEl) negSubEl.textContent = `${negativePct}% tổng số`;
+        
+        if (negativePct > 15) {
+          // Warning/Alert State: Red/Rose
+          if (negValEl) negValEl.className = "text-3xl font-extrabold text-rose-600 leading-none";
+          if (negSubEl) negSubEl.className = "text-[11px] text-rose-600 font-semibold leading-none animate-pulse";
+          if (negCardEl) negCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+          if (negGlowEl) negGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+          if (negIconContainerEl) negIconContainerEl.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+        } else {
+          // Healthy State: Soft Slate
+          if (negValEl) negValEl.className = "text-3xl font-extrabold text-slate-800 leading-none";
+          if (negSubEl) negSubEl.className = "text-[11px] text-slate-500 font-semibold leading-none";
+          if (negCardEl) negCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+          if (negGlowEl) negGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-400/5 rounded-full blur-xl pointer-events-none";
+          if (negIconContainerEl) negIconContainerEl.className = "p-4 bg-slate-100 text-slate-500 rounded-2xl shadow-sm shrink-0";
+        }
+      }
+
+      // Cập nhật card trạng thái KPI Tỷ lệ Phản hồi Tích cực (Màu Pastel cực sang)
+      const rateCardEl = document.getElementById('kpi-rate-card');
+      const rateGlowEl = document.getElementById('kpi-rate-glow');
+      const rateSubEl = document.getElementById('kpi-rate-sub');
+      const rateIconContainerEl = document.getElementById('kpi-rate-icon-container');
+
+      if (totalCount === 0) {
+        rateSubEl.textContent = "Chưa có dữ liệu";
+        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-slate-400";
+        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0";
+      } else if (positivePct >= 80) {
+        rateSubEl.textContent = "✓ Đạt mục tiêu chất lượng (>80%)";
+        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-emerald-500";
+        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0";
+      } else if (positivePct >= 60) {
+        rateSubEl.textContent = "⚠️ Cần kiểm nghiệm chất lượng (60%-80%)";
+        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-amber-500";
+        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-4 bg-amber-50 text-amber-600 rounded-2xl shadow-sm shrink-0";
+      } else {
+        rateSubEl.textContent = "🚨 Báo động đỏ về chất lượng R&D (<60%)";
+        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-rose-500 animate-pulse";
+        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+      }
+
+      // Render các mục phân tích
+      renderIssueBreakdown(issueStats);
+      renderProductSentiment(productStats);
+      renderDonutChart(positiveCount, negativeCount, neutralCount);
+      renderChannelPerformance(channelStats);
+      renderTable();
+    }
+
+    function renderIssueBreakdown(stats) {
+      const container = document.getElementById('issue-bars-container');
+      if (!container) return;
+
+      const issues = Object.keys(stats);
+      if (issues.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 font-medium">Không ghi nhận lỗi chất lượng R&D nào.</div>`;
+        return;
+      }
+
+      // Tính phần trăm và sắp xếp giảm dần
+      const totalIssues = Object.values(stats).reduce((a, b) => a + b, 0);
+      const list = issues.map(name => {
+        const count = stats[name];
+        const pct = Math.round((count / totalIssues) * 100);
+        return { name, count, pct };
+      }).sort((a, b) => b.count - a.count);
+
+      const palette = ["bg-indigo-400", "bg-sky-400", "bg-purple-400", "bg-amber-400", "bg-emerald-400"];
+
+      container.innerHTML = list.map((item, idx) => {
+        const colorClass = palette[idx % palette.length];
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-600">
+              <span class="text-slate-800">${item.name}</span>
+              <div class="text-slate-400">
+                <span class="text-slate-700 font-bold">${item.count} khiếu nại</span> (${item.pct}%)
+              </div>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div class="${colorClass} h-full rounded-full" style="width: ${item.pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderProductSentiment(stats) {
+      const container = document.getElementById('product-sentiment-container');
+      if (!container) return;
+
+      const products = Object.keys(stats);
+      if (products.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 font-medium">Chưa có đánh giá sản phẩm.</div>`;
+        return;
+      }
+
+      // Sắp xếp sản phẩm theo số lượng đánh giá giảm dần
+      const list = products.map(name => {
+        const data = stats[name];
+        const posPct = data.total > 0 ? Math.round((data.positive / data.total) * 100) : 0;
+        const negPct = data.total > 0 ? Math.round((data.negative / data.total) * 100) : 0;
+        return { name, ...data, posPct, negPct };
+      }).sort((a, b) => b.total - a.total);
+
+      container.innerHTML = list.map((item, idx) => {
+        return `
+          <div class="space-y-1.5 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 hover:border-slate-200/80 transition-colors">
+            <div class="flex justify-between items-center text-xs font-semibold">
+              <span class="text-slate-800 font-bold">${item.name}</span>
+              <span class="text-[11px] text-slate-400 font-medium">Tổng số: ${item.total} đánh giá</span>
+            </div>
+            
+            <!-- Double progress bar (Tích cực vs Tiêu cực) -->
+            <div class="w-full bg-slate-100 h-3 rounded-full flex overflow-hidden">
+              <!-- Tích cực 5★ -->
+              <div class="bg-emerald-300 h-full rounded-l-full transition-all duration-1000" style="width: ${item.posPct}%" title="Tích cực: ${item.posPct}%"></div>
+              <!-- Tiêu cực 1-3★ -->
+              <div class="bg-rose-300 h-full rounded-r-full transition-all duration-1000" style="width: ${item.negPct}%" title="Tiêu cực: ${item.negPct}%"></div>
+            </div>
+            
+            <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 px-0.5">
+              <span class="text-emerald-500">Tích cực (5★): ${item.posPct}% (${item.positive} đơn)</span>
+              <span class="text-rose-500">Tiêu cực (1-3★): ${item.negPct}% (${item.negative} đơn)</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderDonutChart(positive, negative, neutral) {
+      const ctx = document.getElementById('donut-chart');
+      if (!ctx) return;
+
+      if (donutChartInstance) {
+        donutChartInstance.destroy();
+      }
+
+      if (positive === 0 && negative === 0 && neutral === 0) {
+        donutChartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Không có dữ liệu'],
+            datasets: [{
+              data: [1],
+              backgroundColor: ['#e2e8f0'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            }
+          }
+        });
+        return;
+      }
+
+      donutChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Tích cực (5★)', 'Tiêu cực (1-3★)', 'Khác (4★)'],
+          datasets: [{
+            data: [positive, negative, neutral],
+            backgroundColor: ['#a7f3d0', '#fca5a5', '#cbd5e1'],
+            hoverBackgroundColor: ['#86efac', '#fda4af', '#cbd5e1'],
+            borderWidth: 0,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '75%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.9)',
+              padding: 10,
+              titleFont: { size: 11, weight: 'bold' },
+              bodyFont: { size: 11 },
+              cornerRadius: 12,
+              callbacks: {
+                label: function(context) {
+                  let value = context.raw;
+                  let total = positive + negative + neutral;
+                  let pct = Math.round((value / total) * 100);
+                  return ` ${context.label}: ${value} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderChannelPerformance(channelStats) {
+      const container = document.getElementById('channel-cards-container');
+      if (!container) return;
+
+      const channels = Object.keys(channelStats);
+      if (channels.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-medium col-span-3">Chưa có thông số theo kênh.</div>`;
+        return;
+      }
+
+      container.innerHTML = channels.map(ch => {
+        const stats = channelStats[ch];
+        const pct = stats.total > 0 ? Math.round((stats.negative / stats.total) * 100) : 0;
+        
+        let colorClass = "text-slate-600 bg-slate-50 border-slate-100";
+        if (pct >= 50) colorClass = "text-rose-600 bg-rose-50 border-rose-100";
+        else if (pct >= 25) colorClass = "text-amber-600 bg-amber-50 border-amber-100";
+        else if (stats.total > 0) colorClass = "text-emerald-600 bg-emerald-50 border-emerald-100";
+
+        // Tên hiển thị kênh chuẩn hóa
+        const displayChName = ch === "SHOPEE" ? "Shopee Mall" : ch === "TIKTOK" ? "Tiktok Shop" : ch;
+
+        return `
+          <div class="p-4 rounded-2xl border ${colorClass} flex flex-col justify-between h-[100px] shadow-sm">
+            <div class="flex justify-between items-start">
+              <span class="text-xs font-extrabold tracking-wide uppercase">${displayChName}</span>
+              <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-white shadow-sm border border-black/5">${stats.total} đánh giá</span>
+            </div>
+            <div class="flex items-end justify-between mt-2">
+              <div class="flex flex-col">
+                <span class="text-2xl font-extrabold leading-none">${pct}%</span>
+                <span class="text-[9px] font-semibold text-slate-400 mt-1">Tỷ lệ tiêu cực (1-3★)</span>
+              </div>
+              <span class="text-xs font-bold">${stats.negative} đơn lỗi</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('table-body');
+      if (!tbody) return;
+
+      if (filteredReviews.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="py-12 text-center text-sm text-slate-400 font-medium">Không tìm thấy đánh giá nào khớp với điều kiện lọc.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filteredReviews.map((row, idx) => {
+        // Đánh giá sao HTML
+        const rating = Number(row.rating) || 0;
+        let starsHTML = '';
+        for (let s = 1; s <= 5; s++) {
+          if (s <= rating) {
+            starsHTML += '<svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+          } else {
+            starsHTML += '<svg class="star-icon empty" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+          }
+        }
+
+        // Badge loại sao
+        let sentimentBadge = '';
+        if (rating === 5) {
+          sentimentBadge = '<span class="ml-1.5 px-1.5 py-0.5 rounded text-[8px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase">TÍCH CỰC</span>';
+        } else if (rating >= 1 && rating <= 3) {
+          sentimentBadge = '<span class="ml-1.5 px-1.5 py-0.5 rounded text-[8px] font-extrabold bg-rose-50 text-rose-600 border border-rose-100 uppercase">TIÊU CỰC</span>';
+        }
+
+        // Tên kênh badge
+        const ch = String(row.channel || "Khác").trim().toUpperCase();
+        let channelClass = "bg-slate-100 text-slate-600";
+        if (ch === "SHOPEE") channelClass = "bg-orange-50 text-orange-600 border border-orange-100";
+        else if (ch === "TIKTOK") channelClass = "bg-black text-white";
+        else if (ch === "LAZADA") channelClass = "bg-blue-50 text-blue-600 border border-blue-100";
+
+        // Tình trạng & Vấn đề
+        const issue = String(row.issue || "-").trim();
+        const cond = String(row.condition || "-").trim();
+
+        return `
+          <tr class="hover:bg-slate-50/50 transition-colors group">
+            <td class="py-3.5 px-6 text-xs font-semibold text-slate-400 font-mono">${idx + 1}</td>
+            <td class="py-3.5 px-6 text-xs font-semibold text-slate-500">${escapeHtml(row.date)}</td>
+            <td class="py-3.5 px-6 text-xs font-bold text-slate-800 font-mono">${escapeHtml(row.orderId || '-')}</td>
+            <td class="py-3.5 px-6">
+              <span class="px-2 py-0.5 rounded text-[9px] font-bold ${channelClass}">${ch}</span>
+            </td>
+            <td class="py-3.5 px-6">
+              <div class="flex items-center">
+                ${starsHTML}
+                ${sentimentBadge}
+              </div>
+            </td>
+            <td class="py-3.5 px-6 text-xs font-bold text-slate-800">${escapeHtml(row.product || '')}</td>
+            <td class="py-3.5 px-6 text-xs font-semibold text-slate-700">${escapeHtml(issue)}</td>
+            <td class="py-3.5 px-6 text-xs font-semibold text-slate-500">${escapeHtml(cond)}</td>
+            <td class="py-3.5 px-6 text-right">
+              <button onclick="viewReviewDetail(${JSON.stringify(row).replace(/"/g, '&quot;')}, this)" class="text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100">
+                Xem phản hồi
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      feather.replace();
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function viewReviewDetail(row, btn) {
+      if (!row) return;
+      
+      const modal = document.getElementById('detail-modal');
+      const card = document.getElementById('modal-card');
+      if (!modal || !card) return;
+
+      // Update contents
+      const ch = String(row.channel || "Khác").trim().toUpperCase();
+      const modalChannel = document.getElementById('modal-channel');
+      modalChannel.textContent = ch;
+      if (ch === "SHOPEE") modalChannel.className = "px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider bg-orange-50 text-orange-600 border border-orange-100 uppercase";
+      else if (ch === "TIKTOK") modalChannel.className = "px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider bg-slate-900 text-white uppercase";
+      else modalChannel.className = "px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider bg-slate-100 text-slate-600 border border-slate-200 uppercase";
+
+      document.getElementById('modal-title').textContent = `Chi Tiết Khiếu Nại Đơn Hàng ${row.orderId || 'N/A'}`;
+      document.getElementById('modal-product').textContent = row.product || '-';
+      document.getElementById('modal-issue').textContent = row.issue || '-';
+      document.getElementById('modal-condition').textContent = row.condition || '-';
+      document.getElementById('modal-date').textContent = row.date || '-';
+      document.getElementById('modal-reason').textContent = row.reason ? `"${row.reason}"` : '"Khách hàng không để lại nhận xét bằng văn bản."';
+
+      // Stars
+      const rating = Number(row.rating) || 0;
+      let starsHTML = '';
+      for (let s = 1; s <= 5; s++) {
+        if (s <= rating) {
+          starsHTML += '<svg class="star-icon w-5 h-5" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+        } else {
+          starsHTML += '<svg class="star-icon empty w-5 h-5" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+        }
+      }
+      document.getElementById('modal-stars').innerHTML = starsHTML;
+
+      // Status
+      const statusEl = document.getElementById('modal-status');
+      const statusStr = String(row.status || "Chưa xử lý").trim();
+      statusEl.textContent = statusStr;
+      
+      if (statusStr.includes("Hoàn thành") || statusStr.includes("Đã xử lý") || statusStr.includes("Đã đổi")) {
+        statusEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100";
+      } else if (statusStr.includes("Đang xử lý")) {
+        statusEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-0.5 bg-amber-50 text-amber-600 border border-amber-100 animate-pulse";
+      } else {
+        statusEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-0.5 bg-rose-50 text-rose-600 border border-rose-100";
+      }
+
+      // Show modal
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+      }, 50);
+
+      feather.replace();
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('detail-modal');
+      const card = document.getElementById('modal-card');
+      if (!modal || !card) return;
+
+      modal.classList.add('opacity-0');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    // Load data khi trang bắt đầu
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+    });
+  </script>
 </body>
 </html>

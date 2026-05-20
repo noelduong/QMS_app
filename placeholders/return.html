@@ -8,6 +8,7 @@
   <!-- Premium Frameworks & Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <style>
@@ -121,250 +122,505 @@
           </span>
           Return Analysis
         </h1>
-        <p class="text-sm text-slate-500 mt-1 md:ml-1">Nhập liệu sản phẩm hàng lỗi trả theo danh sách và gửi hàng loạt lên hệ thống QMS.</p>
+        <p class="text-sm text-slate-500 mt-1 md:ml-1">Hệ thống quản lý và phân tích hàng trả về từ khách hàng.</p>
       </div>
       
-      <!-- Date Picker Float -->
-      <div class="glass-card px-4 py-3 rounded-2xl flex items-center gap-3 self-start md:self-auto">
-        <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-          <i data-feather="calendar" class="w-4 h-4"></i>
-        </div>
-        <div>
-          <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Ngày kiểm tra</label>
-          <input id="inspectionDate" type="date" class="bg-transparent border-none text-slate-800 text-sm font-semibold focus:outline-none cursor-pointer" />
-        </div>
+      <!-- Navigation Tabs -->
+      <div class="flex bg-slate-200/60 p-1 rounded-xl self-start md:self-auto shrink-0">
+        <button id="tab-input" onclick="switchTab('input')" class="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-700 bg-white shadow-sm">
+          <i data-feather="edit-3" class="w-3.5 h-3.5"></i> 1. Nhập
+        </button>
+        <button id="tab-analysis" onclick="switchTab('analysis')" class="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-500 hover:text-slate-700">
+          <i data-feather="bar-chart-2" class="w-3.5 h-3.5"></i> 2. Return Analysis
+        </button>
       </div>
     </div>
 
-    <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- TAB 1: NHẬP DỮ LIỆU CONTENT -->
+    <div id="content-input" class="space-y-6">
       
-      <!-- Left Column: Form Fields -->
-      <div class="lg:col-span-2 space-y-6">
-        
-        <!-- Form Section 1: Product Specs -->
-        <div class="glass-card rounded-3xl p-6 space-y-5">
-          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
-            <span class="w-2 h-2 bg-indigo-600 rounded-full"></span>
-            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">1. Thông tin sản phẩm</h2>
+      <div class="flex justify-end">
+        <!-- Date Picker Float -->
+        <div class="glass-card px-4 py-3 rounded-2xl flex items-center gap-3">
+          <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+            <i data-feather="calendar" class="w-4 h-4"></i>
           </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <div class="md:col-span-2">
-              <label class="premium-label">
-                <i data-feather="tag" class="w-3.5 h-3.5 text-indigo-500"></i>
-                Tên sản phẩm (Style)
-              </label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                  <i data-feather="search" class="w-4 h-4"></i>
-                </span>
-                <input id="style" type="text" placeholder="Nhập tên sản phẩm để dò tự động trong Master..." class="premium-input" oninput="handleStyleChange()" />
-              </div>
-              <p class="text-[11px] text-slate-400 mt-1">Hệ thống sẽ tự động tìm kiếm PO, Supplier và Đơn giá từ Sheet Master dựa trên tên bạn nhập.</p>
-            </div>
-            
-            <div>
-              <label class="premium-label">
-                <i data-feather="activity" class="w-3.5 h-3.5 text-indigo-500"></i>
-                Kích thước (Size)
-              </label>
-              <input id="size" type="text" placeholder="Ví dụ: XL / 30 / 2XL..." class="premium-input-no-icon" oninput="updateIdPreview()" />
-            </div>
-
-            <div>
-              <label class="premium-label">
-                <i data-feather="palette" class="w-3.5 h-3.5 text-indigo-500"></i>
-                Màu sắc / Nghệ thuật (Art)
-              </label>
-              <input id="art" type="text" placeholder="Ví dụ: TRẮNG / ĐEN / XÁM XANH..." class="premium-input-no-icon" oninput="updateIdPreview()" />
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="premium-label">
-                <i data-feather="layers" class="w-3.5 h-3.5 text-indigo-500"></i>
-                Chất liệu (Fabric)
-              </label>
-              <input id="fabric" type="text" placeholder="Ví dụ: INTERLOCK / TR / KAKI..." class="premium-input-no-icon" />
-            </div>
-            
+          <div>
+            <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400">Ngày kiểm tra</label>
+            <input id="inspectionDate" type="date" class="bg-transparent border-none text-slate-800 text-sm font-semibold focus:outline-none cursor-pointer" />
           </div>
         </div>
+      </div>
 
-        <!-- Form Section 2: Defect Details -->
-        <div class="glass-card rounded-3xl p-6 space-y-5">
-          <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
-            <span class="w-2 h-2 bg-indigo-600 rounded-full"></span>
-            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">2. Thông tin lỗi trả về</h2>
-          </div>
+      <!-- Main Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column: Form Fields -->
+        <div class="lg:col-span-2 space-y-6">
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            <div>
-              <label class="premium-label">
-                <i data-feather="alert-circle" class="w-3.5 h-3.5 text-indigo-500"></i>
-                Loại lỗi (Defect Type)
-              </label>
-              <select id="defectType" class="premium-input-no-icon cursor-pointer">
-                <option value="">-- Chọn loại lỗi --</option>
-                <option value="Production">Production</option>
-                <option value="In-Use">In-Use</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="premium-label">
-                <i data-feather="plus-square" class="w-3.5 h-3.5 text-indigo-500"></i>
-                Số lượng lỗi (Quantity)
-              </label>
-              <input id="quantity" type="number" min="1" step="1" placeholder="Ví dụ: 5" class="premium-input-no-icon" />
-            </div>
-
-            <div class="md:col-span-3">
-              <label class="premium-label">
-                <i data-feather="align-left" class="w-3.5 h-3.5 text-indigo-500"></i>
-                Mô tả chi tiết lỗi (Description)
-              </label>
-              <textarea id="description" placeholder="Ví dụ: Bẩn / Rách chỉ sườn / Thiếu cúc / Lỗi phai màu..." class="premium-input-no-icon min-h-[90px]"></textarea>
+          <!-- Form Section 1: Product Specs -->
+          <div class="glass-card rounded-3xl p-6 space-y-5">
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <span class="w-2 h-2 bg-indigo-600 rounded-full"></span>
+              <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">1. Thông tin sản phẩm</h2>
             </div>
             
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <div class="md:col-span-2">
+                <label class="premium-label">
+                  <i data-feather="tag" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Tên sản phẩm (Style)
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                    <i data-feather="search" class="w-4 h-4"></i>
+                  </span>
+                  <input id="style" type="text" placeholder="Nhập tên sản phẩm để dò tự động trong Master..." class="premium-input" oninput="handleStyleChange()" />
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Hệ thống sẽ tự động tìm kiếm PO, Supplier và Đơn giá từ Sheet Master dựa trên tên bạn nhập.</p>
+              </div>
+              
+              <div>
+                <label class="premium-label">
+                  <i data-feather="activity" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Kích thước (Size)
+                </label>
+                <input id="size" type="text" placeholder="Ví dụ: XL / 30 / 2XL..." class="premium-input-no-icon" oninput="updateIdPreview()" />
+              </div>
+
+              <div>
+                <label class="premium-label">
+                  <i data-feather="palette" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Màu sắc / Nghệ thuật (Art)
+                </label>
+                <input id="art" type="text" placeholder="Ví dụ: TRẮNG / ĐEN / XÁM XANH..." class="premium-input-no-icon" oninput="updateIdPreview()" />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="premium-label">
+                  <i data-feather="layers" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Chất liệu (Fabric)
+                </label>
+                <input id="fabric" type="text" placeholder="Ví dụ: INTERLOCK / TR / KAKI..." class="premium-input-no-icon" />
+              </div>
+              
+            </div>
           </div>
+
+          <!-- Form Section 2: Defect Details -->
+          <div class="glass-card rounded-3xl p-6 space-y-5">
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <span class="w-2 h-2 bg-indigo-600 rounded-full"></span>
+              <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">2. Thông tin lỗi trả về</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              <div>
+                <label class="premium-label">
+                  <i data-feather="alert-circle" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Loại lỗi (Defect Type)
+                </label>
+                <select id="defectType" class="premium-input-no-icon cursor-pointer">
+                  <option value="">-- Chọn loại lỗi --</option>
+                  <option value="Production">Production</option>
+                  <option value="In-Use">In-Use</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="premium-label">
+                  <i data-feather="plus-square" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Số lượng lỗi (Quantity)
+                </label>
+                <input id="quantity" type="number" min="1" step="1" placeholder="Ví dụ: 5" class="premium-input-no-icon" />
+              </div>
+
+              <div class="md:col-span-3">
+                <label class="premium-label">
+                  <i data-feather="align-left" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Mô tả chi tiết lỗi (Description)
+                </label>
+                <textarea id="description" placeholder="Ví dụ: Bẩn / Rách chỉ sườn / Thiếu cúc / Lỗi phai màu..." class="premium-input-no-icon min-h-[90px]"></textarea>
+              </div>
+              
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Auto-fill Master Data & Actions -->
+        <div class="space-y-6">
+          
+          <!-- Master Autofill Card -->
+          <div class="glass-card rounded-3xl p-6 space-y-4 bg-slate-900 text-slate-100 border-none relative overflow-hidden">
+            
+            <!-- Subtle Glow Background -->
+            <div class="absolute -right-16 -top-16 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-800">
+              <span class="w-2 h-2 bg-indigo-400 rounded-full"></span>
+              <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider">3. Tra cứu tự động Master</h2>
+            </div>
+
+            <div class="space-y-3">
+              
+              <div>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Mã PO</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                    <i data-feather="hash" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <input id="po" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
+                </div>
+              </div>
+
+              <div>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Supplier / Nhà cung cấp</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                    <i data-feather="briefcase" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <input id="supplier" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
+                </div>
+              </div>
+
+              <div>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Đơn giá (Unit Price)</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                    <i data-feather="dollar-sign" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <input id="unitPrice" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
+                </div>
+              </div>
+
+              <div>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Mã lỗi Preview (ID Preview)</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                    <i data-feather="info" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <input id="idPreview" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-[11px] text-slate-300 font-mono focus:outline-none" placeholder="Auto-generated..." />
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Master Match Notification -->
+            <div id="matchIndicator" class="hidden p-2.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs rounded-xl flex items-center gap-2">
+              <i data-feather="zap" class="w-4 h-4 text-indigo-400 shrink-0"></i>
+              <span id="matchIndicatorText">Đã dò gần đúng</span>
+            </div>
+
+          </div>
+
+          <!-- Form Submission Actions -->
+          <div class="glass-card rounded-3xl p-6 space-y-3">
+            <button onclick="addToQueue()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm transition-all duration-200 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+              <i data-feather="plus" class="w-4 h-4"></i> Thêm vào danh sách chờ
+            </button>
+            
+            <button onclick="resetForm()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2">
+              <i data-feather="refresh-cw" class="w-3.5 h-3.5"></i> Xóa form hiện tại
+            </button>
+          </div>
+
+          <!-- Status Message Indicator -->
+          <div id="msg" class="status-box p-4 rounded-2xl text-sm font-semibold"></div>
+
         </div>
 
       </div>
 
-      <!-- Right Column: Auto-fill Master Data & Actions -->
-      <div class="space-y-6">
+      <!-- Queue & Bulk Submit Area -->
+      <div class="glass-card rounded-3xl p-6 space-y-4">
         
-        <!-- Master Autofill Card -->
-        <div class="glass-card rounded-3xl p-6 space-y-4 bg-slate-900 text-slate-100 border-none relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <i data-feather="list" class="w-5 h-5 text-indigo-600"></i>
+              Danh sách chờ gửi hàng loạt
+            </h2>
+            <p id="queueCount" class="text-xs text-slate-400 font-medium mt-0.5">0 dòng trong hàng đợi</p>
+          </div>
           
-          <!-- Subtle Glow Background -->
-          <div class="absolute -right-16 -top-16 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
-          
-          <div class="flex items-center gap-2 pb-2 border-b border-slate-800">
-            <span class="w-2 h-2 bg-indigo-400 rounded-full"></span>
-            <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider">3. Tra cứu tự động Master</h2>
+          <div class="flex items-center gap-2">
+            <button id="btnSubmitAll" disabled onclick="submitAll()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-sm rounded-xl transition-all shadow-md disabled:shadow-none flex items-center gap-2">
+              <i data-feather="send" class="w-4 h-4"></i> Gửi tất cả lên Sheet
+            </button>
+            <button onclick="clearQueue()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-sm rounded-xl transition-all flex items-center gap-2">
+              <i data-feather="trash-2" class="w-4 h-4"></i> Xóa toàn bộ
+            </button>
           </div>
-
-          <div class="space-y-3">
-            
-            <div>
-              <label class="text-[11px] font-semibold text-slate-400 block mb-1">Mã PO</label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                  <i data-feather="hash" class="w-3.5 h-3.5"></i>
-                </span>
-                <input id="po" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
-              </div>
-            </div>
-
-            <div>
-              <label class="text-[11px] font-semibold text-slate-400 block mb-1">Supplier / Nhà cung cấp</label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                  <i data-feather="briefcase" class="w-3.5 h-3.5"></i>
-                </span>
-                <input id="supplier" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
-              </div>
-            </div>
-
-            <div>
-              <label class="text-[11px] font-semibold text-slate-400 block mb-1">Đơn giá (Unit Price)</label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                  <i data-feather="dollar-sign" class="w-3.5 h-3.5"></i>
-                </span>
-                <input id="unitPrice" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
-              </div>
-            </div>
-
-            <div>
-              <label class="text-[11px] font-semibold text-slate-400 block mb-1">Mã lỗi Preview (ID Preview)</label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-                  <i data-feather="info" class="w-3.5 h-3.5"></i>
-                </span>
-                <input id="idPreview" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-[11px] text-slate-300 font-mono focus:outline-none" placeholder="Auto-generated..." />
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Master Match Notification -->
-          <div id="matchIndicator" class="hidden p-2.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs rounded-xl flex items-center gap-2">
-            <i data-feather="zap" class="w-4 h-4 text-indigo-400 shrink-0"></i>
-            <span id="matchIndicatorText">Đã dò gần đúng</span>
-          </div>
-
         </div>
 
-        <!-- Form Submission Actions -->
-        <div class="glass-card rounded-3xl p-6 space-y-3">
-          <button onclick="addToQueue()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm transition-all duration-200 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-            <i data-feather="plus" class="w-4 h-4"></i> Thêm vào danh sách chờ
-          </button>
-          
-          <button onclick="resetForm()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2">
-            <i data-feather="refresh-cw" class="w-3.5 h-3.5"></i> Xóa form hiện tại
-          </button>
+        <!-- Responsive Queue Table -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-100 custom-scrollbar">
+          <table class="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-100">
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">STT</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Style sản phẩm</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Size</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Art</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Fabric (Vải)</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Defect (Loại lỗi)</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Qty</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Mã PO</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Supplier</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Đơn giá</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="queueBody" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="11" class="py-8 text-center text-sm text-slate-400 font-medium">Chưa có sản phẩm lỗi nào trong danh sách chờ gửi.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <!-- Status Message Indicator -->
-        <div id="msg" class="status-box p-4 rounded-2xl text-sm font-semibold"></div>
 
       </div>
 
     </div>
 
-    <!-- Queue & Bulk Submit Area -->
-    <div class="glass-card rounded-3xl p-6 space-y-4">
+    <!-- TAB 2: RETURN ANALYSIS & REPORT CONTENT -->
+    <div id="content-analysis" class="hidden space-y-6">
       
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-        <div>
-          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <i data-feather="list" class="w-5 h-5 text-indigo-600"></i>
-            Danh sách chờ gửi hàng loạt
-          </h2>
-          <p id="queueCount" class="text-xs text-slate-400 font-medium mt-0.5">0 dòng trong hàng đợi</p>
-        </div>
+      <!-- Stats / KPIs Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        <div class="flex items-center gap-2">
-          <button id="btnSubmitAll" disabled onclick="submitAll()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-sm rounded-xl transition-all shadow-md disabled:shadow-none flex items-center gap-2">
-            <i data-feather="send" class="w-4 h-4"></i> Gửi tất cả lên Sheet
-          </button>
-          <button onclick="clearQueue()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-sm rounded-xl transition-all flex items-center gap-2">
-            <i data-feather="trash-2" class="w-4 h-4"></i> Xóa toàn bộ
-          </button>
+        <!-- Total Quantity KPI -->
+        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
+          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
+          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng sản phẩm lỗi</span>
+            <div class="text-3xl font-extrabold text-slate-900 leading-none" id="stat-total-qty">0</div>
+            <div class="min-h-[18px] flex items-end">
+              <span class="text-[11px] text-indigo-500 font-semibold leading-none">Sản phẩm bị lỗi trả về</span>
+            </div>
+          </div>
+          <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm shadow-indigo-600/5 shrink-0">
+            <i data-feather="package" class="w-6 h-6"></i>
+          </div>
         </div>
+
+        <!-- Total Financial Value KPI -->
+        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
+          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Thiệt hại tài chính</span>
+            <div class="text-2xl font-extrabold text-slate-900 leading-none" id="stat-total-val">0 ₫</div>
+            <div class="min-h-[18px] flex items-end">
+              <span class="text-[11px] text-emerald-600 font-semibold leading-none">Theo đơn giá sản phẩm</span>
+            </div>
+          </div>
+          <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shadow-emerald-600/5 shrink-0">
+            <i data-feather="dollar-sign" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <!-- Defect Ratio KPI -->
+        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
+          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="stat-defect-glow"></div>
+          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng Lỗi Sản Xuất</span>
+            <div class="flex items-baseline gap-2 leading-none">
+              <span class="text-3xl font-extrabold text-slate-900" id="stat-prod-defects">0 pcs</span>
+              <span class="text-[11px] font-bold text-slate-400" id="stat-defect-rate-sub">Rate: 0%</span>
+            </div>
+            <div class="min-h-[18px] flex items-end">
+              <span class="text-[10px] font-black tracking-wide leading-none block" id="stat-defect-alert-sub">✓ Đang tính toán...</span>
+            </div>
+          </div>
+          <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm transition-all duration-300 shrink-0" id="stat-defect-icon-container">
+            <i data-feather="alert-circle" id="stat-defect-icon" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <!-- Top Defective Factory KPI -->
+        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="stat-top-supplier-card">
+          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="stat-top-supplier-glow"></div>
+          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Nhà máy lỗi nhiều nhất</span>
+            <div class="text-2xl font-extrabold text-slate-500 leading-none truncate max-w-[170px]" id="stat-top-supplier">N/A</div>
+            <div class="min-h-[18px] flex items-end">
+              <span class="text-[11px] text-slate-400 font-semibold leading-none" id="stat-top-supplier-sub">Chưa có dữ liệu</span>
+            </div>
+          </div>
+          <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0" id="stat-top-supplier-icon-container">
+            <i data-feather="home" class="w-6 h-6"></i>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Responsive Queue Table -->
-      <div class="overflow-x-auto rounded-2xl border border-slate-100 custom-scrollbar">
-        <table class="w-full text-left border-collapse min-w-[900px]">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-100">
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">STT</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Style sản phẩm</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Size</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Art</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Fabric (Vải)</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Defect (Loại lỗi)</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Qty</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Mã PO</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Supplier</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Đơn giá</th>
-              <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Hành động</th>
-            </tr>
-          </thead>
-          <tbody id="queueBody" class="divide-y divide-slate-100">
-            <tr>
-              <td colspan="11" class="py-8 text-center text-sm text-slate-400 font-medium">Chưa có sản phẩm lỗi nào trong danh sách chờ gửi.</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Actionable Insights Dashboard -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Reports Stack (7/12 width) -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+          
+          <!-- Top highly defective production products -->
+          <div class="glass-card rounded-3xl p-6 space-y-4 border-l-4 border-l-rose-500 relative overflow-hidden flex-1">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+              <div class="p-1.5 bg-rose-50 text-rose-600 rounded-lg">
+                <i data-feather="alert-triangle" class="w-4 h-4 animate-pulse"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Top sản phẩm lỗi sản xuất cao</h3>
+                <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Sản phẩm phát hiện lỗi nhiều nhất tại xưởng sản xuất</p>
+              </div>
+            </div>
+            
+            <div id="insight-severe-list" class="space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar">
+              <div class="text-center py-6 text-sm text-slate-400 font-medium">Đang phân tích dữ liệu...</div>
+            </div>
+          </div>
+
+          <!-- Insight từ khách hàng (In-Use) -->
+          <div class="glass-card rounded-3xl p-6 space-y-4 border-l-4 border-l-indigo-500 relative overflow-hidden flex-1">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+              <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+                <i data-feather="trending-up" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Insight từ khách hàng (In-Use)</h3>
+                <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Phân tích lỗi phát sinh sau khi sử dụng/giặt ủi</p>
+              </div>
+            </div>
+            
+            <div id="insight-consumer-list" class="space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar">
+              <div class="text-center py-6 text-sm text-slate-400 font-medium">Đang phân tích dữ liệu...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Factory Defect Chart & Premium HTML Legend (5/12 width) -->
+        <div class="lg:col-span-5 glass-card rounded-3xl p-6 border-l-4 border-l-emerald-500 relative overflow-hidden flex flex-col justify-between">
+          <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+              <i data-feather="pie-chart" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Tỷ trọng lỗi nhà máy</h3>
+              <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Phân bổ tỉ lệ lỗi của từng nhà cung cấp</p>
+            </div>
+          </div>
+          
+          <div class="relative flex items-center justify-center h-[200px] my-4">
+            <canvas id="factoryChart" class="max-h-full max-w-full"></canvas>
+            <div id="factoryChartEmpty" class="hidden flex flex-col items-center justify-center text-center text-slate-400 space-y-1.5 py-8">
+              <div class="p-2 bg-slate-100 text-slate-400 rounded-full">
+                <i data-feather="database" class="w-5 h-5"></i>
+              </div>
+              <span class="text-xs font-semibold">Chưa có dữ liệu nhà máy</span>
+            </div>
+          </div>
+
+          <!-- Premium Custom HTML Legend list -->
+          <div id="factoryLegendContainer" class="space-y-2 mt-2 pt-2 border-t border-slate-100 max-h-[160px] overflow-y-auto custom-scrollbar">
+            <div class="text-center text-xs text-slate-400 font-medium">Đang tải chú thích...</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="glass-card rounded-3xl p-5 space-y-4">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          
+          <!-- Search Input -->
+          <div class="relative w-full">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+              <i data-feather="search" class="w-4 h-4"></i>
+            </span>
+            <input id="analysisSearch" type="text" placeholder="Tìm Style, PO, NCC..." class="premium-input" oninput="renderHistoricalData()" />
+          </div>
+
+          <!-- Defect Filter -->
+          <div>
+            <select id="analysisDefectFilter" class="premium-input-no-icon cursor-pointer" onchange="renderHistoricalData()">
+              <option value="">-- Tất cả loại lỗi --</option>
+              <option value="Production">Production (Sản xuất)</option>
+              <option value="In-Use">In-Use (Sử dụng)</option>
+              <option value="Others">Others (Khác)</option>
+            </select>
+          </div>
+
+          <!-- Start Date -->
+          <div class="relative w-full">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+              <i data-feather="calendar" class="w-4 h-4"></i>
+            </span>
+            <input id="analysisStartDate" type="date" class="premium-input pl-10" onchange="renderHistoricalData()" placeholder="Từ ngày" />
+          </div>
+
+          <!-- End Date -->
+          <div class="relative w-full">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+              <i data-feather="calendar" class="w-4 h-4"></i>
+            </span>
+            <input id="analysisEndDate" type="date" class="premium-input pl-10" onchange="renderHistoricalData()" placeholder="Đến ngày" />
+          </div>
+
+        </div>
+
+        <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+          <button onclick="clearFilters()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+            <i data-feather="x-circle" class="w-3.5 h-3.5"></i> Xóa bộ lọc
+          </button>
+          
+          <button onclick="loadHistoricalData()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
+            <i data-feather="refresh-cw" class="w-3.5 h-3.5"></i> Làm mới dữ liệu
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Historical Database Table Card -->
+      <div class="glass-card rounded-3xl p-6 space-y-4">
+        
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            <i data-feather="database" class="w-4 h-4 text-indigo-500"></i>
+            Lịch sử toàn bộ hàng lỗi hoàn về
+          </h3>
+          <span class="text-xs text-slate-400 font-semibold font-mono">
+            Đang hiển thị <span id="showing-count" class="text-indigo-600 font-bold">0</span> / <span id="total-count">0</span> dòng
+          </span>
+        </div>
+
+        <!-- Table Container -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-100 custom-scrollbar">
+          <table class="w-full text-left border-collapse min-w-[1000px]">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-100">
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">STT</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Ngày kiểm</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Tên sản phẩm (Style)</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Size & Art</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Chất liệu (Fabric)</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Loại lỗi</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">SL</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Đơn giá</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Thành tiền</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Mô tả chi tiết</th>
+              </tr>
+            </thead>
+            <tbody id="analysisTableBody" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="10" class="py-12 text-center text-sm text-slate-400 font-medium">Đang chờ tải dữ liệu từ Sheets...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
 
     </div>
@@ -377,14 +633,521 @@
   <script>
     let lookupTimer = null;
     let queueItems = [];
+    let allHistoricalRows = [];
+    let factoryChartInstance = null;
 
     // Set Default Today's Date
+    // Set Default Today's Date & Tab Handling
     document.addEventListener("DOMContentLoaded", () => {
       const today = new Date().toISOString().split('T')[0];
-      document.getElementById("inspectionDate").value = today;
+      const dateEl = document.getElementById("inspectionDate");
+      if (dateEl) dateEl.value = today;
+
+      // Switch tab based on URL query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'analysis') {
+        switchTab('analysis');
+      } else {
+        switchTab('input');
+      }
+
       feather.replace();
     });
 
+    // switchTab
+    function switchTab(tab) {
+      const btnInput = document.getElementById("tab-input");
+      const btnAnalysis = document.getElementById("tab-analysis");
+      const contentInput = document.getElementById("content-input");
+      const contentAnalysis = document.getElementById("content-analysis");
+
+      if (tab === "input") {
+        btnInput.className = "px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-700 bg-white shadow-sm";
+        btnAnalysis.className = "px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-500 hover:text-slate-700";
+        contentInput.classList.remove("hidden");
+        contentAnalysis.classList.add("hidden");
+      } else {
+        btnAnalysis.className = "px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-700 bg-white shadow-sm";
+        btnInput.className = "px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-500 hover:text-slate-700";
+        contentInput.classList.add("hidden");
+        contentAnalysis.classList.remove("hidden");
+        loadHistoricalData();
+      }
+      feather.replace();
+    }
+
+    // loadHistoricalData
+    function loadHistoricalData() {
+      const tbody = document.getElementById("analysisTableBody");
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="10" class="py-12 text-center text-sm text-slate-400 font-medium">
+            <div class="flex flex-col items-center gap-3 justify-center">
+              <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <span>Đang tải dữ liệu từ Google Sheets...</span>
+            </div>
+          </td>
+        </tr>
+      `;
+
+      QMS_API.getReturnRows()
+        .then(res => {
+          if (res && res.ok) {
+            allHistoricalRows = res.rows || [];
+            renderHistoricalData();
+          } else {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="10" class="py-8 text-center text-sm text-rose-500 font-semibold">
+                  Lỗi khi tải dữ liệu: ${res.message || "Không xác định"}
+                </td>
+              </tr>
+            `;
+          }
+        })
+        .catch(e => {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="10" class="py-8 text-center text-sm text-rose-500 font-semibold">
+                Lỗi kết nối API: ${e.message}
+              </td>
+            </tr>
+          `;
+        });
+    }
+
+    // clearFilters
+    function clearFilters() {
+      document.getElementById("analysisSearch").value = "";
+      document.getElementById("analysisDefectFilter").value = "";
+      document.getElementById("analysisStartDate").value = "";
+      document.getElementById("analysisEndDate").value = "";
+      renderHistoricalData();
+    }
+
+    // renderHistoricalData
+    function renderHistoricalData() {
+      const query = document.getElementById("analysisSearch").value.toLowerCase().trim();
+      const defectFilter = document.getElementById("analysisDefectFilter").value;
+      const startDateStr = document.getElementById("analysisStartDate").value;
+      const endDateStr = document.getElementById("analysisEndDate").value;
+      const tbody = document.getElementById("analysisTableBody");
+
+      const startDate = startDateStr ? new Date(startDateStr) : null;
+      if (startDate) startDate.setHours(0, 0, 0, 0);
+
+      const endDate = endDateStr ? new Date(endDateStr) : null;
+      if (endDate) endDate.setHours(23, 59, 59, 999);
+
+      const filtered = allHistoricalRows.filter(row => {
+        const matchesQuery = !query || 
+          String(row.style || "").toLowerCase().includes(query) ||
+          String(row.po || "").toLowerCase().includes(query) ||
+          String(row.supplier || "").toLowerCase().includes(query) ||
+          String(row.id || "").toLowerCase().includes(query) ||
+          String(row.description || "").toLowerCase().includes(query);
+
+        const matchesDefect = !defectFilter || 
+          String(row.defectType || "").trim().toLowerCase() === String(defectFilter).trim().toLowerCase();
+
+        let matchesDate = true;
+        if (row.inspectionDate) {
+          const rowDate = new Date(row.inspectionDate);
+          if (!isNaN(rowDate)) {
+            if (startDate && rowDate < startDate) matchesDate = false;
+            if (endDate && rowDate > endDate) matchesDate = false;
+          }
+        } else if (startDate || endDate) {
+          matchesDate = false;
+        }
+
+        return matchesQuery && matchesDefect && matchesDate;
+      });
+
+      calculateStats(filtered);
+
+      document.getElementById("showing-count").textContent = filtered.length;
+      document.getElementById("total-count").textContent = allHistoricalRows.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="py-12 text-center text-sm text-slate-400 font-medium">Không tìm thấy dữ liệu hàng trả trùng khớp.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((row, idx) => {
+        const qty = Number(row.quantity || 0);
+        const price = Number(row.unitPrice || 0);
+        const total = qty * price;
+        const formattedDate = row.inspectionDate ? formatDateString(row.inspectionDate) : "N/A";
+
+        return `
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="py-3.5 px-4 text-xs font-semibold text-slate-500 font-mono">${idx + 1}</td>
+            <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">${escapeHtml(formattedDate)}</td>
+            <td class="py-3.5 px-4 text-sm font-bold text-slate-800">${escapeHtml(row.style)}</td>
+            <td class="py-3.5 px-4 text-xs">
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded font-medium">${escapeHtml(row.size)}</span>
+              <span class="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded font-medium ml-1">${escapeHtml(row.art)}</span>
+            </td>
+            <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">${escapeHtml(row.fabric)}</td>
+            <td class="py-3.5 px-4 text-xs">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                String(row.defectType || "").trim().toLowerCase() === 'production' ? 'bg-amber-100 text-amber-800' :
+                String(row.defectType || "").trim().toLowerCase() === 'in-use' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-800'
+              }">${escapeHtml(row.defectType)}</span>
+            </td>
+            <td class="py-3.5 px-4 text-xs font-bold text-slate-800 text-center">${qty}</td>
+            <td class="py-3.5 px-4 text-xs font-bold text-slate-600 text-right">${formatCurrency(price)}</td>
+            <td class="py-3.5 px-4 text-xs font-bold text-emerald-600 text-right">${formatCurrency(total)}</td>
+            <td class="py-3.5 px-4 text-xs text-slate-500 max-w-[200px] truncate" title="${escapeHtml(row.description)}">${escapeHtml(row.description || "-")}</td>
+          </tr>
+        `;
+      }).join("");
+      
+      feather.replace();
+    }
+
+    // calculateStats
+    function calculateStats(rows) {
+      let totalQty = 0;
+      let totalVal = 0;
+      let prodCount = 0;
+
+      // 1. Dùng Map để tìm Supplier bị lỗi nhiều nhất
+      const supplierMap = {};
+
+      // 2. Dùng Map để nhóm các sản phẩm lỗi sản xuất cao (Production Defects Only)
+      const styleDefects = {};
+
+      // 3. Phân loại phàn nàn của khách hàng (lỗi sau sử dụng - In-Use)
+      const consumerIssues = {};
+      let inUseQty = 0;
+
+      rows.forEach(r => {
+        let q = Number(r.quantity);
+        if (isNaN(q)) q = 0;
+        let p = Number(r.unitPrice);
+        if (isNaN(p)) p = 0;
+
+        totalQty += q;
+        totalVal += (q * p);
+        
+        const defType = String(r.defectType || "").trim().toLowerCase();
+
+        if (defType === "production") {
+          prodCount += q;
+        }
+
+        // Tích lũy lỗi theo nhà cung cấp
+        let supplierName = r.supplier ? String(r.supplier).trim().toUpperCase() : "CHƯA XÁC ĐỊNH";
+        if (supplierName === "A THANH") supplierName = "TALYNO";
+        else if (supplierName === "A BẢO" || supplierName === "A BAO") supplierName = "ANH THƯ";
+        
+        if (q > 0) {
+          supplierMap[supplierName] = (supplierMap[supplierName] || 0) + q;
+        }
+
+        // CHỈ nhóm sản phẩm lỗi sản xuất (Production) để lập danh sách "Top sản phẩm lỗi sản xuất cao"
+        if (defType === "production" && q > 0) {
+          const key = `${r.style} (${supplierName})`;
+          if (!styleDefects[key]) {
+            styleDefects[key] = { qty: 0, defects: new Set(), supplier: supplierName, style: r.style };
+          }
+          styleDefects[key].qty += q;
+          if (r.description) {
+            styleDefects[key].defects.add(String(r.description).trim());
+          }
+        }
+
+        // Thống kê lỗi khách hàng phàn nàn sau giặt/sử dụng (In-Use)
+        if (defType === "in-use" && q > 0) {
+          inUseQty += q;
+          const desc = String(r.description || "").toLowerCase();
+          let matchedKey = "Lỗi hao mòn / Lỗi khác";
+          if (desc.includes("co rút") || desc.includes("co rut") || desc.includes("co rút")) matchedKey = "Co rút vải sau khi giặt";
+          else if (desc.includes("ra màu") || desc.includes("ra mau") || desc.includes("nhiễm màu") || desc.includes("nhiem mau") || desc.includes("phai")) matchedKey = "Phai / Lem nhiễm màu vải";
+          else if (desc.includes("xù") || desc.includes("xu") || desc.includes("xù lông")) matchedKey = "Đổ lông / Xù lông mặt vải";
+          else if (desc.includes("rách") || desc.includes("rach") || desc.includes("rách chỉ")) matchedKey = "Rách vải / Bung đường may";
+          else if (desc.includes("đã giặt") || desc.includes("giặt") || desc.includes("giat")) matchedKey = "Lỗi phát hiện sau giặt ủi";
+          else if (desc.includes("mặc") || desc.includes("sử dụng")) matchedKey = "Khách phàn nàn sau mặc thử";
+
+          consumerIssues[matchedKey] = (consumerIssues[matchedKey] || 0) + q;
+        }
+      });
+
+      // ---- Tính toán Nhà máy lỗi nhiều nhất ----
+      let topSupplier = "N/A";
+      let topSupplierQty = 0;
+      for (const key in supplierMap) {
+        if (supplierMap[key] > topSupplierQty) {
+          topSupplierQty = supplierMap[key];
+          topSupplier = key;
+        }
+      }
+
+      const defectRatio = totalQty > 0 ? Math.round((prodCount / totalQty) * 100) : 0;
+
+      // Cập nhật các KPI Cards
+      document.getElementById("stat-total-qty").textContent = totalQty.toLocaleString("vi-VN");
+      document.getElementById("stat-total-val").textContent = formatCurrency(totalVal);
+      
+      // Tổng lỗi sản xuất & Tỷ lệ lỗi (Rate)
+      document.getElementById("stat-prod-defects").textContent = prodCount.toLocaleString("vi-VN") + " pcs";
+      document.getElementById("stat-defect-rate-sub").textContent = `Rate: ${defectRatio}%`;
+      
+      const alertSubEl = document.getElementById("stat-defect-alert-sub");
+      const iconContainerEl = document.getElementById("stat-defect-icon-container");
+      const iconEl = document.getElementById("stat-defect-icon");
+      const glowEl = document.getElementById("stat-defect-glow");
+
+      if (defectRatio > 25) {
+        // Trạng thái cảnh báo khi tỷ lệ lỗi vượt quá 25% (Tone màu pastel rose cực đẹp)
+        alertSubEl.textContent = "⚠️ Cần phản hồi với nhà máy";
+        alertSubEl.className = "text-[10px] font-black mt-0.5 tracking-wide text-rose-500 animate-pulse";
+        
+        iconContainerEl.className = "p-4 bg-rose-100/50 text-rose-500 rounded-2xl shadow-sm shadow-rose-500/10";
+        iconEl.className = "w-6 h-6";
+        iconEl.setAttribute("data-feather", "alert-triangle");
+        glowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+      } else {
+        // Trạng thái an toàn dưới hoặc bằng 25% (Tone màu pastel mint cực đẹp)
+        alertSubEl.textContent = "✓ Tỷ lệ lỗi trong mức an toàn";
+        alertSubEl.className = "text-[10px] font-black mt-0.5 tracking-wide text-emerald-500";
+        
+        iconContainerEl.className = "p-4 bg-emerald-100/50 text-emerald-500 rounded-2xl shadow-sm shadow-emerald-500/10";
+        iconEl.className = "w-6 h-6";
+        iconEl.setAttribute("data-feather", "check-circle");
+        glowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
+      }
+      
+      const supplierCardEl = document.getElementById("stat-top-supplier");
+      const supplierSubEl = document.getElementById("stat-top-supplier-sub");
+      
+      const supplierContainerEl = document.getElementById("stat-top-supplier-card");
+      const supplierGlowEl = document.getElementById("stat-top-supplier-glow");
+      const supplierIconContainerEl = document.getElementById("stat-top-supplier-icon-container");
+
+      if (topSupplierQty > 0) {
+        supplierCardEl.textContent = topSupplier;
+        supplierSubEl.textContent = `${topSupplierQty} sản phẩm lỗi`;
+
+        if (topSupplierQty > 20) {
+          // Warning/Alert State: Red/Rose
+          supplierCardEl.className = "text-2xl font-extrabold text-rose-600 leading-none truncate max-w-[170px]";
+          supplierSubEl.className = "text-[11px] text-rose-500 font-bold leading-none animate-pulse";
+          if (supplierContainerEl) supplierContainerEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+          if (supplierGlowEl) supplierGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+          if (supplierIconContainerEl) supplierIconContainerEl.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+        } else {
+          // Healthy State: Soft Slate
+          supplierCardEl.className = "text-2xl font-extrabold text-slate-800 leading-none truncate max-w-[170px]";
+          supplierSubEl.className = "text-[11px] text-slate-500 font-semibold leading-none";
+          if (supplierContainerEl) supplierContainerEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+          if (supplierGlowEl) supplierGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-400/5 rounded-full blur-xl pointer-events-none";
+          if (supplierIconContainerEl) supplierIconContainerEl.className = "p-4 bg-slate-100 text-slate-500 rounded-2xl shadow-sm shrink-0";
+        }
+      } else {
+        supplierCardEl.textContent = "N/A";
+        supplierCardEl.className = "text-2xl font-extrabold text-slate-500 leading-none truncate max-w-[170px]";
+        supplierSubEl.textContent = "Chưa có dữ liệu";
+        supplierSubEl.className = "text-[11px] text-slate-400 font-semibold leading-none";
+        if (supplierContainerEl) supplierContainerEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (supplierGlowEl) supplierGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
+        if (supplierIconContainerEl) supplierIconContainerEl.className = "p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0";
+      }
+
+      // ---- RENDER INSIGHT 1: TOP SẢN PHẨM LỖI SẢN XUẤT CAO ----
+      const severeIssuesList = [];
+      for (const key in styleDefects) {
+        severeIssuesList.push(styleDefects[key]);
+      }
+      severeIssuesList.sort((a, b) => b.qty - a.qty); // Sắp xếp giảm dần theo số lỗi sản xuất
+
+      const severeContainer = document.getElementById("insight-severe-list");
+      if (severeIssuesList.length === 0) {
+        severeContainer.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-8 text-slate-400 space-y-2">
+            <div class="p-3 bg-emerald-50 text-emerald-500 rounded-full">
+              <i data-feather="check-circle" class="w-6 h-6"></i>
+            </div>
+            <span class="text-xs font-bold text-emerald-600">Tuyệt vời! Chưa có sản phẩm nào ghi nhận lỗi sản xuất.</span>
+          </div>
+        `;
+      } else {
+        // Chỉ lấy tối đa top 5 sản phẩm lỗi nhiều nhất để giao diện cực kỳ gọn gàng
+        severeContainer.innerHTML = severeIssuesList.slice(0, 5).map(item => {
+          const defectsStr = Array.from(item.defects).join(", ") || "Lỗi kỹ thuật / Lỗi vải";
+          return `
+            <div class="p-3 bg-slate-50 rounded-2xl flex items-start justify-between border border-slate-100 hover:bg-slate-100/50 transition-all duration-200">
+              <div class="space-y-1 pr-3">
+                <span class="text-xs font-extrabold text-slate-700">${escapeHtml(item.style)}</span>
+                <p class="text-[11px] text-slate-400 font-semibold truncate max-w-[280px]">Mô tả lỗi: <span class="text-slate-600 font-semibold">${escapeHtml(defectsStr)}</span></p>
+                <div class="flex items-center gap-1.5 pt-1">
+                  <span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Nhà máy: ${escapeHtml(item.supplier)}</span>
+                </div>
+              </div>
+              <div class="px-2.5 py-1 bg-rose-50 text-rose-600 font-bold text-xs rounded-xl shrink-0 self-center">
+                ${item.qty} pcs
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      // ---- RENDER INSIGHT 2: INSIGHT KHÁCH HÀNG (CONSUMER INSIGHT) ----
+      const consumerIssuesList = [];
+      for (const key in consumerIssues) {
+        consumerIssuesList.push({ name: key, qty: consumerIssues[key] });
+      }
+      consumerIssuesList.sort((a, b) => b.qty - a.qty);
+
+      const consumerContainer = document.getElementById("insight-consumer-list");
+      if (consumerIssuesList.length === 0) {
+        consumerContainer.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-8 text-slate-400 space-y-2">
+            <div class="p-3 bg-indigo-50 text-indigo-400 rounded-full">
+              <i data-feather="smile" class="w-6 h-6"></i>
+            </div>
+            <span class="text-xs font-bold text-indigo-500">Chưa ghi nhận phản hồi tiêu cực nào từ khách sau sử dụng.</span>
+          </div>
+        `;
+      } else {
+        consumerContainer.innerHTML = consumerIssuesList.map(item => {
+          const pct = inUseQty > 0 ? Math.round((item.qty / inUseQty) * 100) : 0;
+          return `
+            <div class="p-3 bg-slate-50 rounded-2xl space-y-2 border border-slate-100 hover:bg-indigo-50/10 transition-all duration-200">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-700">${escapeHtml(item.name)}</span>
+                <span class="text-xs font-bold text-indigo-500">${item.qty} pcs (${pct}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-indigo-300 h-full rounded-full transition-all" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      // ---- RENDER CHART & CUSTOM HTML LEGEND: TỶ TRỌNG LỖI GIỮA CÁC NHÀ MÁY ----
+      const chartCanvas = document.getElementById("factoryChart");
+      const emptyEl = document.getElementById("factoryChartEmpty");
+      const legendContainer = document.getElementById("factoryLegendContainer");
+
+      // Lọc các nhà cung cấp có tổng số lượng lỗi > 0
+      const chartLabels = [];
+      const chartData = [];
+      for (const key in supplierMap) {
+        if (supplierMap[key] > 0) {
+          chartLabels.push(key);
+          chartData.push(supplierMap[key]);
+        }
+      }
+
+      const colors = [
+        "#a5b4fc", // Soft Pastel Indigo
+        "#a7f3d0", // Soft Pastel Mint/Emerald
+        "#fde68a", // Soft Pastel Yellow/Amber
+        "#fca5a5", // Soft Pastel Rose/Coral
+        "#fbcfe8", // Soft Pastel Pink
+        "#c084fc", // Soft Pastel Purple
+        "#a5f3fc", // Soft Pastel Cyan/Sky
+        "#bfdbfe"  // Soft Pastel Blue
+      ];
+
+      if (chartData.length === 0) {
+        chartCanvas.classList.add("hidden");
+        emptyEl.classList.remove("hidden");
+        legendContainer.innerHTML = "";
+        if (factoryChartInstance) {
+          factoryChartInstance.destroy();
+          factoryChartInstance = null;
+        }
+      } else {
+        chartCanvas.classList.remove("hidden");
+        emptyEl.classList.add("hidden");
+
+        if (factoryChartInstance) {
+          factoryChartInstance.destroy();
+        }
+
+        factoryChartInstance = new Chart(chartCanvas, {
+          type: "doughnut",
+          data: {
+            labels: chartLabels,
+            datasets: [{
+              data: chartData,
+              backgroundColor: colors.slice(0, chartData.length),
+              borderWidth: 2,
+              borderColor: "#ffffff",
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false // Ẩn chú thích mặc định của Chart.js để tránh chật hẹp
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const val = context.raw || 0;
+                    const sum = chartData.reduce((a, b) => a + b, 0);
+                    const percent = Math.round((val / sum) * 100);
+                    return ` ${label}: ${val} sản phẩm (${percent}%)`;
+                  }
+                }
+              }
+            },
+            cutout: "65%"
+          }
+        });
+
+        // Tạo chú thích HTML cực thoáng đãng, sang xịn
+        const totalSum = chartData.reduce((a, b) => a + b, 0);
+        legendContainer.innerHTML = chartLabels.map((label, index) => {
+          const val = chartData[index];
+          const pct = Math.round((val / totalSum) * 100);
+          const color = colors[index % colors.length];
+          return `
+            <div class="flex items-center justify-between text-xs font-bold py-1.5 px-3 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${color}"></span>
+                <span class="text-slate-700">${escapeHtml(label)}</span>
+              </div>
+              <span class="text-slate-500 font-mono text-[11px]">${val} pcs <span class="text-slate-400 font-extrabold ml-1">(${pct}%)</span></span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      feather.replace();
+    }
+
+    // formatDateString
+    function formatDateString(dateVal) {
+      if (!dateVal) return "N/A";
+      const s = String(dateVal).trim();
+      if (s.includes("T") || s.match(/^\d{4}-\d{2}-\d{2}/)) {
+        const d = new Date(s);
+        if (!isNaN(d)) {
+          const dd = String(d.getDate()).padStart(2, '0');
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const yyyy = d.getFullYear();
+          return `${dd}/${mm}/${yyyy}`;
+        }
+      }
+      return s.split("T")[0];
+    }
+
+    // setMsg
     function setMsg(text, type) {
       const el = document.getElementById("msg");
       if (!text) {
@@ -398,19 +1161,42 @@
         (type === "ok" ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-rose-50 border border-rose-200 text-rose-700");
     }
 
+    // formatCurrency
     function formatCurrency(value) {
       const n = Number(value || 0);
       return n.toLocaleString("vi-VN") + " ₫";
     }
 
+    // removeAccents
+    function removeAccents(str) {
+      if (!str) return "";
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D");
+    }
+
+    // cleanFieldForId
+    function cleanFieldForId(str) {
+      if (!str) return "";
+      return removeAccents(str)
+        .toUpperCase()
+        .replace(/[^A-Z0-9-]/g, "") // Chỉ giữ chữ in hoa, số và gạch ngang nếu có
+        .replace(/\s+/g, "");        // Viết liền không khoảng trắng
+    }
+
+    // updateIdPreview
     function updateIdPreview() {
-      const po = document.getElementById("po").value.trim();
-      const art = document.getElementById("art").value.trim();
-      const size = document.getElementById("size").value.trim();
+      const po = cleanFieldForId(document.getElementById("po").value);
+      const art = cleanFieldForId(document.getElementById("art").value);
+      const size = cleanFieldForId(document.getElementById("size").value);
+      
       const id = [po, art, size].filter(Boolean).join("-");
       document.getElementById("idPreview").value = id;
     }
 
+    // clearMasterFields
     function clearMasterFields() {
       document.getElementById("po").value = "";
       document.getElementById("supplier").value = "";
@@ -419,6 +1205,7 @@
       updateIdPreview();
     }
 
+    // handleStyleChange
     function handleStyleChange() {
       const style = document.getElementById("style").value.trim();
       clearMasterFields();
@@ -430,7 +1217,6 @@
 
       clearTimeout(lookupTimer);
       lookupTimer = setTimeout(() => {
-        // Query master list using QMS_API client
         QMS_API.getMasterInfoByStyle(style)
           .then((res) => {
             if (!res || !res.ok) {
@@ -462,6 +1248,7 @@
       }, 350);
     }
 
+    // getPayload
     function getPayload() {
       return {
         style: document.getElementById("style").value.trim(),
@@ -480,6 +1267,7 @@
       };
     }
 
+    // validate
     function validate(p) {
       if (!p.style) return "Vui lòng nhập Tên sản phẩm (Style).";
       if (!p.size) return "Vui lòng nhập Size kích thước.";
@@ -492,6 +1280,7 @@
       return "";
     }
 
+    // resetForm
     function resetForm() {
       [
         "style",
@@ -505,7 +1294,8 @@
         "unitPrice",
         "idPreview"
       ].forEach(id => {
-        document.getElementById(id).value = "";
+        const el = document.getElementById(id);
+        if (el) el.value = "";
       });
 
       document.getElementById("defectType").value = "";
@@ -513,6 +1303,7 @@
       setMsg("", "");
     }
 
+    // addToQueue
     function addToQueue() {
       const payload = getPayload();
       const err = validate(payload);
@@ -539,7 +1330,6 @@
       renderQueue();
       setMsg("Đã lưu tạm sản phẩm vào danh sách chờ bên dưới.", "ok");
 
-      // Keep fields for fast multiple entries
       const keepInspectionDate = document.getElementById("inspectionDate").value;
       const keepDefectType = document.getElementById("defectType").value;
 
@@ -549,17 +1339,20 @@
       document.getElementById("defectType").value = keepDefectType;
     }
 
+    // removeQueueItem
     function removeQueueItem(index) {
       queueItems.splice(index, 1);
       renderQueue();
     }
 
+    // clearQueue
     function clearQueue() {
       queueItems = [];
       renderQueue();
       setMsg("Đã xóa sạch hàng đợi gửi.", "ok");
     }
 
+    // renderQueue
     function renderQueue() {
       const body = document.getElementById("queueBody");
       const count = document.getElementById("queueCount");
@@ -605,6 +1398,7 @@
       feather.replace();
     }
 
+    // submitAll
     function submitAll() {
       if (queueItems.length === 0) {
         return setMsg("Danh sách hàng đợi đang trống.", "err");
@@ -625,7 +1419,6 @@
         inspectionDate: item.inspectionDate
       }));
 
-      // Call batch API method
       QMS_API.submitReturnAnalysisBatch(payloads)
         .then((res) => {
           if (res && res.ok) {
@@ -647,6 +1440,7 @@
         });
     }
 
+    // escapeHtml
     function escapeHtml(str) {
       return String(str || "")
         .replace(/&/g, "&amp;")

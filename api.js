@@ -8,7 +8,7 @@
 
 const QMS_API = (() => {
 
-  const API_URL = 'https://script.google.com/macros/s/AKfycbz8lgi8wXdgg5xoZehK9uVkwux77bXFvoVE3rCwTBwAqCWUk777g4zI-kbTqCoKCpoW/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxGqsxP0OXpFiA8SqZjNlZzuL44JylF16vfnsAB4HPNkOpPpe37fUxrc2SuTDf58pdO/exec';
 
   /* ---- Helper: GET request ---- */
   async function get(params = {}) {
@@ -18,7 +18,7 @@ const QMS_API = (() => {
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    if (json.ok === false) throw new Error(json.err || 'API Error');
+    if (json.ok === false) throw new Error(json.err || json.message || json.msg || 'API Error');
     return json;
   }
 
@@ -32,8 +32,27 @@ const QMS_API = (() => {
 
     // GAS redirects POST → follow manually
     const json = await res.json();
-    if (json.ok === false) throw new Error(json.err || 'API Error');
+    if (json.ok === false) throw new Error(json.err || json.message || json.msg || 'API Error');
     return json;
+  }
+
+  /* ---- Helper: Check and filter out test records ---- */
+  function isTestRecord(fobSupplier, po, style) {
+    const fob = String(fobSupplier || "").trim().toLowerCase();
+    const poLower = String(po || "").trim().toLowerCase();
+    const styleLower = String(style || "").trim().toLowerCase();
+    
+    // Check specific test factory/supplier names
+    if (fob === 'agaga' || fob === 'test factory' || fob === 'khác' || fob === 'khac' || fob === 'test' || fob === 'test fob') {
+      return true;
+    }
+    
+    // Check if the PO or style name contains test/agaga keyword
+    if (poLower.includes('test') || styleLower.includes('test') || poLower === 'agaga' || styleLower === 'agaga') {
+      return true;
+    }
+    
+    return false;
   }
 
   /* ---- Public API ---- */
@@ -84,7 +103,13 @@ const QMS_API = (() => {
 
     /** GET: Load all final inspection results from General and Summary sheets */
     async getFinalResults() {
-      return await get({ action: 'getFinalResults' });
+      const res = await get({ action: 'getFinalResults' });
+      if (res && res.ok && Array.isArray(res.general)) {
+        res.general = res.general.filter(row => {
+          return !isTestRecord(row.fob_supplier, row.po_no || row.product_name, row.style_no);
+        });
+      }
+      return res;
     },
 
     /** GET: Load a specific inspection report details */
@@ -138,6 +163,48 @@ const QMS_API = (() => {
      */
     async getMasterInfoByStyle(style) {
       return await get({ action: 'getMasterInfoByStyle', style });
+    },
+
+    /**
+     * GET: Fetch all customer feedback rows for R&D
+     */
+    async getCustomerFeedback() {
+      const res = await get({ action: 'getCustomerFeedback' });
+      if (res && res.ok && Array.isArray(res.rows)) {
+        res.rows = res.rows.filter(row => {
+          return !isTestRecord(row.fob_supplier || row.supplier, row.orderId || row.po, row.product);
+        });
+      }
+      return res;
+    },
+
+    /**
+     * GET: Fetch all historical return rows
+     */
+    async getReturnRows() {
+      const res = await get({ action: 'getReturnRows' });
+      if (res && res.ok && Array.isArray(res.rows)) {
+        res.rows = res.rows.filter(row => {
+          return !isTestRecord(row.supplier, row.po, row.style);
+        });
+      }
+      return res;
+    },
+
+    /**
+     * GET: Fetch planned schedule data
+     */
+    async getPlanData() {
+      const res = await get({ action: 'getPlanData' });
+      if (res && res.ok && Array.isArray(res.data)) {
+        res.data = res.data.filter(p => {
+          const fob = p.fob || p.supplier || p.factory || p["nhà máy"] || p.fob_supplier || "";
+          const po = p.po || p.po_number || p["po number"] || p["mã po"] || "";
+          const style = p.style || p.product_code || p.product_name || "";
+          return !isTestRecord(fob, po, style);
+        });
+      }
+      return res;
     },
 
     /**

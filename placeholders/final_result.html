@@ -3,52 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Final Result Dashboard</title>
+  <title>Final Quality Inspection Analytics</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- QMS API Client -->
   <script src="../api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
       background: transparent; 
       -webkit-font-smoothing: antialiased;
     }
     
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.45);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    .glass-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.03);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(31, 38, 135, 0.05);
     }
 
-    .glass-header {
-      background: rgba(245, 245, 247, 0.6);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    .table-container {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.02);
     }
   </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 bg-slate-50/50">
 
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-6xl mx-auto space-y-6">
     <!-- Header Area -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Final Inspection Results</h2>
-        <p class="text-sm text-slate-500 mt-1 font-medium tracking-wide">Lịch sử đánh giá chất lượng xuất xưởng</p>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Final Quality Inspection Analytics</h2>
+        <p class="text-xs text-slate-400 font-semibold tracking-wide uppercase mt-0.5">Phân tích kiểm hàng xuất xưởng - Giám sát chất lượng & Tỷ lệ lỗi AQL</p>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 bg-white/60 border border-slate-200/60 px-3 py-1.5 rounded-full shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+        <span>Đồng bộ từ Google Sheets</span>
       </div>
     </div>
 
     <!-- Filters Panel -->
-    <div class="glass-panel rounded-2xl p-4 md:p-6 mb-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="glass-card rounded-3xl p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Nhà máy filter -->
         <div>
           <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nhà máy / Nhà gia công</label>
           <div class="relative">
-            <select id="filter-factory" onchange="applyFilters()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
+            <select id="filter-factory" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
               <option value="">Tất cả nhà máy</option>
             </select>
             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
@@ -57,12 +71,12 @@
           </div>
         </div>
 
-        <!-- Filter theo Thời gian (Tháng, Tuần, Ngày) -->
+        <!-- Filter theo Thời gian -->
         <div>
           <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Khoảng thời gian</label>
           <div class="relative">
-            <select id="filter-time-preset" onchange="onTimePresetChange()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-              <option value="all">Tất cả thời gian</option>
+            <select id="filter-time-preset" onchange="onTimePresetChange()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
+              <option value="all" selected>Tất cả thời gian</option>
               <option value="today">Hôm nay</option>
               <option value="yesterday">Hôm qua</option>
               <option value="this-week">Tuần này</option>
@@ -77,44 +91,146 @@
           </div>
         </div>
 
-        <!-- Ngày bắt đầu (Cho Custom) -->
-        <div id="custom-date-start-container" class="hidden">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Từ ngày</label>
-          <input type="date" id="filter-date-start" onchange="applyFilters()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
-        </div>
-
-        <!-- Ngày kết thúc (Cho Custom) -->
-        <div id="custom-date-end-container" class="hidden">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Đến ngày</label>
-          <input type="date" id="filter-date-end" onchange="applyFilters()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
+        <!-- Ngày bắt đầu & kết thúc (Cho Custom) -->
+        <div id="custom-date-container" class="hidden sm:col-span-2 lg:col-span-1 grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Từ ngày</label>
+            <input type="date" id="filter-date-start" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Đến ngày</label>
+            <input type="date" id="filter-date-end" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Main Data Table -->
-    <div class="glass-panel rounded-2xl overflow-hidden">
+    <!-- KPI Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- First Pass Rate KPI -->
+      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-fpr-card">
+        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" id="kpi-fpr-glow"></div>
+        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">First Pass Rate</span>
+          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-fpr">0%</div>
+          <div class="min-h-[18px] flex items-end">
+            <span class="text-[10px] text-emerald-600 font-bold leading-none" id="kpi-fpr-sub">Lần đầu đạt tiêu chuẩn</span>
+          </div>
+        </div>
+        <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0" id="kpi-fpr-icon-container">
+          <i data-feather="award" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <!-- Defect Rate (FDR) KPI -->
+      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-fdr-card">
+        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-fdr-glow"></div>
+        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
+          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Defect Rate (FDR)</span>
+          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-fdr">0.00%</div>
+          <div class="min-h-[18px] flex items-end">
+            <span class="text-[10px] text-slate-400 font-medium leading-none" id="kpi-fdr-sub">Mật độ lỗi ngoại quan</span>
+          </div>
+        </div>
+        <div class="p-4 bg-slate-100 text-slate-500 rounded-2xl shadow-sm shrink-0" id="kpi-fdr-icon-container">
+          <i data-feather="alert-circle" class="w-6 h-6"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Row 1 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Top Lỗi Phổ Biến -->
+      <div class="glass-card rounded-3xl p-6 space-y-6">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Top Lỗi Phổ Biến</h3>
+          <p class="text-xs text-slate-400 font-medium">Nhóm lỗi ngoại quan xuất hiện nhiều nhất</p>
+        </div>
+        <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="issue-bars-container">
+          <div class="text-center py-10 text-xs text-slate-400 font-medium">Đang thống kê dữ liệu...</div>
+        </div>
+      </div>
+
+      <!-- Top Sản Phẩm Lỗi Cao -->
+      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Top Sản Phẩm Lỗi Cao</h3>
+          <p class="text-xs text-slate-400 font-medium">Xếp hạng dòng sản phẩm phát hiện tỷ lệ lỗi AQL cao nhất</p>
+        </div>
+        <div class="space-y-4 overflow-y-auto pr-1 max-h-[300px]" id="product-defect-container">
+          <div class="text-center py-10 text-xs text-slate-400 font-medium">Đang thống kê dữ liệu...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Row 2 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Donut Chart -->
+      <div class="glass-card rounded-3xl p-6 flex flex-col justify-between min-h-[320px]">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Cơ Cấu Kết Quả Đánh Giá</h3>
+          <p class="text-xs text-slate-400 font-medium">Tỷ lệ phân bố số đợt kiểm ĐẠT vs KHÔNG ĐẠT</p>
+        </div>
+        <div class="relative w-44 h-44 mx-auto my-2 flex items-center justify-center">
+          <canvas id="donut-chart" class="z-10"></canvas>
+        </div>
+        <div class="flex justify-center items-center gap-4 text-[11px] font-bold">
+          <div class="flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#a7f3d0] mr-1.5"></span>
+            <span>Đạt (PASS)</span>
+          </div>
+          <div class="flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#fca5a5] mr-1.5"></span>
+            <span>Không đạt (FAIL)</span>
+          </div>
+          <div class="flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#cbd5e1] mr-1.5"></span>
+            <span>Chờ duyệt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Nhà Máy Tỷ Lệ First Pass Rate Thấp Nhất -->
+      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Top Nhà Máy Tỷ Lệ First Pass Rate Thấp Nhất</h3>
+          <p class="text-xs text-slate-400 font-medium">Nhà gia công cần giám sát quy trình sản xuất và cải thiện năng lực lần đầu</p>
+        </div>
+        <div class="space-y-4 overflow-y-auto pr-1 max-h-[300px]" id="factory-fpr-container">
+          <div class="text-center py-10 text-xs text-slate-400 font-medium">Đang thống kê dữ liệu...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Data Log Table -->
+    <div class="glass-card rounded-3xl overflow-hidden">
+      <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 tracking-tight">Nhật Ký Kiểm Hàng Chi Tiết</h3>
+          <p class="text-xs text-slate-400 font-medium">Danh sách các đợt kiểm hàng xuất xưởng lưu trên hệ thống</p>
+        </div>
+        <div class="text-[11px] font-bold text-indigo-500 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl" id="table-counter">
+          Hiển thị: 0 kết quả
+        </div>
+      </div>
+      
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm whitespace-nowrap">
-          <thead class="glass-header text-slate-500 font-medium border-b border-black/5">
-            <tr>
-              <th class="px-5 py-4 w-32 tracking-wide uppercase text-[11px]">Ngày kiểm</th>
-              <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Mã báo cáo</th>
-              <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Nhà gia công</th>
-              <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Sản phẩm</th>
-              <th class="px-5 py-4 tracking-wide uppercase text-[11px]">PO Qty</th>
-              <th class="px-5 py-4 tracking-wide uppercase text-[11px]">Kết quả</th>
-              <th class="px-5 py-4 text-right tracking-wide uppercase text-[11px]">Thao tác</th>
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+              <th class="py-3 px-6 font-extrabold">Ngày kiểm</th>
+              <th class="py-3 px-6 font-extrabold">Mã báo cáo</th>
+              <th class="py-3 px-6 font-extrabold">Nhà gia công</th>
+              <th class="py-3 px-6 font-extrabold">Tên sản phẩm</th>
+              <th class="py-3 px-6 font-extrabold">Số lượng PO</th>
+              <th class="py-3 px-6 font-extrabold">FDR</th>
+              <th class="py-3 px-6 font-extrabold">Kết quả (Verdict)</th>
+              <th class="py-3 px-6 text-right font-extrabold">Thao tác</th>
             </tr>
           </thead>
-          <tbody id="table-body" class="divide-y divide-black/5">
-            <!-- Loading State -->
-            <tr id="loading">
-              <td colspan="7" class="p-12 text-center text-slate-500">
-                <div class="flex flex-col items-center justify-center">
-                  <i data-feather="loader" class="w-6 h-6 animate-spin mb-3 text-blue-500"></i>
-                  <p class="font-medium">Đang tải dữ liệu từ Database...</p>
-                </div>
-              </td>
+          <tbody id="table-body" class="divide-y divide-slate-100/70">
+            <tr>
+              <td colspan="8" class="py-12 text-center text-sm text-slate-400 font-medium">Đang tải dữ liệu kiểm hàng xuất xưởng...</td>
             </tr>
           </tbody>
         </table>
@@ -123,73 +239,546 @@
   </div>
 
   <script>
+    // State management
     let allFinalGens = [];
     let allSummaryMap = {};
+    let allPlans = [];
+    let donutChartInstance = null;
 
+    // Load data from API
     async function loadData() {
+      showLoading();
       try {
-        if (!QMS_API.isConfigured()) {
-          throw new Error('API chưa được cấu hình. Vui lòng cấu hình API_URL trong api.js');
+        const [res, planRes] = await Promise.all([
+          QMS_API.getFinalResults(),
+          QMS_API.getPlanData().catch(e => {
+            console.warn("Lỗi tải kế hoạch:", e);
+            return { ok: false, err: e.message };
+          })
+        ]);
+
+        if (!res || !res.ok) {
+          throw new Error(res.err || "Không thể tải dữ liệu.");
         }
 
-        const res = await QMS_API.getFinalResults();
-        const genData = res.general || [];
-        const sumData = res.summary || [];
+        allFinalGens = res.general || [];
+        const summaries = res.summary || [];
+        allPlans = (planRes && planRes.ok) ? (planRes.data || []) : [];
 
-        // Lọc các báo cáo có status là Final
-        allFinalGens = genData.filter(r => r.status && r.status.trim().toLowerCase() === 'final');
-
-        // Tạo Map summary theo general_id
+        // Build summary map for quick lookup
         allSummaryMap = {};
-        sumData.forEach(row => {
-          if (row.general_id) allSummaryMap[row.general_id] = row;
+        summaries.forEach(s => {
+          if (s.general_id) {
+            allSummaryMap[s.general_id] = s;
+          }
         });
 
-        // Sắp xếp báo cáo mới nhất lên đầu
-        allFinalGens.sort((a, b) => new Date(b.submit_time || b.timestamp) - new Date(a.submit_time || a.timestamp));
+        // Populate Factory filter list dynamically
+        const factoryFilter = document.getElementById('filter-factory');
+        const factories = new Set();
+        allFinalGens.forEach(row => {
+          if (row.fob_supplier && row.fob_supplier.trim() !== "-") {
+            factories.add(row.fob_supplier.trim());
+          }
+        });
 
-        // Nạp danh sách nhà máy vào bộ lọc
-        populateFactoryFilter();
+        factoryFilter.innerHTML = '<option value="">Tất cả nhà máy</option>' + 
+          Array.from(factories).sort().map(f => `<option value="${f}">${f}</option>`).join("");
 
-        // Render bảng dữ liệu
-        renderTable(allFinalGens);
+        applyFilters();
+      } catch (err) {
+        console.error("Lỗi khi tải dữ liệu từ Google Sheets:", err);
+        showError(`Lỗi khi tải dữ liệu từ Google Sheets: ${err.message}`);
+      }
+    }
 
-      } catch (e) {
-        console.error(e);
-        document.getElementById('loading').innerHTML = `
-          <td colspan="7" class="p-12 text-center text-rose-500">
-            <div class="flex flex-col items-center justify-center">
-              <i data-feather="alert-triangle" class="w-6 h-6 mb-3"></i>
-              <p class="font-medium">Lỗi khi tải dữ liệu từ Google Sheets.</p>
-              <p class="text-xs mt-1 text-rose-400">${e.message}</p>
-            </div>
-          </td>
+    function showLoading() {
+      const tbody = document.getElementById('table-body');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-20 text-center">
+              <div class="inline-flex flex-col items-center justify-center gap-3">
+                <div class="w-8 h-8 border-3 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+                <span class="text-xs font-bold text-slate-500 tracking-wide">Đang tải báo cáo thời gian thực...</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function showError(msg) {
+      const tbody = document.getElementById('table-body');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-12 px-6">
+              <div class="max-w-md mx-auto p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3">
+                <i data-feather="alert-circle" class="text-rose-500 shrink-0 w-5 h-5 mt-0.5"></i>
+                <div class="space-y-1">
+                  <h4 class="text-xs font-black text-rose-800">Không thể tải dữ liệu</h4>
+                  <p class="text-[11px] text-rose-600 font-medium leading-relaxed">${msg}</p>
+                </div>
+              </div>
+            </td>
+          </tr>
         `;
         feather.replace();
       }
     }
 
-    function populateFactoryFilter() {
-      const select = document.getElementById('filter-factory');
-      if (!select) return;
+    function calculateAndRender(dataList) {
+      const filteredCount = dataList.length;
+      const totalCount = allFinalGens.length;
 
-      // Tìm danh sách nhà máy độc nhất
-      const factories = new Set();
-      allFinalGens.forEach(row => {
-        if (row.fob_supplier && row.fob_supplier.trim()) {
-          factories.add(row.fob_supplier.trim());
+      // 1. Inspection Coverage (Lấy kế hoạch để tính tổng PO phải kiểm và tính được Coverage)
+      const plannedSet = new Set();
+      allPlans.forEach(p => {
+        const key = String(p.po || p.po_number || p["po number"] || p["mã po"] || p.style || p.product_code || p.product_name || "").trim().toUpperCase();
+        if (key && key !== "-" && key !== "0") {
+          plannedSet.add(key);
         }
       });
 
-      // Reset select
-      select.innerHTML = '<option value="">Tất cả nhà máy</option>';
+      const totalPlanned = plannedSet.size > 0 ? plannedSet.size : 0;
 
-      // Sắp xếp và thêm vào select
-      [...factories].sort().forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f;
-        opt.textContent = f;
-        select.appendChild(opt);
+      const inspectedSet = new Set();
+      dataList.forEach(r => {
+        const key = String(r.product_name || "Unknown").trim().toUpperCase() + "_" + String(r.po_qty || "0");
+        inspectedSet.add(key);
+      });
+      const actualInspectedCount = inspectedSet.size;
+
+      let coveragePct = 0;
+      if (totalPlanned > 0) {
+        let matchCount = 0;
+        plannedSet.forEach(pk => {
+          let matched = false;
+          inspectedSet.forEach(ik => {
+            if (ik.includes(pk) || pk.includes(ik)) {
+              matched = true;
+            }
+          });
+          if (matched) matchCount++;
+        });
+
+        const successCount = matchCount > 0 ? matchCount : actualInspectedCount;
+        coveragePct = Math.min(Math.round((successCount / totalPlanned) * 100), 100);
+      } else {
+        coveragePct = totalCount > 0 ? Math.round((filteredCount / totalCount) * 100) : 0;
+      }
+
+      if (document.getElementById('kpi-coverage')) {
+        document.getElementById('kpi-coverage').textContent = `${coveragePct}%`;
+      }
+      const subLabel = totalPlanned > 0 
+        ? `${actualInspectedCount}/${totalPlanned} PO đã kiểm (Kế hoạch)` 
+        : `${filteredCount}/${totalCount} đơn hàng đã kiểm`;
+      if (document.getElementById('kpi-coverage-sub')) {
+        document.getElementById('kpi-coverage-sub').textContent = subLabel;
+      }
+
+      // 2. First Pass Rate (FPR)
+      // Group by unique PO key (product_name + po_qty), find if the earliest check was PASS
+      const firstAttemptMap = {};
+      dataList.forEach(row => {
+        const prodKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + String(row.po_qty || "0");
+        const insDate = parseDate(row.inspection_date) || new Date(0);
+        const sum = allSummaryMap[row.general_id] || {};
+        const isPass = sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true;
+        
+        if (!firstAttemptMap[prodKey]) {
+          firstAttemptMap[prodKey] = { date: insDate, isPass: isPass };
+        } else if (insDate < firstAttemptMap[prodKey].date) {
+          firstAttemptMap[prodKey] = { date: insDate, isPass: isPass };
+        }
+      });
+      
+      let firstPassCount = 0;
+      const firstAttempts = Object.values(firstAttemptMap);
+      firstAttempts.forEach(att => {
+        if (att.isPass) firstPassCount++;
+      });
+      const fprPct = firstAttempts.length > 0 ? Math.round((firstPassCount / firstAttempts.length) * 100) : 0;
+      document.getElementById('kpi-fpr').textContent = `${fprPct}%`;
+      
+      // Update FPR Card Styling
+      const fprCard = document.getElementById('kpi-fpr-card');
+      const fprGlow = document.getElementById('kpi-fpr-glow');
+      const fprSub = document.getElementById('kpi-fpr-sub');
+      const fprIconContainer = document.getElementById('kpi-fpr-icon-container');
+      
+      if (fprPct >= 90) {
+        fprSub.textContent = "✓ Năng lực đạt lần đầu tối ưu (≥90%)";
+        fprSub.className = "text-[10px] font-black tracking-wide leading-none text-emerald-500";
+        fprIconContainer.className = "p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0";
+        document.getElementById('kpi-fpr').className = "text-3xl font-extrabold text-slate-900 leading-none";
+        if (fprCard) fprCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (fprGlow) fprGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
+      } else if (fprPct >= 75) {
+        fprSub.textContent = "⚠️ Cần rà soát năng lực sản xuất (75%-90%)";
+        fprSub.className = "text-[10px] font-black tracking-wide leading-none text-amber-500";
+        fprIconContainer.className = "p-4 bg-amber-50 text-amber-600 rounded-2xl shadow-sm shrink-0";
+        document.getElementById('kpi-fpr').className = "text-3xl font-extrabold text-amber-600 leading-none";
+        if (fprCard) fprCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (fprGlow) fprGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none";
+      } else {
+        fprSub.textContent = "🚨 Cảnh báo chất lượng đầu ra lần đầu (<75%)";
+        fprSub.className = "text-[10px] font-black tracking-wide leading-none text-rose-500 animate-pulse";
+        fprIconContainer.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+        document.getElementById('kpi-fpr').className = "text-3xl font-extrabold text-rose-600 leading-none";
+        if (fprCard) fprCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (fprGlow) fprGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+      }
+
+      // 3. Defect Rate (FDR)
+      let totalIndividualDefectRate = 0;
+      let validOrderCount = 0;
+      let passCount = 0;
+      let failCount = 0;
+      let pendingCount = 0;
+
+      const issueStats = {};
+      const prodDefectMap = {};
+      const factoryAttemptsMap = {};
+
+      dataList.forEach(row => {
+        const sum = allSummaryMap[row.general_id] || {};
+        const defects = (Number(sum.app_total_qty) || 0) + (Number(sum.meas_fail_count) || 0);
+        const samples = Number(row.sample_size) || Number(sum.sample_size) || 0;
+        if (samples > 0) {
+          totalIndividualDefectRate += (defects / samples);
+          validOrderCount++;
+        }
+
+        // Verdict
+        let verdict = 'PENDING';
+        if (sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true) {
+          verdict = 'PASS';
+          passCount++;
+        } else if (sum.final_fail === '1' || sum.final_fail === 'TRUE' || sum.final_fail === true) {
+          verdict = 'FAIL';
+          failCount++;
+        } else {
+          pendingCount++;
+        }
+
+        // Product defects group
+        const prod = String(row.product_name || "Khác").trim().toUpperCase();
+        if (prod && prod !== "-") {
+          if (!prodDefectMap[prod]) {
+            prodDefectMap[prod] = { defects: 0, samples: 0, failCount: 0, totalRuns: 0 };
+          }
+          prodDefectMap[prod].defects += Number(sum.app_total_qty) || 0;
+          prodDefectMap[prod].samples += Number(row.sample_size) || Number(sum.sample_size) || 0;
+          prodDefectMap[prod].totalRuns++;
+          if (verdict === 'FAIL') prodDefectMap[prod].failCount++;
+        }
+
+        // Factory attempts map
+        const factory = String(row.fob_supplier || "Khác").trim();
+        if (factory && factory !== "-") {
+          if (!factoryAttemptsMap[factory]) {
+            factoryAttemptsMap[factory] = {};
+          }
+          const prodKey = prod + "_" + String(row.po_qty || "0");
+          const insDate = parseDate(row.inspection_date) || new Date(0);
+          const isPass = verdict === 'PASS';
+
+          if (!factoryAttemptsMap[factory][prodKey]) {
+            factoryAttemptsMap[factory][prodKey] = { date: insDate, isPass: isPass };
+          } else if (insDate < factoryAttemptsMap[factory][prodKey].date) {
+            factoryAttemptsMap[factory][prodKey] = { date: insDate, isPass: isPass };
+          }
+        }
+
+        // Common defects extract
+        const causeStr = String(sum.app_cause || "").trim();
+        if (causeStr && causeStr !== "-") {
+          const lines = causeStr.split(/\r?\n/);
+          lines.forEach(line => {
+            const trimmedLine = line.trim();
+            if (trimmedLine) {
+              const keywords = ["Chỉ thừa", "Dơ bẩn", "May lệch", "Bung chỉ", "Nhăn sườn", "Đứt chỉ", "Vệ sinh máy", "Rách", "Bần", "Sọc vải", "Lệch đường may"];
+              let matched = false;
+              keywords.forEach(kw => {
+                if (trimmedLine.toLowerCase().includes(kw.toLowerCase())) {
+                  issueStats[kw] = (issueStats[kw] || 0) + 1;
+                  matched = true;
+                }
+              });
+              if (!matched) {
+                let cleanDefect = trimmedLine;
+                if (cleanDefect.includes("-->")) {
+                  cleanDefect = cleanDefect.split("-->")[0].trim();
+                } else if (cleanDefect.includes("-")) {
+                  cleanDefect = cleanDefect.replace(/^-/, "").trim();
+                }
+                if (cleanDefect.length > 3 && cleanDefect.length < 30) {
+                  const standard = cleanDefect.charAt(0).toUpperCase() + cleanDefect.slice(1);
+                  issueStats[standard] = (issueStats[standard] || 0) + 1;
+                }
+              }
+            }
+          });
+        }
+      });
+
+      const fdrPct = validOrderCount > 0 ? ((totalIndividualDefectRate / validOrderCount) * 100).toFixed(2) : "0.00";
+      document.getElementById('kpi-fdr').textContent = `${fdrPct}%`;
+
+      // Update FDR Card Styling
+      const fdrCard = document.getElementById('kpi-fdr-card');
+      const fdrGlow = document.getElementById('kpi-fdr-glow');
+      const fdrSub = document.getElementById('kpi-fdr-sub');
+      const fdrIconContainer = document.getElementById('kpi-fdr-icon-container');
+
+      if (Number(fdrPct) <= 2.5) {
+        fdrSub.textContent = "✓ Nằm trong giới hạn AQL (≤2.5%)";
+        fdrSub.className = "text-[10px] font-black tracking-wide leading-none text-emerald-500";
+        fdrIconContainer.className = "p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0";
+        document.getElementById('kpi-fdr').className = "text-3xl font-extrabold text-slate-900 leading-none";
+        if (fdrCard) fdrCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (fdrGlow) fdrGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
+      } else if (Number(fdrPct) <= 4.0) {
+        fdrSub.textContent = "⚠️ Cần rà soát năng lực sản xuất (2.5%-4.0%)";
+        fdrSub.className = "text-[10px] font-black tracking-wide leading-none text-amber-500";
+        fdrIconContainer.className = "p-4 bg-amber-50 text-amber-600 rounded-2xl shadow-sm shrink-0";
+        document.getElementById('kpi-fdr').className = "text-3xl font-extrabold text-amber-600 leading-none";
+        if (fdrCard) fdrCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (fdrGlow) fdrGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none";
+      } else {
+        fdrSub.textContent = "🚨 Cảnh báo mật độ lỗi cao (>4.0%)";
+        fdrSub.className = "text-[10px] font-black tracking-wide leading-none text-rose-500 animate-pulse";
+        fdrIconContainer.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+        document.getElementById('kpi-fdr').className = "text-3xl font-extrabold text-rose-600 leading-none";
+        if (fdrCard) fdrCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        if (fdrGlow) fdrGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+      }
+
+      // 4. Total planned POs (Không dùng Tổng đợt kiểm hàng, dùng PLAN tính bao nhiêu PO)
+      const factoryFilterVal = document.getElementById('filter-factory')?.value || "";
+      let activeFilteredPlans = allPlans;
+      if (factoryFilterVal) {
+        activeFilteredPlans = allPlans.filter(p => {
+          const facVal = String(p.fob || p.supplier || p.factory || p["nhà máy"] || p.fob_supplier || "").trim().toUpperCase();
+          const filterUpper = factoryFilterVal.trim().toUpperCase();
+          return facVal.includes(filterUpper) || filterUpper.includes(facVal);
+        });
+      }
+
+      const activePlannedSet = new Set();
+      activeFilteredPlans.forEach(p => {
+        const key = String(p.po || p.po_number || p["po number"] || p["mã po"] || p.style || p.product_code || p.product_name || "").trim().toUpperCase();
+        if (key && key !== "-" && key !== "0") {
+          activePlannedSet.add(key);
+        }
+      });
+      const activeTotalPlanned = activePlannedSet.size > 0 ? activePlannedSet.size : activeFilteredPlans.length;
+
+      if (document.getElementById('kpi-total')) {
+        document.getElementById('kpi-total').textContent = activeTotalPlanned;
+      }
+      if (document.getElementById('kpi-total-sub')) {
+        document.getElementById('kpi-total-sub').textContent = `Tổng số PO cần kiểm`;
+      }
+      document.getElementById('table-counter').textContent = `Hiển thị: ${filteredCount} kết quả`;
+
+      // Render components
+      renderIssueBreakdown(issueStats);
+      renderTopDefectiveProducts(prodDefectMap);
+      renderFactoryFPR(factoryAttemptsMap);
+      renderDonutChart(passCount, failCount, pendingCount);
+      renderTable(dataList);
+    }
+
+    function renderIssueBreakdown(stats) {
+      const container = document.getElementById('issue-bars-container');
+      if (!container) return;
+
+      const issues = Object.keys(stats);
+      if (issues.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 font-medium">Không ghi nhận lỗi ngoại quan nào.</div>`;
+        return;
+      }
+
+      const totalIssues = Object.values(stats).reduce((a, b) => a + b, 0);
+      const list = issues.map(name => {
+        const count = stats[name];
+        const pct = Math.round((count / totalIssues) * 100);
+        return { name, count, pct };
+      }).sort((a, b) => b.count - a.count).slice(0, 5);
+
+      const palette = ["bg-indigo-400", "bg-sky-400", "bg-purple-400", "bg-amber-400", "bg-emerald-400"];
+
+      container.innerHTML = list.map((item, idx) => {
+        const colorClass = palette[idx % palette.length];
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-600">
+              <span class="text-slate-800 font-bold">${item.name}</span>
+              <div class="text-slate-400 text-[11px]">
+                <span class="text-slate-700 font-extrabold">${item.count} lần</span> (${item.pct}%)
+              </div>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div class="${colorClass} h-full rounded-full transition-all duration-1000" style="width: ${item.pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTopDefectiveProducts(prodDefectMap) {
+      const container = document.getElementById('product-defect-container');
+      if (!container) return;
+
+      const prods = Object.keys(prodDefectMap);
+      if (prods.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 font-medium">Không ghi nhận lỗi sản phẩm nào.</div>`;
+        return;
+      }
+
+      const list = prods.map(name => {
+        const stats = prodDefectMap[name];
+        const defectRate = stats.samples > 0 ? ((stats.defects / stats.samples) * 100).toFixed(2) : "0.00";
+        return { name, ...stats, defectRate: Number(defectRate) };
+      }).sort((a, b) => b.defectRate - a.defectRate).slice(0, 5);
+
+      container.innerHTML = list.map(item => {
+        let colorClass = "bg-rose-400";
+        if (item.defectRate <= 2.5) colorClass = "bg-emerald-400";
+        else if (item.defectRate <= 4.0) colorClass = "bg-amber-400";
+
+        return `
+          <div class="space-y-1 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 hover:border-slate-200/80 transition-colors">
+            <div class="flex justify-between items-center text-xs font-semibold">
+              <span class="text-slate-800 font-extrabold">${item.name}</span>
+              <span class="text-[11px] text-slate-500 font-bold">${item.defectRate}% FDR <span class="text-slate-400 font-normal">(${item.defects} lỗi / ${item.samples} mẫu)</span></span>
+            </div>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+              <div class="${colorClass} h-full rounded-full transition-all duration-1000" style="width: ${Math.min(item.defectRate * 10, 100)}%"></div>
+            </div>
+            <div class="flex justify-between items-center text-[10px] text-slate-400 font-medium px-0.5 mt-0.5">
+              <span>Đợt kiểm lỗi: ${item.failCount}/${item.totalRuns} đợt</span>
+              <span class="font-bold ${item.defectRate > 4.0 ? 'text-rose-500' : (item.defectRate > 2.5 ? 'text-amber-500' : 'text-emerald-500')}">${item.defectRate > 4.0 ? "🚨 Cảnh báo chất lượng" : (item.defectRate > 2.5 ? "⚠️ Theo dõi" : "✓ Đạt chuẩn AQL")}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderFactoryFPR(factoryAttemptsMap) {
+      const container = document.getElementById('factory-fpr-container');
+      if (!container) return;
+
+      const factories = Object.keys(factoryAttemptsMap);
+      if (factories.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 font-medium">Chưa có thông số nhà máy.</div>`;
+        return;
+      }
+
+      const list = factories.map(name => {
+        const attempts = Object.values(factoryAttemptsMap[name]);
+        let firstPassCount = 0;
+        attempts.forEach(att => {
+          if (att.isPass) firstPassCount++;
+        });
+        const fpr = attempts.length > 0 ? Math.round((firstPassCount / attempts.length) * 100) : 0;
+        return { name, total: attempts.length, pass: firstPassCount, fpr };
+      }).sort((a, b) => a.fpr - b.fpr).slice(0, 5); // lowest First Pass Rate first
+
+      container.innerHTML = list.map(item => {
+        let colorClass = "bg-rose-400";
+        if (item.fpr >= 90) colorClass = "bg-emerald-400";
+        else if (item.fpr >= 75) colorClass = "bg-amber-400";
+
+        return `
+          <div class="space-y-1 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 hover:border-slate-200/80 transition-colors">
+            <div class="flex justify-between items-center text-xs font-semibold">
+              <span class="text-slate-800 font-bold">${item.name}</span>
+              <span class="text-[11px] text-slate-400 font-medium">Đơn hàng kiểm: ${item.total} PO</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+              <div class="${colorClass} h-full rounded-full transition-all duration-1000" style="width: ${item.fpr}%"></div>
+            </div>
+            <div class="flex justify-between items-center text-[10px] font-bold px-0.5 mt-0.5">
+              <span class="${item.fpr < 75 ? 'text-rose-500 animate-pulse' : (item.fpr < 90 ? 'text-amber-500' : 'text-emerald-500')}">FPR: ${item.fpr}%</span>
+              <span class="text-slate-400 font-semibold">Đạt lần đầu: ${item.pass}/${item.total}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderDonutChart(pass, fail, pending) {
+      const ctx = document.getElementById('donut-chart');
+      if (!ctx) return;
+
+      if (donutChartInstance) {
+        donutChartInstance.destroy();
+      }
+
+      if (pass === 0 && fail === 0 && pending === 0) {
+        donutChartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Không có dữ liệu'],
+            datasets: [{
+              data: [1],
+              backgroundColor: ['#e2e8f0'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            }
+          }
+        });
+        return;
+      }
+
+      donutChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Đạt (PASS)', 'Không Đạt (FAIL)', 'Chờ duyệt'],
+          datasets: [{
+            data: [pass, fail, pending],
+            backgroundColor: ['#a7f3d0', '#fca5a5', '#cbd5e1'],
+            hoverBackgroundColor: ['#86efac', '#fda4af', '#cbd5e1'],
+            borderWidth: 0,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '75%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.9)',
+              padding: 10,
+              titleFont: { size: 11, weight: 'bold' },
+              bodyFont: { size: 11 },
+              cornerRadius: 12,
+              callbacks: {
+                label: function(context) {
+                  let value = context.raw;
+                  let total = pass + fail + pending;
+                  let pct = Math.round((value / total) * 100);
+                  return ` ${context.label}: ${value} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
       });
     }
 
@@ -199,7 +788,7 @@
 
       let html = '';
 
-      dataList.forEach(row => {
+      dataList.forEach((row, idx) => {
         const sum = allSummaryMap[row.general_id] || {};
         
         // Logic Kết quả (Verdict)
@@ -212,20 +801,27 @@
         }
 
         const dateStr = formatDateDMY(row.inspection_date);
+        
+        // FDR Calculation for Row
+        const appDefects = Number(sum.app_total_qty) || 0;
+        const measDefects = Number(sum.meas_fail_count) || 0;
+        const samples = Number(row.sample_size) || Number(sum.sample_size) || 0;
+        const rowFdr = samples > 0 ? (((appDefects + measDefects) / samples) * 100).toFixed(2) : "0.00";
 
         html += `
-          <tr class="hover:bg-white/60 transition-colors group cursor-pointer">
-            <td class="px-5 py-4 text-sm font-medium text-slate-500">${dateStr}</td>
-            <td class="px-5 py-4 text-sm font-semibold text-slate-800">${row.general_id}</td>
-            <td class="px-5 py-4 text-sm text-slate-600">${row.fob_supplier || ''}</td>
-            <td class="px-5 py-4 text-sm text-slate-800 font-medium">${row.product_name || ''}</td>
-            <td class="px-5 py-4 text-sm text-slate-600">${row.po_qty || 0}</td>
-            <td class="px-5 py-4">${verdictHTML}</td>
-            <td class="px-5 py-4 text-right">
-              <button onclick="viewReportDetail('${row.general_id}', this)" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100">
+          <tr class="hover:bg-slate-50/50 transition-colors group">
+            <td class="py-3.5 px-6 text-xs font-semibold text-slate-500">${dateStr}</td>
+            <td class="py-3.5 px-6 text-xs font-bold text-slate-800 font-mono">${row.general_id}</td>
+            <td class="py-3.5 px-6 text-xs font-semibold text-slate-600">${row.fob_supplier || ''}</td>
+            <td class="py-3.5 px-6 text-xs font-bold text-slate-800">${row.product_name || ''}</td>
+            <td class="py-3.5 px-6 text-xs font-semibold text-slate-600">${row.po_qty || 0}</td>
+            <td class="py-3.5 px-6 text-xs font-bold text-slate-700">${rowFdr}%</td>
+            <td class="py-3.5 px-6">${verdictHTML}</td>
+            <td class="py-3.5 px-6 text-right">
+              <button onclick="viewReportDetail('${row.general_id}', this)" class="text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100">
                 Xem chi tiết
               </button>
-              <button onclick="exportToPDF('${row.general_id}')" class="text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-lg transition-colors ml-1 opacity-0 group-hover:opacity-100 focus:opacity-100" title="Xuất PDF">
+              <button onclick="exportToPDF('${row.general_id}')" class="text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded-xl transition-all ml-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100" title="Xuất PDF">
                 <i data-feather="file-text" class="w-4 h-4"></i>
               </button>
             </td>
@@ -234,7 +830,7 @@
       });
 
       if (dataList.length === 0) {
-        html = '<tr><td colspan="7" class="p-12 text-center text-slate-500 font-medium">Không tìm thấy báo cáo kiểm tra nào phù hợp với bộ lọc.</td></tr>';
+        html = '<tr><td colspan="8" class="py-12 text-center text-sm text-slate-400 font-medium">Không tìm thấy báo cáo kiểm tra nào phù hợp với bộ lọc.</td></tr>';
       }
 
       tableBody.innerHTML = html;
@@ -276,15 +872,12 @@
 
     function onTimePresetChange() {
       const preset = document.getElementById('filter-time-preset').value;
-      const startCont = document.getElementById('custom-date-start-container');
-      const endCont = document.getElementById('custom-date-end-container');
+      const dateCont = document.getElementById('custom-date-container');
 
       if (preset === 'custom') {
-        startCont.classList.remove('hidden');
-        endCont.classList.remove('hidden');
+        dateCont.classList.remove('hidden');
       } else {
-        startCont.classList.add('hidden');
-        endCont.classList.add('hidden');
+        dateCont.classList.add('hidden');
         applyFilters();
       }
     }
@@ -338,13 +931,13 @@
     function applyFilters() {
       const factory = document.getElementById('filter-factory').value;
       const preset = document.getElementById('filter-time-preset').value;
+      const startVal = document.getElementById('filter-date-start').value;
+      const endVal = document.getElementById('filter-date-end').value;
 
       let startDate = null;
       let endDate = null;
 
       if (preset === 'custom') {
-        const startVal = document.getElementById('filter-date-start').value;
-        const endVal = document.getElementById('filter-date-end').value;
         if (startVal) startDate = new Date(startVal + 'T00:00:00');
         if (endVal) endDate = new Date(endVal + 'T23:59:59');
       } else if (preset !== 'all') {
@@ -371,13 +964,14 @@
         return true;
       });
 
-      renderTable(filtered);
+      calculateAndRender(filtered);
     }
 
     // Tự động tải dữ liệu khi trang sẵn sàng
     document.addEventListener('DOMContentLoaded', loadData);
 
     function escapeHtml(str) {
+
       return String(str || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
