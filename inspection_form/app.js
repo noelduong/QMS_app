@@ -27,6 +27,40 @@ function getSampleSize(qty) {
   return rule ? rule.sample : 0;
 }
 
+const BOTTOM_CATEGORIES = ["Jean", "Quần Kaki", "Quần Tây", "Short Jean", "Short", "Kaki SD"];
+
+function sortMeasurementPoints(points, category) {
+  const isBottom = BOTTOM_CATEGORIES.some(c => category && category.toLowerCase().includes(c.toLowerCase())) || 
+                   points.includes("Dài quần") || points.includes("Ngang eo");
+
+  const order = isBottom ? [
+    "Dài quần",
+    "Ngang eo",
+    "Ngang mông (3 điểm từ lưng xuống 20 cm)",
+    "Ngang đùi (Dưới đáy 2.5cm)",
+    "Ngang gối (Dưới đáy 33cm)",
+    "Ngang lai"
+  ] : [
+    "Dài áo từ đỉnh vai đến lai áo (bao gồm chồm vai)",
+    "Dài tay (+ Manchete/Bo)",
+    "1/2 Cửa tay",
+    "Ngang vai",
+    "Ngang ngực",
+    "Ngang lai"
+  ];
+
+  return [...points].sort((a, b) => {
+    let idxA = order.indexOf(a);
+    let idxB = order.indexOf(b);
+    if (idxA === -1) idxA = 999;
+    if (idxB === -1) idxB = 999;
+    if (idxA !== idxB) {
+      return idxA - idxB;
+    }
+    return a.localeCompare(b);
+  });
+}
+
 /* ---- SECTION 1: GENERAL ---- */
 function onCategoryChange() {
   const cat = document.getElementById('inp-category').value;
@@ -68,7 +102,7 @@ function buildMeasurementTable() {
   }
   const sizesStr = document.getElementById('inp-sizes').value;
   const sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean);
-  const points = Object.keys(specs);
+  const points = sortMeasurementPoints(Object.keys(specs), cat);
   const measSamplesEl = document.getElementById('inp-meas-samples');
   const numSamples = measSamplesEl ? (parseInt(measSamplesEl.value) || 3) : 3;
 
@@ -540,7 +574,7 @@ function exportInspectionPDF() {
   const sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean);
   const cat = v('inp-category');
   const specs = SPECS_DATA[cat] || {};
-  const points = Object.keys(specs);
+  const points = sortMeasurementPoints(Object.keys(specs), cat);
   const sampleCount = 5;
   
   const mRows = {};
@@ -1246,7 +1280,7 @@ async function submitToDatabase() {
     // ========== STEP 2: Submit Measurements ==========
     const sizesStr = v('inp-sizes');
     const sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean);
-    const points = Object.keys(specs);
+    const points = sortMeasurementPoints(Object.keys(specs), cat);
     const sampleCount = parseInt(v('inp-meas-samples')) || 3;
 
     const measPoints = points.map(point => {
