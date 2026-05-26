@@ -196,14 +196,15 @@
       }
 
       .logo-img-placeholder {
-        background-color: transparent !important;
-        border: none !important;
-        height: 64px !important;
+        background-color: #1e3a8a !important;
+        border-radius: 9999px !important;
+        height: 80px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         margin-right: 8px !important;
-        box-shadow: none !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+        border: 1px solid var(--report-border) !important;
       }
 
       .logo-img {
@@ -211,13 +212,12 @@
         max-width: 220px !important;
         object-fit: contain;
         display: block;
-        filter: invert(20%) sepia(90%) saturate(3000%) hue-rotate(210deg) brightness(75%) contrast(120%) !important;
       }
 
       .report-main-title {
         background-color: var(--slate-100) !important;
         border-radius: 9999px !important;
-        height: 64px !important;
+        height: 80px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -521,13 +521,15 @@
       }
 
       body.clean-view .logo-img-placeholder {
-        background-color: transparent !important;
-        border: none !important;
+        background-color: #1e3a8a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border: 1px solid #000000 !important;
         box-shadow: none !important;
       }
 
       body.clean-view .logo-img {
-        filter: invert(20%) sepia(90%) saturate(3000%) hue-rotate(210deg) brightness(75%) contrast(120%) !important;
+        /* No color filter, keep original white logo */
       }
 
       body.clean-view .report-main-title {
