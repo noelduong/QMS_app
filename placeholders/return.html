@@ -1532,8 +1532,9 @@
     }
 
     // getColorHex
-    function getColorHex(colorStr) {
-      if (!colorStr) return "#cbd5e1"; // Muted gray fallback
+    function getColorHex(colorVal) {
+      if (!colorVal) return "#cbd5e1"; // Muted gray fallback
+      const colorStr = String(colorVal);
       const norm = removeAccents(colorStr).toLowerCase().trim();
 
       if (norm.includes("navy")) return "#1e3a8a"; // Deep Blue / Navy
