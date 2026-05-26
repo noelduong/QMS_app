@@ -1070,17 +1070,17 @@
               <td colspan="2" style="padding: 0; border: none; border-bottom: 1px solid var(--report-border);">
                 <table style="width: 100%; border-collapse: collapse; border: none;">
                   <tr>
-                    <td style="width: 33.33%; border: none; border-right: 1px solid var(--report-border); padding: 10px 16px; text-align: left; vertical-align: middle;">
-                      <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-weight: bold; font-size: 13px; color: #991b1b; white-space: nowrap;">SUP/MILL:</span>
-                        <input id="supMill" type="text" class="report-input" style="max-width: 160px; text-align: center; font-weight: bold;" value="Trung Quy" oninput="updateSupMillDisplay(this.value)" placeholder="Nhập nhà máy..." />
+                    <td style="width: 50%; border: none; border-right: 1px solid var(--report-border); padding: 10px 16px; text-align: left; vertical-align: middle;">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="field-label-txt" style="font-weight: bold; font-size: 11px; color: var(--slate-600); text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; width: 120px; white-space: nowrap;">SUP/MILL:</span>
+                        <input id="supMill" type="text" class="report-input" style="flex: 1; text-align: left; font-weight: bold;" value="Trung Quy" oninput="updateSupMillDisplay(this.value)" placeholder="Nhập nhà máy..." />
                         <span id="supMillDisplay" style="display: none; font-size: 14px; font-weight: bold; color: #000;">Trung Quy</span>
                       </div>
                     </td>
-                    <td style="width: 66.67%; border: none; padding: 10px 16px; text-align: right; vertical-align: middle;">
-                      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                        <span style="font-weight: bold; font-size: 13px; color: #000; white-space: nowrap;">DATE:</span>
-                        <input id="testDate" type="date" class="report-input" style="max-width: 160px; text-align: center; font-weight: bold;" onchange="updateDateDisplay(this.value)" />
+                    <td style="width: 50%; border: none; padding: 10px 16px; text-align: left; vertical-align: middle;">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="field-label-txt" style="font-weight: bold; font-size: 11px; color: var(--slate-600); text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; width: 120px; white-space: nowrap;">DATE:</span>
+                        <input id="testDate" type="date" class="report-input" style="flex: 1; text-align: left; font-weight: bold;" onchange="updateDateDisplay(this.value)" />
                         <span id="testDateDisplay" style="display: none; font-size: 14px; font-weight: bold; color: #000;">20/05/2026</span>
                       </div>
                     </td>
@@ -1094,13 +1094,17 @@
               <td colspan="2" style="padding: 0; border: none; border-bottom: 1px solid var(--report-border);">
                 <table style="width: 100%; border-collapse: collapse; border: none;">
                   <tr>
-                    <td style="width: 16.67%; border: none; border-right: 1px solid var(--report-border); padding: 10px 12px; background-color: #fafafa; font-weight: bold; font-size: 12px; color: #000; text-align: left;" class="field-label-txt">FABRIC ARTICLE</td>
-                    <td style="width: 16.66%; border: none; border-right: 1px solid var(--report-border); padding: 4px 8px; text-align: center;">
-                      <input id="fabricArticle" type="text" class="report-input" value="Interlock" />
+                    <td style="width: 50%; border: none; border-right: 1px solid var(--report-border); padding: 10px 16px; text-align: left; vertical-align: middle;">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="field-label-txt" style="font-weight: bold; font-size: 11px; color: var(--slate-600); text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; width: 120px; white-space: nowrap;">FABRIC ARTICLE:</span>
+                        <input id="fabricArticle" type="text" class="report-input" style="flex: 1; text-align: left; font-weight: bold;" value="Interlock" />
+                      </div>
                     </td>
-                    <td style="width: 16.67%; border: none; border-right: 1px solid var(--report-border); padding: 10px 12px; background-color: #fafafa; font-weight: bold; font-size: 12px; color: #000; text-align: left;" class="field-label-txt">COLOR</td>
-                    <td style="width: 50%; border: none; padding: 4px 8px; text-align: center;">
-                      <input id="color" type="text" class="report-input" value="Khaki 0397" />
+                    <td style="width: 50%; border: none; padding: 10px 16px; text-align: left; vertical-align: middle;">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="field-label-txt" style="font-weight: bold; font-size: 11px; color: var(--slate-600); text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; width: 120px; white-space: nowrap;">COLOR:</span>
+                        <input id="color" type="text" class="report-input" style="flex: 1; text-align: left; font-weight: bold;" value="Khaki 0397" />
+                      </div>
                     </td>
                   </tr>
                 </table>
