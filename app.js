@@ -67,7 +67,7 @@ function loadModule(moduleId) {
 
   // Load target iframe URL
   if (iframe) {
-    iframe.src = mod.url + '?v=2.0.6';
+    iframe.src = mod.url + '?v=2.0.7';
     iframe.onload = () => {
       if (loader) {
         loader.classList.add('opacity-0', 'pointer-events-none');
