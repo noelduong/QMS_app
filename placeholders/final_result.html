@@ -9,197 +9,296 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- QMS API Client -->
   <script src="../api.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { 
-      font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      background: transparent; 
+    body {
+      filter: saturate(0.8) !important; 
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      background: #f8fafc; 
       -webkit-font-smoothing: antialiased;
     }
     
     .glass-card {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.03);
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .glass-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(31, 38, 135, 0.05);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .dark-card {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .dark-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .defect-row {
+      transition: all 0.2s ease;
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    .defect-row:hover {
+      background: rgba(99, 102, 241, 0.04);
     }
 
     .table-container {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.02);
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    }
+
+    @keyframes bar-fill {
+      from { width: 0%; }
+    }
+    .bar-animate {
+      animation: bar-fill 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
   </style>
 </head>
 <body class="p-4 md:p-8 bg-slate-50/50">
 
-  <div class="max-w-6xl mx-auto space-y-6">
-    <!-- Header Area -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">FINAL QUALITY INSPECTION ANALYTICS</h2>
-        <p class="text-xs text-slate-400 font-semibold tracking-wide uppercase mt-0.5">Phân tích kiểm hàng xuất xưởng - Giám sát chất lượng & Tỷ lệ lỗi AQL</p>
+  <div class="w-full max-w-full space-y-6">
+
+    <!-- Filters Single Pill -->
+    <div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 bg-white/95 backdrop-blur-md border border-slate-200/70 rounded-full px-6 py-2.5 shadow-sm w-fit mx-auto max-w-full">
+      <!-- Factory Filter Portion -->
+      <div class="flex items-center gap-2 text-slate-400">
+        <i data-feather="home" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+        <div class="relative">
+          <select id="filter-factory" onchange="applyFilters()" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none focus:ring-0">
+            <option value="">Tất cả nhà máy</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+            <i data-feather="chevron-down" class="w-3 h-3"></i>
+          </div>
+        </div>
       </div>
-      <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 bg-white/60 border border-slate-200/60 px-3 py-1.5 rounded-full shadow-sm">
-        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-        <span>Đồng bộ từ Google Sheets</span>
+
+      <!-- Vertical Divider -->
+      <div class="hidden sm:block h-4 w-[1px] bg-slate-200"></div>
+
+      <!-- Time Preset Portion -->
+      <div class="flex items-center gap-2 text-slate-400">
+        <i data-feather="calendar" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+        <div class="relative">
+          <select id="filter-time-preset" onchange="onTimePresetChange()" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none focus:ring-0">
+            <option value="all" selected>Tất cả thời gian</option>
+            <option value="today">Hôm nay</option>
+            <option value="yesterday">Hôm qua</option>
+            <option value="this-week">Tuần này</option>
+            <option value="last-week">Tuần trước</option>
+            <option value="this-month">Tháng này</option>
+            <option value="last-month">Tháng trước</option>
+            <option value="custom">Tùy chọn ngày...</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+            <i data-feather="chevron-down" class="w-3 h-3"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Date Inputs (Displays inline when preset is custom) -->
+      <div id="custom-date-container" class="hidden flex items-center gap-2 animate-fade-in pl-3 border-l border-slate-200/80">
+        <input type="date" id="filter-date-start" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer">
+        <span class="text-[9px] font-black text-slate-400 uppercase">đến</span>
+        <input type="date" id="filter-date-end" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer">
       </div>
     </div>
 
-    <!-- Filters Panel -->
-    <div class="glass-card rounded-3xl p-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Nhà máy filter -->
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nhà máy / Nhà gia công</label>
-          <div class="relative">
-            <select id="filter-factory" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="">Tất cả nhà máy</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-              <i data-feather="chevron-down" class="w-4 h-4"></i>
+    <!-- Tech-Forward Dashboard Layout (Restructured to Fintech Mockup Layout) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      
+      <!-- LEFT COLUMN: 2/3 Width Main Area -->
+      <div class="lg:col-span-2 space-y-5">
+        
+        <!-- Widget 1: Large Supreme Dark Card (My Card Fintech style with Smoky Grey Gradient) -->
+        <div class="rounded-[28px] p-6 relative overflow-hidden bg-gradient-to-br from-[#3a3b40] via-[#2d2e33] to-[#212226] border border-[#48494f] shadow-[0_12px_35px_rgba(0,0,0,0.15)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] min-h-[175px] flex flex-col justify-between" id="kpi-fpr-card">
+          <!-- Subtle glow vector -->
+          <div class="absolute -right-16 -top-16 w-44 h-44 bg-slate-400/5 rounded-full blur-3xl pointer-events-none" id="kpi-fpr-glow"></div>
+          
+          <div class="relative z-10 flex justify-between items-start w-full">
+            <div>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Quality Performance (First Pass Rate)</span>
+              <div class="flex items-baseline gap-2">
+                <div class="text-4xl font-black text-white leading-none tracking-tight animate-fade-in" id="kpi-fpr">0%</div>
+                <span class="text-[10px] text-[#546de5] font-bold" id="kpi-fpr-trend"></span>
+              </div>
+            </div>
+            
+            <!-- Neon Sparkline SVG decoration -->
+            <div class="w-36 h-10 hidden sm:block">
+              <svg viewBox="0 0 140 40" class="w-full h-full">
+                <path d="M 0 35 Q 20 10, 40 30 T 80 5 T 120 20 L 140 10" fill="none" stroke="#546de5" stroke-width="2.5" stroke-linecap="round" class="animate-pulse"></path>
+                <circle cx="140" cy="10" r="3" fill="#546de5"></circle>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6 pt-4 border-t border-slate-700/40">
+            <div class="w-full sm:max-w-[280px]">
+              <!-- Premium Level Meter -->
+              <div class="flex items-center gap-[2.5px] h-[12px] w-full" id="kpi-fpr-level-meter"></div>
+              <p class="text-[9px] text-slate-400 font-bold mt-2" id="kpi-fpr-sub">Lần đầu đạt tiêu chuẩn (FPR ≥ 75%)</p>
+            </div>
+            
+            <!-- Quick action buttons -->
+            <div class="flex gap-2 self-end sm:self-auto shrink-0">
+              <button onclick="document.getElementById('table-body').scrollIntoView({behavior:'smooth'})" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-full text-[10px] font-extrabold transition-all border border-white/5 shadow-sm">
+                Nhật Ký QC
+              </button>
+              <button onclick="exportCSV()" class="px-4 py-2 bg-white text-[#2d2e33] hover:bg-slate-100 rounded-full text-[10px] font-black transition-all shadow-sm">
+                Xuất Báo Cáo
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Filter theo Thời gian -->
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Khoảng thời gian</label>
-          <div class="relative">
-            <select id="filter-time-preset" onchange="onTimePresetChange()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="all" selected>Tất cả thời gian</option>
-              <option value="today">Hôm nay</option>
-              <option value="yesterday">Hôm qua</option>
-              <option value="this-week">Tuần này</option>
-              <option value="last-week">Tuần trước</option>
-              <option value="this-month">Tháng này</option>
-              <option value="last-month">Tháng trước</option>
-              <option value="custom">Tùy chọn ngày...</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-              <i data-feather="chevron-down" class="w-4 h-4"></i>
+        <!-- Widget 2: Financial Record style Row of Three Pastel KPI Cards (with Dusty Linear Gradients) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          
+          <!-- Card 2.1: Coverage Rate (Dusty Slate Blue Gradient Card) -->
+          <div class="rounded-[24px] p-5 relative overflow-hidden flex flex-col justify-between min-h-[142px] bg-gradient-to-br from-[#e4e9f2] to-[#cbd4e5] border border-[#cbd4e5] shadow-[0_4px_25px_rgba(45,62,107,0.01)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(45,62,107,0.03)]" id="kpi-coverage-card">
+            <div class="relative z-10 w-full flex flex-col justify-between h-full">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Độ Phủ Kiểm Hàng</span>
+                  <div class="w-8 h-8 rounded-lg bg-slate-200/50 text-[#2b3445] flex items-center justify-center border border-slate-300/40" id="kpi-coverage-icon-container">
+                    <i data-feather="check-square" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <div class="text-2xl font-black text-[#2b3445] leading-none tracking-tight" id="kpi-coverage">0%</div>
+                  <span class="text-[9px] text-[#2b3445] font-bold" id="kpi-coverage-trend"></span>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center gap-[2.5px] mt-4 h-[12px] w-full" id="kpi-coverage-level-meter"></div>
+                <p class="text-[9px] text-slate-500 font-bold mt-2" id="kpi-coverage-sub">0/0 PO đã kiểm (Kế hoạch)</p>
+              </div>
             </div>
           </div>
+
+          <!-- Card 2.2: Defect Rate (Dusty Sage Green Gradient Card) -->
+          <div class="rounded-[24px] p-5 relative overflow-hidden flex flex-col justify-between min-h-[142px] bg-gradient-to-br from-[#e1ede5] to-[#c8dad0] border border-[#c8dad0] shadow-[0_4px_25px_rgba(45,62,107,0.01)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(45,62,107,0.03)]" id="kpi-fdr-card">
+            <div class="absolute -right-8 -top-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" id="kpi-fdr-glow"></div>
+            <div class="relative z-10 w-full flex flex-col justify-between h-full">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Defect Rate (FDR)</span>
+                  <div class="w-8 h-8 rounded-lg bg-slate-200/50 text-[#2d3e33] flex items-center justify-center border border-slate-300/40" id="kpi-fdr-icon-container">
+                    <i data-feather="alert-triangle" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <div class="text-2xl font-black text-[#2d3e33] leading-none tracking-tight" id="kpi-fdr">0.00%</div>
+                  <span class="text-[9px] text-[#2d3e33] font-bold" id="kpi-fdr-trend"></span>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center gap-[2.5px] mt-4 h-[12px] w-full" id="kpi-fdr-level-meter"></div>
+                <p class="text-[9px] text-slate-500 font-bold mt-2" id="kpi-fdr-sub">Mật độ lỗi ngoại quan (FDR ≤ 4.0%)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2.3: Total QC Runs (Dusty Terracotta Gradient Card) -->
+          <div class="rounded-[24px] p-5 relative overflow-hidden flex flex-col justify-between min-h-[142px] bg-gradient-to-br from-[#f5ede9] to-[#ebd7ce] border border-[#ebd7ce] shadow-[0_4px_25px_rgba(45,62,107,0.01)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(45,62,107,0.03)]" id="kpi-total-card">
+            <div class="relative z-10 w-full flex flex-col justify-between h-full">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tổng Lượt QC</span>
+                  <div class="w-8 h-8 rounded-lg bg-slate-200/50 text-[#4a352b] flex items-center justify-center border border-slate-300/40" id="kpi-total-icon-container">
+                    <i data-feather="activity" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <div class="text-2xl font-black text-[#4a352b] leading-none tracking-tight" id="kpi-total">0</div>
+                  <span class="text-[9px] text-[#4a352b] font-bold" id="kpi-total-trend"></span>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center gap-[2.5px] mt-4 h-[12px] w-full" id="kpi-total-level-meter"></div>
+                <p class="text-[9px] text-slate-500 font-bold mt-2" id="kpi-total-sub">QC đã kiểm thực tế</p>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Ngày bắt đầu & kết thúc (Cho Custom) -->
-        <div id="custom-date-container" class="hidden sm:col-span-2 lg:col-span-1 grid grid-cols-2 gap-2">
+        <!-- Widget 3: Quality Trend Chart (Combined FPR & FDR - Light Gradient Container) -->
+        <div class="glass-card rounded-[28px] p-6 flex flex-col justify-between bg-gradient-to-br from-white to-slate-50/50 border border-slate-200/60 shadow-[0_4px_25px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Từ ngày</label>
-            <input type="date" id="filter-date-start" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 mb-1">
+              <i data-feather="trending-up" class="w-4 h-4 text-[#4f46e5]"></i> XU HƯỚNG CHẤT LƯỢNG (FPR & FDR) THEO THỜI GIAN
+            </h4>
+            <p class="text-[10px] text-slate-400 font-bold mb-3">Biến động tỷ lệ đạt lần đầu (FPR) & mật độ lỗi ngoại quan (FDR)</p>
           </div>
+          <div class="h-[235px] relative w-full flex items-center justify-center">
+            <canvas id="trendChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Widget 4: FDR by Factory Chart (Light Gradient Container) -->
+        <div class="glass-card rounded-[28px] p-6 flex flex-col justify-between bg-gradient-to-br from-white to-slate-50/50 border border-slate-200/60 shadow-[0_4px_25px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Đến ngày</label>
-            <input type="date" id="filter-date-end" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 mb-1">
+              <i data-feather="home" class="w-4 h-4 text-[#4f46e5]"></i> MẬT ĐỘ LỖI (FDR) THEO NHÀ MÁY
+            </h4>
+            <p class="text-[10px] text-slate-400 font-bold mb-4">So sánh FDR giữa các đơn vị gia công</p>
+          </div>
+          <div class="h-[235px] relative w-full flex items-center justify-center">
+            <canvas id="factoryFDRChart" class="w-full h-full"></canvas>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- KPI Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- First Pass Rate KPI -->
-      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-fpr-card">
-        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" id="kpi-fpr-glow"></div>
-        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">First Pass Rate</span>
-          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-fpr">0%</div>
-          <div class="min-h-[18px] flex items-end">
-            <span class="text-[10px] text-emerald-600 font-bold leading-none" id="kpi-fpr-sub">Lần đầu đạt tiêu chuẩn</span>
+      </div>
+
+      <!-- RIGHT COLUMN: 1/3 Width Sidebar Area -->
+      <div class="lg:col-span-1 space-y-5">
+        
+        <!-- Widget 1: Transactions style list - SẢN PHẨM LỖI CAO -->
+        <div class="glass-card rounded-2xl p-5 border border-slate-200/60 flex-1">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+              <i data-feather="alert-circle" class="w-4 h-4 text-rose-500"></i>
+            </div>
+            <div>
+              <h4 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">SẢN PHẨM LỖI CAO</h4>
+              <p class="text-[9px] text-slate-400 font-medium">Tỷ lệ lỗi AQL cao nhất</p>
+            </div>
+          </div>
+          <div class="space-y-2 overflow-y-auto max-h-[350px]" id="product-defect-container">
+            <div class="text-center py-6 text-[10px] text-slate-400">Đang thống kê...</div>
           </div>
         </div>
-        <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0" id="kpi-fpr-icon-container">
-          <i data-feather="award" class="w-6 h-6"></i>
-        </div>
-      </div>
 
-      <!-- Defect Rate (FDR) KPI -->
-      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-fdr-card">
-        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-fdr-glow"></div>
-        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Defect Rate (FDR)</span>
-          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-fdr">0.00%</div>
-          <div class="min-h-[18px] flex items-end">
-            <span class="text-[10px] text-slate-400 font-medium leading-none" id="kpi-fdr-sub">Mật độ lỗi ngoại quan</span>
+        <!-- Widget 2: Available Card style list - NHÀ MÁY FPR THẤP -->
+        <div class="glass-card rounded-2xl p-5 border border-slate-200/60 flex-1">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <i data-feather="trending-down" class="w-4 h-4 text-amber-500"></i>
+            </div>
+            <div>
+              <h4 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">NHÀ MÁY FPR THẤP</h4>
+              <p class="text-[9px] text-slate-400 font-medium">Cần cải thiện năng lực kiểm đạt</p>
+            </div>
+          </div>
+          <div class="space-y-2 overflow-y-auto max-h-[300px]" id="factory-fpr-container">
+            <div class="text-center py-6 text-[10px] text-slate-400">Đang thống kê...</div>
           </div>
         </div>
-        <div class="p-4 bg-slate-100 text-slate-500 rounded-2xl shadow-sm shrink-0" id="kpi-fdr-icon-container">
-          <i data-feather="alert-circle" class="w-6 h-6"></i>
-        </div>
-      </div>
-    </div>
 
-    <!-- Analytics Row 1 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Top Lỗi Phổ Biến -->
-      <div class="glass-card rounded-3xl p-6 space-y-6">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">TOP LỖI PHỔ BIẾN</h3>
-          <p class="text-xs text-slate-400 font-medium">Nhóm lỗi ngoại quan xuất hiện nhiều nhất</p>
-        </div>
-        <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="issue-bars-container">
-          <div class="text-center py-10 text-xs text-slate-400 font-medium">Đang thống kê dữ liệu...</div>
-        </div>
       </div>
 
-      <!-- Top Sản Phẩm Lỗi Cao -->
-      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">TOP SẢN PHẨM LỖI CAO</h3>
-          <p class="text-xs text-slate-400 font-medium">Xếp hạng dòng sản phẩm phát hiện tỷ lệ lỗi AQL cao nhất</p>
-        </div>
-        <div class="space-y-4 overflow-y-auto pr-1 max-h-[300px]" id="product-defect-container">
-          <div class="text-center py-10 text-xs text-slate-400 font-medium">Đang thống kê dữ liệu...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Analytics Row 2 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Donut Chart -->
-      <div class="glass-card rounded-3xl p-6 flex flex-col justify-between min-h-[320px]">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">CƠ CẤU KẾT QUẢ ĐÁNH GIÁ</h3>
-          <p class="text-xs text-slate-400 font-medium">Tỷ lệ phân bố số đợt kiểm ĐẠT vs KHÔNG ĐẠT</p>
-        </div>
-        <div class="relative w-44 h-44 mx-auto my-2 flex items-center justify-center">
-          <canvas id="donut-chart" class="z-10"></canvas>
-        </div>
-        <div class="flex justify-center items-center gap-4 text-[11px] font-bold">
-          <div class="flex items-center">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#a7f3d0] mr-1.5"></span>
-            <span>Đạt (PASS)</span>
-          </div>
-          <div class="flex items-center">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#fca5a5] mr-1.5"></span>
-            <span>Không đạt (FAIL)</span>
-          </div>
-          <div class="flex items-center">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#cbd5e1] mr-1.5"></span>
-            <span>Chờ duyệt</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top Nhà Máy Tỷ Lệ First Pass Rate Thấp Nhất -->
-      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">TOP NHÀ MÁY TỶ LỆ FIRST PASS RATE THẤP NHẤT</h3>
-          <p class="text-xs text-slate-400 font-medium">Nhà gia công cần giám sát quy trình sản xuất và cải thiện năng lực lần đầu</p>
-        </div>
-        <div class="space-y-4 overflow-y-auto pr-1 max-h-[300px]" id="factory-fpr-container">
-          <div class="text-center py-10 text-xs text-slate-400 font-medium">Đang thống kê dữ liệu...</div>
-        </div>
-      </div>
     </div>
 
     <!-- History Data Log Table -->
@@ -244,7 +343,126 @@
     let allFinalGens = [];
     let allSummaryMap = {};
     let allPlans = [];
-    let donutChartInstance = null;
+    let trendChartInstance = null;
+    let factoryFDRChartInstance = null;
+
+
+    // Helper: Normalize factory name for matching/grouping (casing, spaces, trimming)
+    function normalizeFactoryName(name) {
+      if (!name || name === "-" || name === "0") return "";
+      return String(name).trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    // Helper: Map Vietnamese color string to exact hex color
+    function getActualProductColorHex(colorName) {
+      if (!colorName) return { hex: '#94a3b8', hasBorder: false };
+      
+      const normalized = colorName.trim().toLowerCase();
+      
+      // Black / Đen
+      if (normalized.includes('đen') || normalized.includes('black') || normalized.includes('charcoal')) {
+        return { hex: '#0f172a', hasBorder: false };
+      }
+      // Navy / Xanh đậm / Xanh đen
+      if (normalized.includes('navy') || normalized.includes('xanh đậm') || normalized.includes('xanh đen') || normalized.includes('xanh thẫm')) {
+        return { hex: '#1e3b8a', hasBorder: false };
+      }
+      // Indigo
+      if (normalized.includes('indigo')) {
+        return { hex: '#312e81', hasBorder: false };
+      }
+      // Xanh nhạt / Light Blue
+      if (normalized.includes('xanh nhạt') || normalized.includes('light blue') || normalized.includes('xanh lơ')) {
+        return { hex: '#bae6fd', hasBorder: false };
+      }
+      // Xanh khói / Smoke Blue
+      if (normalized.includes('xanh khói') || normalized.includes('smoke blue')) {
+        return { hex: '#94a3b8', hasBorder: false };
+      }
+      // Xanh lá / Green
+      if (normalized.includes('xanh lá') || normalized.includes('green')) {
+        return { hex: '#16a34a', hasBorder: false };
+      }
+      // Rêu / Moss
+      if (normalized.includes('rêu') || normalized.includes('moss')) {
+        return { hex: '#14532d', hasBorder: false };
+      }
+      // Oliu / Olive
+      if (normalized.includes('oliu') || normalized.includes('olive')) {
+        return { hex: '#3f6212', hasBorder: false };
+      }
+      // Mint / Bạc hà
+      if (normalized.includes('mint') || normalized.includes('bạc hà')) {
+        return { hex: '#a7f3d0', hasBorder: true };
+      }
+      // Trắng / White
+      if (normalized.includes('trắng') || normalized.includes('white')) {
+        return { hex: '#ffffff', hasBorder: true };
+      }
+      // Đỏ nâu / Đỏ / Red / Maroon / Chilli / Đỏ đô
+      if (normalized.includes('đỏ') || normalized.includes('red') || normalized.includes('maroon') || normalized.includes('chilli') || normalized.includes('đỏ đô') || normalized.includes('đỏ nâu')) {
+        return { hex: '#991b1b', hasBorder: false };
+      }
+      // Nâu nhạt / Nâu / Brown
+      if (normalized.includes('nâu') || normalized.includes('brown')) {
+        if (normalized.includes('nâu nhạt')) {
+          return { hex: '#b45309', hasBorder: false };
+        }
+        return { hex: '#78350f', hasBorder: false };
+      }
+      // Khaki / Kaki
+      if (normalized.includes('khaki') || normalized.includes('kaki')) {
+        return { hex: '#c5a880', hasBorder: false };
+      }
+      // Denim
+      if (normalized.includes('denim')) {
+        return { hex: '#3b82f6', hasBorder: false };
+      }
+      // Cafe / Cà phê
+      if (normalized.includes('cafe') || normalized.includes('cà phê')) {
+        return { hex: '#451a03', hasBorder: false };
+      }
+      // Đất
+      if (normalized.includes('đất')) {
+        return { hex: '#a16207', hasBorder: false };
+      }
+      // Xám nhạt / Light Gray / Xám
+      if (normalized.includes('xám') || normalized.includes('gray') || normalized.includes('grey')) {
+        if (normalized.includes('xám đậm')) {
+          return { hex: '#475569', hasBorder: false };
+        }
+        return { hex: '#cbd5e1', hasBorder: true };
+      }
+      // Be hồng
+      if (normalized.includes('be hồng')) {
+        return { hex: '#fbcfe8', hasBorder: true };
+      }
+      // Cream / Kem / Beige / Be / Be nhạt
+      if (normalized.includes('kem') || normalized.includes('beige') || normalized.includes('be') || normalized.includes('cream')) {
+        if (normalized.includes('be đậm')) {
+          return { hex: '#d2b48c', hasBorder: false };
+        }
+        return { hex: '#fafaf9', hasBorder: true };
+      }
+      
+      // Default: Slate-400
+      return { hex: '#94a3b8', hasBorder: false };
+    }
+
+    // Helper: Draw level progress meter with vertical dashes
+    function renderLevelMeter(containerId, pct, colorClass = 'bg-slate-800') {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const barCount = 38;
+      const activeCount = Math.round((pct / 100) * barCount);
+      let html = '';
+      for (let i = 0; i < barCount; i++) {
+        const isActive = i < activeCount;
+        const cls = isActive ? colorClass : 'bg-slate-100';
+        html += `<div class="w-[2.5px] h-full ${cls} rounded-full transition-all duration-300" style="transition-delay: ${i * 4}ms"></div>`;
+      }
+      container.innerHTML = html;
+    }
 
     // Load data from API
     async function loadData() {
@@ -278,8 +496,9 @@
         const factoryFilter = document.getElementById('filter-factory');
         const factories = new Set();
         allFinalGens.forEach(row => {
-          if (row.fob_supplier && row.fob_supplier.trim() !== "-") {
-            factories.add(row.fob_supplier.trim());
+          const fac = normalizeFactoryName(row.fob_supplier);
+          if (fac) {
+            factories.add(fac);
           }
         });
 
@@ -370,68 +589,122 @@
         coveragePct = totalCount > 0 ? Math.round((filteredCount / totalCount) * 100) : 0;
       }
 
-      if (document.getElementById('kpi-coverage')) {
-        document.getElementById('kpi-coverage').textContent = `${coveragePct}%`;
-      }
+      // Update Coverage Card
+      const covEl = document.getElementById('kpi-coverage');
+      if (covEl) covEl.textContent = `${coveragePct}%`;
+      
+      const covSubEl = document.getElementById('kpi-coverage-sub');
       const subLabel = totalPlanned > 0 
         ? `${actualInspectedCount}/${totalPlanned} PO đã kiểm (Kế hoạch)` 
         : `${filteredCount}/${totalCount} đơn hàng đã kiểm`;
-      if (document.getElementById('kpi-coverage-sub')) {
-        document.getElementById('kpi-coverage-sub').textContent = subLabel;
-      }
+      if (covSubEl) covSubEl.textContent = subLabel;
+      
+      renderLevelMeter('kpi-coverage-level-meter', coveragePct, 'bg-[#425a94]');
 
-      // 2. First Pass Rate (FPR)
-      // Group by unique PO key (product_name + po_qty), find if the earliest check was PASS
-      const firstAttemptMap = {};
-      dataList.forEach(row => {
-        const prodKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + String(row.po_qty || "0");
-        const insDate = parseDate(row.inspection_date) || new Date(0);
+      // 1.5. Build Global First Attempt Map (chronological earliest inspection per PO across ALL records in allFinalGens)
+      const globalFirstAttemptMap = {};
+      allFinalGens.forEach(row => {
+        const prodKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.color || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.po_qty || "0") + "_" + 
+                        normalizeFactoryName(row.fob_supplier || "Unknown");
+        
+        const insDate = parseDate(row.inspection_date);
+        const submitDate = parseDate(row.timestamp || row.submit_time);
+        
+        const primaryTime = insDate ? insDate.getTime() : (submitDate ? submitDate.getTime() : 0);
+        const secondaryTime = submitDate ? submitDate.getTime() : 0;
+        
         const sum = allSummaryMap[row.general_id] || {};
         const isPass = sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true;
         
-        if (!firstAttemptMap[prodKey]) {
-          firstAttemptMap[prodKey] = { date: insDate, isPass: isPass };
-        } else if (insDate < firstAttemptMap[prodKey].date) {
-          firstAttemptMap[prodKey] = { date: insDate, isPass: isPass };
+        if (!globalFirstAttemptMap[prodKey]) {
+          globalFirstAttemptMap[prodKey] = {
+            primaryTime,
+            secondaryTime,
+            isPass,
+            factory: normalizeFactoryName(row.fob_supplier) || "KHÁC"
+          };
+        } else {
+          let isEarlier = false;
+          if (primaryTime !== globalFirstAttemptMap[prodKey].primaryTime) {
+            isEarlier = primaryTime < globalFirstAttemptMap[prodKey].primaryTime;
+          } else {
+            isEarlier = secondaryTime < globalFirstAttemptMap[prodKey].secondaryTime;
+          }
+          
+          if (isEarlier) {
+            globalFirstAttemptMap[prodKey] = {
+              primaryTime,
+              secondaryTime,
+              isPass,
+              factory: normalizeFactoryName(row.fob_supplier) || "KHÁC"
+            };
+          }
         }
+      });
+
+      // 2. First Pass Rate (FPR)
+      const inspectedPOKeys = new Set();
+      dataList.forEach(row => {
+        const prodKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.color || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.po_qty || "0") + "_" + 
+                        normalizeFactoryName(row.fob_supplier || "Unknown");
+        inspectedPOKeys.add(prodKey);
       });
       
       let firstPassCount = 0;
-      const firstAttempts = Object.values(firstAttemptMap);
-      firstAttempts.forEach(att => {
-        if (att.isPass) firstPassCount++;
+      inspectedPOKeys.forEach(prodKey => {
+        const globalAtt = globalFirstAttemptMap[prodKey];
+        if (globalAtt && globalAtt.isPass) {
+          firstPassCount++;
+        }
       });
-      const fprPct = firstAttempts.length > 0 ? Math.round((firstPassCount / firstAttempts.length) * 100) : 0;
-      document.getElementById('kpi-fpr').textContent = `${fprPct}%`;
       
-      // Update FPR Card Styling
-      const fprCard = document.getElementById('kpi-fpr-card');
-      const fprGlow = document.getElementById('kpi-fpr-glow');
+      const fprPct = inspectedPOKeys.size > 0 ? Math.round((firstPassCount / inspectedPOKeys.size) * 100) : 0;
+      
+      const fprEl = document.getElementById('kpi-fpr');
+      if (fprEl) fprEl.textContent = `${fprPct}%`;
+      
+      // Update FPR Card Styling & Level Meter
       const fprSub = document.getElementById('kpi-fpr-sub');
-      const fprIconContainer = document.getElementById('kpi-fpr-icon-container');
+      const fprTrend = document.getElementById('kpi-fpr-trend');
       
+      let fprColorClass = 'bg-slate-800';
       if (fprPct >= 90) {
-        fprSub.textContent = "✓ Năng lực đạt lần đầu tối ưu (≥90%)";
-        fprSub.className = "text-[10px] font-black tracking-wide leading-none text-emerald-500";
-        fprIconContainer.className = "p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0";
-        document.getElementById('kpi-fpr').className = "text-3xl font-extrabold text-slate-900 leading-none";
-        if (fprCard) fprCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        if (fprGlow) fprGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
+        fprColorClass = 'bg-[#59936f]';
+        if (fprSub) {
+          fprSub.textContent = "✓ Năng lực đạt lần đầu tối ưu (≥90%)";
+          fprSub.className = "text-[9px] font-bold mt-2 text-emerald-400";
+        }
+        if (fprTrend) {
+          fprTrend.textContent = "✓ Xuất sắc";
+          fprTrend.className = "text-[10px] text-emerald-400 font-bold bg-white/5 border border-emerald-400/25 px-1.5 py-0.5 rounded";
+        }
       } else if (fprPct >= 75) {
-        fprSub.textContent = "⚠️ Cần rà soát năng lực sản xuất (75%-90%)";
-        fprSub.className = "text-[10px] font-black tracking-wide leading-none text-amber-500";
-        fprIconContainer.className = "p-4 bg-amber-50 text-amber-600 rounded-2xl shadow-sm shrink-0";
-        document.getElementById('kpi-fpr').className = "text-3xl font-extrabold text-amber-600 leading-none";
-        if (fprCard) fprCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        if (fprGlow) fprGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none";
+        fprColorClass = 'bg-[#d6a74c]';
+        if (fprSub) {
+          fprSub.textContent = "⚠️ Cần rà soát năng lực sản xuất (75%-90%)";
+          fprSub.className = "text-[9px] font-bold mt-2 text-amber-400";
+        }
+        if (fprTrend) {
+          fprTrend.textContent = "⚠️ Khá";
+          fprTrend.className = "text-[10px] text-amber-400 font-bold bg-white/5 border border-amber-400/25 px-1.5 py-0.5 rounded";
+        }
       } else {
-        fprSub.textContent = "🚨 Cảnh báo chất lượng đầu ra lần đầu (<75%)";
-        fprSub.className = "text-[10px] font-black tracking-wide leading-none text-rose-500 animate-pulse";
-        fprIconContainer.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
-        document.getElementById('kpi-fpr').className = "text-3xl font-extrabold text-rose-600 leading-none";
-        if (fprCard) fprCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        if (fprGlow) fprGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+        fprColorClass = 'bg-[#c75466]';
+        if (fprSub) {
+          fprSub.textContent = "🚨 Cảnh báo chất lượng đầu ra lần đầu (<75%)";
+          fprSub.className = "text-[9px] font-bold mt-2 text-rose-400 animate-pulse";
+        }
+        if (fprTrend) {
+          fprTrend.textContent = "🚨 Cảnh báo";
+          fprTrend.className = "text-[10px] text-rose-400 font-bold bg-white/5 border border-rose-400/25 px-1.5 py-0.5 rounded";
+        }
       }
+      
+      renderLevelMeter('kpi-fpr-level-meter', fprPct, fprColorClass);
 
       // 3. Defect Rate (FDR)
       let totalIndividualDefectRate = 0;
@@ -443,14 +716,42 @@
       const issueStats = {};
       const prodDefectMap = {};
       const factoryAttemptsMap = {};
+      const factoryFDRMap = {};
+      const dateFDRMap = {};
 
       dataList.forEach(row => {
         const sum = allSummaryMap[row.general_id] || {};
         const defects = (Number(sum.app_total_qty) || 0) + (Number(sum.meas_fail_count) || 0);
         const samples = Number(row.sample_size) || Number(sum.sample_size) || 0;
+        
         if (samples > 0) {
           totalIndividualDefectRate += (defects / samples);
           validOrderCount++;
+
+          // Aggregate by Factory for FDR chart
+          const facName = normalizeFactoryName(row.fob_supplier) || "KHÁC";
+          if (!factoryFDRMap[facName]) {
+            factoryFDRMap[facName] = { defects: 0, samples: 0 };
+          }
+          factoryFDRMap[facName].defects += defects;
+          factoryFDRMap[facName].samples += samples;
+
+          // Aggregate by Date for Trend chart
+          const dObj = parseDate(row.inspection_date);
+          if (dObj) {
+            const dateKey = `${String(dObj.getDate()).padStart(2, '0')}/${String(dObj.getMonth() + 1).padStart(2, '0')}`;
+            if (!dateFDRMap[dateKey]) {
+              dateFDRMap[dateKey] = { dateVal: dObj.getTime(), defects: 0, samples: 0, poKeys: new Set() };
+            }
+            dateFDRMap[dateKey].defects += defects;
+            dateFDRMap[dateKey].samples += samples;
+            
+            const prodKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + 
+                            String(row.color || "Unknown").trim().toUpperCase() + "_" + 
+                            String(row.po_qty || "0") + "_" + 
+                            normalizeFactoryName(row.fob_supplier || "Unknown");
+            dateFDRMap[dateKey].poKeys.add(prodKey);
+          }
         }
 
         // Verdict
@@ -466,31 +767,43 @@
         }
 
         // Product defects group
-        const prod = String(row.product_name || "Khác").trim().toUpperCase();
-        if (prod && prod !== "-") {
-          if (!prodDefectMap[prod]) {
-            prodDefectMap[prod] = { defects: 0, samples: 0, failCount: 0, totalRuns: 0 };
+        const prodName = String(row.product_name || "Khác").trim();
+        const prodColor = String(row.color || "").trim();
+        const prodKey = prodColor ? `${prodName} - ${prodColor}` : prodName;
+        const prodKeyUpper = prodKey.toUpperCase();
+        
+        if (prodName && prodName !== "-") {
+          if (!prodDefectMap[prodKeyUpper]) {
+            prodDefectMap[prodKeyUpper] = { 
+              name: prodKey, 
+              colorVal: prodColor, 
+              defects: 0, 
+              samples: 0, 
+              failCount: 0, 
+              totalRuns: 0 
+            };
           }
-          prodDefectMap[prod].defects += Number(sum.app_total_qty) || 0;
-          prodDefectMap[prod].samples += Number(row.sample_size) || Number(sum.sample_size) || 0;
-          prodDefectMap[prod].totalRuns++;
-          if (verdict === 'FAIL') prodDefectMap[prod].failCount++;
+          prodDefectMap[prodKeyUpper].defects += Number(sum.app_total_qty) || 0;
+          prodDefectMap[prodKeyUpper].samples += Number(row.sample_size) || Number(sum.sample_size) || 0;
+          prodDefectMap[prodKeyUpper].totalRuns++;
+          if (verdict === 'FAIL') prodDefectMap[prodKeyUpper].failCount++;
         }
 
         // Factory attempts map
-        const factory = String(row.fob_supplier || "Khác").trim();
-        if (factory && factory !== "-") {
+        const factory = normalizeFactoryName(row.fob_supplier) || "KHÁC";
+        if (factory) {
           if (!factoryAttemptsMap[factory]) {
             factoryAttemptsMap[factory] = {};
           }
-          const prodKey = prod + "_" + String(row.po_qty || "0");
-          const insDate = parseDate(row.inspection_date) || new Date(0);
-          const isPass = verdict === 'PASS';
-
-          if (!factoryAttemptsMap[factory][prodKey]) {
-            factoryAttemptsMap[factory][prodKey] = { date: insDate, isPass: isPass };
-          } else if (insDate < factoryAttemptsMap[factory][prodKey].date) {
-            factoryAttemptsMap[factory][prodKey] = { date: insDate, isPass: isPass };
+          const prodKey = prodName + "_" + String(row.color || "Unknown").trim().toUpperCase() + "_" + String(row.po_qty || "0");
+          const globalPOKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + 
+                              String(row.color || "Unknown").trim().toUpperCase() + "_" + 
+                              String(row.po_qty || "0") + "_" + 
+                              factory;
+          
+          const globalAtt = globalFirstAttemptMap[globalPOKey];
+          if (globalAtt) {
+            factoryAttemptsMap[factory][prodKey] = { isPass: globalAtt.isPass };
           }
         }
 
@@ -516,7 +829,7 @@
                 } else if (cleanDefect.includes("-")) {
                   cleanDefect = cleanDefect.replace(/^-/, "").trim();
                 }
-                if (cleanDefect.length > 3 && cleanDefect.length < 30) {
+                if (cleanDefect.length > 3 && cleanDefect.length < 100) {
                   const standard = cleanDefect.charAt(0).toUpperCase() + cleanDefect.slice(1);
                   issueStats[standard] = (issueStats[standard] || 0) + 1;
                 }
@@ -527,108 +840,314 @@
       });
 
       const fdrPct = validOrderCount > 0 ? ((totalIndividualDefectRate / validOrderCount) * 100).toFixed(2) : "0.00";
-      document.getElementById('kpi-fdr').textContent = `${fdrPct}%`;
+      
+      const fdrEl = document.getElementById('kpi-fdr');
+      if (fdrEl) fdrEl.textContent = `${fdrPct}%`;
 
-      // Update FDR Card Styling
-      const fdrCard = document.getElementById('kpi-fdr-card');
-      const fdrGlow = document.getElementById('kpi-fdr-glow');
+      // Update FDR Card Styling & Level Meter
       const fdrSub = document.getElementById('kpi-fdr-sub');
-      const fdrIconContainer = document.getElementById('kpi-fdr-icon-container');
-
+      const fdrTrend = document.getElementById('kpi-fdr-trend');
+      
+      let fdrColorClass = 'bg-slate-800';
       if (Number(fdrPct) <= 2.5) {
-        fdrSub.textContent = "✓ Nằm trong giới hạn AQL (≤2.5%)";
-        fdrSub.className = "text-[10px] font-black tracking-wide leading-none text-emerald-500";
-        fdrIconContainer.className = "p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0";
-        document.getElementById('kpi-fdr').className = "text-3xl font-extrabold text-slate-900 leading-none";
-        if (fdrCard) fdrCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        if (fdrGlow) fdrGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
+        fdrColorClass = 'bg-[#59936f]';
+        if (fdrSub) fdrSub.textContent = "✓ Nằm trong giới hạn AQL tối ưu (≤2.5%)";
+        if (fdrTrend) {
+          fdrTrend.textContent = "✓ Tốt";
+          fdrTrend.className = "text-[10px] text-[#59936f] font-bold bg-[#59936f]/10 border border-[#59936f]/20 px-1.5 py-0.5 rounded";
+        }
       } else if (Number(fdrPct) <= 4.0) {
-        fdrSub.textContent = "⚠️ Cần rà soát năng lực sản xuất (2.5%-4.0%)";
-        fdrSub.className = "text-[10px] font-black tracking-wide leading-none text-amber-500";
-        fdrIconContainer.className = "p-4 bg-amber-50 text-amber-600 rounded-2xl shadow-sm shrink-0";
-        document.getElementById('kpi-fdr').className = "text-3xl font-extrabold text-amber-600 leading-none";
-        if (fdrCard) fdrCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        if (fdrGlow) fdrGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none";
+        fdrColorClass = 'bg-[#d6a74c]';
+        if (fdrSub) fdrSub.textContent = "⚠️ Cần rà soát năng lực sản xuất (2.5%-4.0%)";
+        if (fdrTrend) {
+          fdrTrend.textContent = "⚠️ Cảnh báo";
+          fdrTrend.className = "text-[10px] text-[#d6a74c] font-bold bg-[#d6a74c]/10 border border-[#d6a74c]/20 px-1.5 py-0.5 rounded";
+        }
       } else {
-        fdrSub.textContent = "🚨 Cảnh báo mật độ lỗi cao (>4.0%)";
-        fdrSub.className = "text-[10px] font-black tracking-wide leading-none text-rose-500 animate-pulse";
-        fdrIconContainer.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
-        document.getElementById('kpi-fdr').className = "text-3xl font-extrabold text-rose-600 leading-none";
-        if (fdrCard) fdrCard.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        if (fdrGlow) fdrGlow.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+        fdrColorClass = 'bg-[#c75466]';
+        if (fdrSub) fdrSub.textContent = "🚨 Cảnh báo mật độ lỗi vượt AQL (>4.0%)";
+        if (fdrTrend) {
+          fdrTrend.textContent = "🚨 Nguy cơ";
+          fdrTrend.className = "text-[10px] text-[#c75466] font-bold bg-[#c75466]/10 border border-[#c75466]/20 px-1.5 py-0.5 rounded";
+        }
       }
+      
+      // Calculate quality compliance index (100 - FDR*15) for the meter
+      const fdrMeterVal = Math.max(0, 100 - Math.round(Number(fdrPct) * 15));
+      renderLevelMeter('kpi-fdr-level-meter', fdrMeterVal, fdrColorClass);
 
-      // 4. Total planned POs (Không dùng Tổng đợt kiểm hàng, dùng PLAN tính bao nhiêu PO)
-      const factoryFilterVal = document.getElementById('filter-factory')?.value || "";
-      let activeFilteredPlans = allPlans;
-      if (factoryFilterVal) {
-        activeFilteredPlans = allPlans.filter(p => {
-          const facVal = String(p.fob || p.supplier || p.factory || p["nhà máy"] || p.fob_supplier || "").trim().toUpperCase();
-          const filterUpper = factoryFilterVal.trim().toUpperCase();
-          return facVal.includes(filterUpper) || filterUpper.includes(facVal);
+      // 4. Total QC Inspections Card
+      const totalEl = document.getElementById('kpi-total');
+      if (totalEl) totalEl.textContent = filteredCount;
+      
+      const totalTrend = document.getElementById('kpi-total-trend');
+      if (totalTrend) {
+        totalTrend.textContent = `Lượt kiểm`;
+        totalTrend.className = "text-[10px] text-[#a37f70] font-bold bg-[#a37f70]/10 border border-[#a37f70]/20 px-1.5 py-0.5 rounded";
+      }
+      
+      const totalSub = document.getElementById('kpi-total-sub');
+      if (totalSub) totalSub.textContent = `Thực tế đã chạy kiểm QC ${filteredCount} đợt`;
+      
+      // Level meter for total QC capacity (normalized to 60 runs max)
+      const totalMeterVal = Math.min(100, Math.round((filteredCount / 60) * 100));
+      renderLevelMeter('kpi-total-level-meter', totalMeterVal, 'bg-[#a37f70]');
+
+      document.getElementById('table-counter').textContent = `Hiển thị: ${filteredCount} kết quả`;
+
+      // 📊 DRAW CHARTS (Chart.js)
+      
+      // A. Quality Trend (Combined FPR & FDR)
+      const sortedTrend = Object.entries(dateFDRMap).map(([label, data]) => {
+        let fpCount = 0;
+        if (data.poKeys) {
+          data.poKeys.forEach(pk => {
+            const att = globalFirstAttemptMap[pk];
+            if (att && att.isPass) {
+              fpCount++;
+            }
+          });
+        }
+        return {
+          label,
+          dateVal: data.dateVal,
+          fdr: Number(data.samples > 0 ? ((data.defects / data.samples) * 100).toFixed(2) : 0),
+          fpr: data.poKeys && data.poKeys.size > 0 ? Math.round((fpCount / data.poKeys.size) * 100) : 0
+        };
+      }).sort((a, b) => a.dateVal - b.dateVal);
+
+      const trendCtx = document.getElementById('trendChart')?.getContext('2d');
+      if (trendCtx) {
+        if (trendChartInstance) trendChartInstance.destroy();
+
+        // 🎨 Premium Dusty Deep Canvas Gradients (30% desaturated, 30% darker)
+        // Modern Dusty Blue (FPR): #2d3e6b (rgba(45, 62, 107, ...))
+        const fprGrad = trendCtx.createLinearGradient(0, 0, 0, 230);
+        fprGrad.addColorStop(0, 'rgba(45, 62, 107, 0.07)');
+        fprGrad.addColorStop(1, 'rgba(45, 62, 107, 0.0)');
+
+        // Dusty Burgundy (FDR): #732a3b (rgba(115, 42, 59, ...))
+        const fdrGrad = trendCtx.createLinearGradient(0, 0, 0, 230);
+        fdrGrad.addColorStop(0, 'rgba(115, 42, 59, 0.07)');
+        fdrGrad.addColorStop(1, 'rgba(115, 42, 59, 0.0)');
+
+        trendChartInstance = new Chart(trendCtx, {
+          type: 'line',
+          data: {
+            labels: sortedTrend.map(t => t.label),
+            datasets: [
+              {
+                label: 'Tỷ lệ đạt lần đầu (FPR %)',
+                data: sortedTrend.map(t => t.fpr),
+                borderColor: '#2d3e6b', // Modern Dusty Blue
+                backgroundColor: fprGrad,
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#2d3e6b',
+                pointBorderWidth: 1.5,
+                pointRadius: 4.5,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#2d3e6b',
+                pointHoverBorderColor: '#ffffff'
+              },
+              {
+                label: 'Mật độ lỗi (FDR %)',
+                data: sortedTrend.map(t => t.fdr),
+                borderColor: '#732a3b', // Dusty Burgundy
+                backgroundColor: fdrGrad,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#732a3b',
+                pointBorderWidth: 1.5,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#732a3b',
+                pointHoverBorderColor: '#ffffff'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { 
+                display: true,
+                position: 'top',
+                labels: {
+                  boxWidth: 12,
+                  font: { size: 9, family: 'Plus Jakarta Sans', weight: 'bold' },
+                  color: '#475569'
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                titleColor: '#1e293b',
+                bodyColor: '#475569',
+                borderColor: 'rgba(226, 232, 240, 0.8)',
+                borderWidth: 1,
+                padding: 10,
+                boxPadding: 4,
+                cornerRadius: 12,
+                titleFont: { family: 'Plus Jakarta Sans', size: 10, weight: 'bold' },
+                bodyFont: { family: 'Plus Jakarta Sans', size: 10 },
+                callbacks: {
+                  label: function(context) { 
+                    return ` ${context.dataset.label}: ${context.parsed.y.toFixed(context.datasetIndex === 0 ? 0 : 2)}%`; 
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { 
+                grid: { display: false }, 
+                ticks: { font: { size: 9, family: 'Plus Jakarta Sans' }, color: '#94a3b8' } 
+              },
+              y: { 
+                grid: { color: '#f1f5f9', drawBorder: false }, 
+                ticks: { 
+                  font: { size: 9, family: 'Plus Jakarta Sans' }, 
+                  color: '#94a3b8',
+                  callback: function(val) { return val + '%'; }
+                } 
+              }
+            }
+          }
         });
       }
 
-      const activePlannedSet = new Set();
-      activeFilteredPlans.forEach(p => {
-        const key = String(p.po || p.po_number || p["po number"] || p["mã po"] || p.style || p.product_code || p.product_name || "").trim().toUpperCase();
-        if (key && key !== "-" && key !== "0") {
-          activePlannedSet.add(key);
-        }
-      });
-      const activeTotalPlanned = activePlannedSet.size > 0 ? activePlannedSet.size : activeFilteredPlans.length;
+      // B. FDR by Factory
+      const sortedFactoryFDR = Object.entries(factoryFDRMap).map(([factory, data]) => {
+        return {
+          factory,
+          fdr: Number(data.samples > 0 ? ((data.defects / data.samples) * 100).toFixed(2) : 0)
+        };
+      }).sort((a, b) => b.fdr - a.fdr);
 
-      if (document.getElementById('kpi-total')) {
-        document.getElementById('kpi-total').textContent = activeTotalPlanned;
-      }
-      if (document.getElementById('kpi-total-sub')) {
-        document.getElementById('kpi-total-sub').textContent = `Tổng số PO cần kiểm`;
-      }
-      document.getElementById('table-counter').textContent = `Hiển thị: ${filteredCount} kết quả`;
+      const facCtx = document.getElementById('factoryFDRChart')?.getContext('2d');
+      if (facCtx) {
+        if (factoryFDRChartInstance) factoryFDRChartInstance.destroy();
 
-      // Render components
-      renderIssueBreakdown(issueStats);
+        // 🎨 Create Capsule/Bar Gradients (30% desaturated, 30% darker)
+        // Standard FDR (<4.0%): Modern Dusty Blue gradient
+        const barGradNormal = facCtx.createLinearGradient(0, 0, 0, 200);
+        barGradNormal.addColorStop(0, '#425a94');
+        barGradNormal.addColorStop(1, '#233359');
+
+        // Alert FDR (>=4.0%): Dusty Burgundy gradient
+        const barGradAlert = facCtx.createLinearGradient(0, 0, 0, 200);
+        barGradAlert.addColorStop(0, '#803748');
+        barGradAlert.addColorStop(1, '#4b1722');
+
+        const backgroundColors = sortedFactoryFDR.map(f => f.fdr > 4.0 ? barGradAlert : barGradNormal);
+
+        factoryFDRChartInstance = new Chart(facCtx, {
+          type: 'bar',
+          data: {
+            labels: sortedFactoryFDR.map(f => f.factory),
+            datasets: [{
+              label: 'FDR %',
+              data: sortedFactoryFDR.map(f => f.fdr),
+              backgroundColor: backgroundColors,
+              borderRadius: 8,
+              borderWidth: 0,
+              barPercentage: 0.52
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                titleColor: '#1e293b',
+                bodyColor: '#475569',
+                borderColor: 'rgba(226, 232, 240, 0.8)',
+                borderWidth: 1,
+                padding: 10,
+                boxPadding: 4,
+                cornerRadius: 12,
+                titleFont: { family: 'Plus Jakarta Sans', size: 10, weight: 'bold' },
+                bodyFont: { family: 'Plus Jakarta Sans', size: 10 },
+                callbacks: {
+                  label: function(context) { return ` FDR: ${context.parsed.y.toFixed(2)}%`; }
+                }
+              }
+            },
+            scales: {
+              x: { 
+                grid: { display: false }, 
+                ticks: { font: { size: 9, family: 'Plus Jakarta Sans' }, color: '#94a3b8' } 
+              },
+              y: { 
+                grid: { color: '#f1f5f9', drawBorder: false }, 
+                ticks: { 
+                  font: { size: 9, family: 'Plus Jakarta Sans' }, 
+                  color: '#94a3b8',
+                  callback: function(val) { return val + '%'; }
+                } 
+              }
+            }
+          }
+        });
+      }
+
+      // Render other components
       renderTopDefectiveProducts(prodDefectMap);
       renderFactoryFPR(factoryAttemptsMap);
-      renderDonutChart(passCount, failCount, pendingCount);
       renderTable(dataList);
     }
 
     function renderIssueBreakdown(stats) {
-      const container = document.getElementById('issue-bars-container');
+      const container = document.getElementById('issue-mini-bars');
+      const emptyEl = document.getElementById('issue-bars-empty');
       if (!container) return;
 
       const issues = Object.keys(stats);
       if (issues.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 font-medium">Không ghi nhận lỗi ngoại quan nào.</div>`;
+        if (emptyEl) { emptyEl.textContent = 'Không ghi nhận lỗi ngoại quan nào.'; emptyEl.style.display = 'block'; }
+        container.innerHTML = '';
         return;
       }
+      if (emptyEl) emptyEl.style.display = 'none';
 
       const totalIssues = Object.values(stats).reduce((a, b) => a + b, 0);
       const list = issues.map(name => {
         const count = stats[name];
-        const pct = Math.round((count / totalIssues) * 100);
+        const pct = totalIssues > 0 ? Math.round((count / totalIssues) * 100) : 0;
         return { name, count, pct };
       }).sort((a, b) => b.count - a.count).slice(0, 5);
 
-      const palette = ["bg-indigo-400", "bg-sky-400", "bg-purple-400", "bg-amber-400", "bg-emerald-400"];
+      const maxCount = list[0]?.count || 1;
 
-      container.innerHTML = list.map((item, idx) => {
-        const colorClass = palette[idx % palette.length];
+      const gradients = [
+        'linear-gradient(90deg, #6366f1, #818cf8)',
+        'linear-gradient(90deg, #06b6d4, #22d3ee)',
+        'linear-gradient(90deg, #8b5cf6, #a78bfa)',
+        'linear-gradient(90deg, #f59e0b, #fbbf24)',
+        'linear-gradient(90deg, #10b981, #34d399)'
+      ];
+
+      container.innerHTML = list.map((item, i) => {
+        const barWidth = Math.max(Math.round((item.count / maxCount) * 100), 12);
+        const gradient = gradients[i % gradients.length];
+        const rank = i + 1;
         return `
-          <div class="space-y-1">
-            <div class="flex justify-between items-center text-xs font-semibold text-slate-600">
-              <span class="text-slate-800 font-bold">${item.name}</span>
-              <div class="text-slate-400 text-[11px]">
-                <span class="text-slate-700 font-extrabold">${item.count} lần</span> (${item.pct}%)
-              </div>
+          <div class="defect-row flex items-center gap-3">
+            <span class="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center text-[9px] font-extrabold text-slate-500 shrink-0">${rank}</span>
+            <span class="w-[100px] truncate text-[11px] text-slate-700 font-bold shrink-0" title="${item.name}">${item.name.length > 14 ? item.name.substring(0, 13) + '…' : item.name}</span>
+            <div class="flex-1 h-[8px] bg-slate-100/80 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bar-animate" style="width:${barWidth}%; background:${gradient}"></div>
             </div>
-            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-              <div class="${colorClass} h-full rounded-full transition-all duration-1000" style="width: ${item.pct}%"></div>
-            </div>
+            <span class="text-[11px] text-slate-700 font-extrabold shrink-0 w-[24px] text-right">${item.count}</span>
+            <span class="text-[10px] text-slate-400 font-semibold shrink-0 w-[32px] text-right">${item.pct}%</span>
           </div>
         `;
-      }).join("");
+      }).join('');
     }
 
     function renderTopDefectiveProducts(prodDefectMap) {
@@ -648,22 +1167,43 @@
       }).sort((a, b) => b.defectRate - a.defectRate).slice(0, 5);
 
       container.innerHTML = list.map(item => {
-        let colorClass = "bg-rose-400";
-        if (item.defectRate <= 2.5) colorClass = "bg-emerald-400";
-        else if (item.defectRate <= 4.0) colorClass = "bg-amber-400";
+        // Parse fabric color
+        const colorInfo = getActualProductColorHex(item.colorVal || item.name);
+        const borderStyle = colorInfo.hasBorder ? 'border border-slate-200' : 'border border-transparent';
+
+        let badgeColorClass = "bg-rose-500/10 text-rose-600 border border-rose-500/20";
+        if (item.defectRate <= 2.5) badgeColorClass = "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20";
+        else if (item.defectRate <= 4.0) badgeColorClass = "bg-amber-500/10 text-amber-600 border border-amber-500/20";
+
+        // Display format: [Product Name] - [Pill Dot] [Color Name]
+        let prodOnly = item.name;
+        let formattedColor = "Khác";
+
+        if (item.colorVal) {
+          const suffix = " - " + item.colorVal;
+          if (prodOnly.toUpperCase().endsWith(suffix.toUpperCase())) {
+            prodOnly = prodOnly.substring(0, prodOnly.length - suffix.length);
+          }
+          formattedColor = item.colorVal.trim().toLowerCase().replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+        } else {
+          const parts = item.name.split(" - ");
+          if (parts.length > 1) {
+            prodOnly = parts[0].trim();
+            const colorVal = parts[1].trim();
+            formattedColor = colorVal.toLowerCase().replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+          }
+        }
 
         return `
-          <div class="space-y-1 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 hover:border-slate-200/80 transition-colors">
-            <div class="flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-800 font-extrabold">${item.name}</span>
-              <span class="text-[11px] text-slate-500 font-bold">${item.defectRate}% FDR <span class="text-slate-400 font-normal">(${item.defects} lỗi / ${item.samples} mẫu)</span></span>
+          <div class="p-2.5 rounded-xl border border-slate-100/60 hover:border-indigo-200/40 hover:bg-indigo-50/30 transition-all duration-200 flex justify-between items-center text-[11px] gap-2">
+            <div class="flex items-center gap-1.5 truncate max-w-[170px]">
+              <span class="text-slate-800 font-extrabold truncate" title="${item.name}">${prodOnly}</span>
+              <span class="w-[18px] h-[8px] rounded-full shrink-0 ${borderStyle} shadow-[0_1px_2px_rgba(0,0,0,0.12)] inline-block" style="background-color: ${colorInfo.hex}"></span>
+              <span class="text-slate-400 font-medium truncate text-[9px]" title="${formattedColor}">${formattedColor}</span>
             </div>
-            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-              <div class="${colorClass} h-full rounded-full transition-all duration-1000" style="width: ${Math.min(item.defectRate * 10, 100)}%"></div>
-            </div>
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-medium px-0.5 mt-0.5">
-              <span>Đợt kiểm lỗi: ${item.failCount}/${item.totalRuns} đợt</span>
-              <span class="font-bold ${item.defectRate > 4.0 ? 'text-rose-500' : (item.defectRate > 2.5 ? 'text-amber-500' : 'text-emerald-500')}">${item.defectRate > 4.0 ? "🚨 Cảnh báo chất lượng" : (item.defectRate > 2.5 ? "⚠️ Theo dõi" : "✓ Đạt chuẩn AQL")}</span>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-[8px] text-slate-400 font-semibold">${item.failCount}/${item.totalRuns}</span>
+              <span class="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold ${badgeColorClass}">${item.defectRate}%</span>
             </div>
           </div>
         `;
@@ -691,97 +1231,32 @@
       }).sort((a, b) => a.fpr - b.fpr).slice(0, 5); // lowest First Pass Rate first
 
       container.innerHTML = list.map(item => {
-        let colorClass = "bg-rose-400";
-        if (item.fpr >= 90) colorClass = "bg-emerald-400";
-        else if (item.fpr >= 75) colorClass = "bg-amber-400";
+        let dotColorClass = "bg-rose-400";
+        let badgeColorClass = "bg-rose-500/10 text-rose-600 border border-rose-500/20";
+        if (item.fpr >= 90) {
+          dotColorClass = "bg-emerald-400";
+          badgeColorClass = "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20";
+        } else if (item.fpr >= 75) {
+          dotColorClass = "bg-amber-400";
+          badgeColorClass = "bg-amber-500/10 text-amber-600 border border-amber-500/20";
+        }
 
         return `
-          <div class="space-y-1 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 hover:border-slate-200/80 transition-colors">
-            <div class="flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-800 font-bold">${item.name}</span>
-              <span class="text-[11px] text-slate-400 font-medium">Đơn hàng kiểm: ${item.total} PO</span>
+          <div class="p-2.5 rounded-xl border border-slate-100/60 hover:border-amber-200/40 hover:bg-amber-50/20 transition-all duration-200 flex justify-between items-center text-[11px] gap-2">
+            <div class="flex items-center gap-2 truncate max-w-[150px]">
+              <span class="w-1.5 h-1.5 rounded-full shrink-0 ${dotColorClass}"></span>
+              <span class="text-slate-700 font-bold truncate text-[10px]" title="${item.name}">${item.name}</span>
             </div>
-            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-              <div class="${colorClass} h-full rounded-full transition-all duration-1000" style="width: ${item.fpr}%"></div>
-            </div>
-            <div class="flex justify-between items-center text-[10px] font-bold px-0.5 mt-0.5">
-              <span class="${item.fpr < 75 ? 'text-rose-500 animate-pulse' : (item.fpr < 90 ? 'text-amber-500' : 'text-emerald-500')}">FPR: ${item.fpr}%</span>
-              <span class="text-slate-400 font-semibold">Đạt lần đầu: ${item.pass}/${item.total}</span>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-[8px] text-slate-400 font-semibold">${item.pass}/${item.total}</span>
+              <span class="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold ${badgeColorClass}">${item.fpr}%</span>
             </div>
           </div>
         `;
       }).join("");
     }
 
-    function renderDonutChart(pass, fail, pending) {
-      const ctx = document.getElementById('donut-chart');
-      if (!ctx) return;
 
-      if (donutChartInstance) {
-        donutChartInstance.destroy();
-      }
-
-      if (pass === 0 && fail === 0 && pending === 0) {
-        donutChartInstance = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Không có dữ liệu'],
-            datasets: [{
-              data: [1],
-              backgroundColor: ['#e2e8f0'],
-              borderWidth: 0
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '75%',
-            plugins: {
-              legend: { display: false },
-              tooltip: { enabled: false }
-            }
-          }
-        });
-        return;
-      }
-
-      donutChartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Đạt (PASS)', 'Không Đạt (FAIL)', 'Chờ duyệt'],
-          datasets: [{
-            data: [pass, fail, pending],
-            backgroundColor: ['#a7f3d0', '#fca5a5', '#cbd5e1'],
-            hoverBackgroundColor: ['#86efac', '#fda4af', '#cbd5e1'],
-            borderWidth: 0,
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '75%',
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(15, 23, 42, 0.9)',
-              padding: 10,
-              titleFont: { size: 11, weight: 'bold' },
-              bodyFont: { size: 11 },
-              cornerRadius: 12,
-              callbacks: {
-                label: function(context) {
-                  let value = context.raw;
-                  let total = pass + fail + pending;
-                  let pct = Math.round((value / total) * 100);
-                  return ` ${context.label}: ${value} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
-    }
 
     function renderTable(dataList) {
       const tableBody = document.getElementById('table-body');
@@ -950,7 +1425,7 @@
 
       const filtered = allFinalGens.filter(row => {
         // Lọc theo Nhà máy
-        if (factory && row.fob_supplier && row.fob_supplier.trim() !== factory) {
+        if (factory && normalizeFactoryName(row.fob_supplier) !== normalizeFactoryName(factory)) {
           return false;
         }
 
@@ -1001,6 +1476,7 @@
           <title>Đang tải báo cáo...</title>
           <style>
             body {
+      filter: saturate(0.8) !important;
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
               display: flex;
               flex-direction: column;
@@ -1158,7 +1634,18 @@
           meas_result: measPass ? "PASS" : "FAIL",
 
           app_qty: s.app_total_qty || 0,
-          app_rate: s.app_defect_rate ? (parseFloat(s.app_defect_rate) * 100).toFixed(2) + "%" : "0.00%",
+          app_rate: (() => {
+            const rawRate = parseFloat(s.app_defect_rate || 0);
+            if (rawRate > 1.0) {
+              const totalQty = parseInt(s.app_total_qty || 0, 10);
+              const sampleSize = parseInt(s.sample_size || 0, 10);
+              if (sampleSize > 0) {
+                return ((totalQty / sampleSize) * 100).toFixed(2) + "%";
+              }
+              return "0.00%";
+            }
+            return (rawRate * 100).toFixed(2) + "%";
+          })(),
           app_cause: s.app_cause || "",
           app_impact: aImpactStr,
           app_result: appPass ? "PASS" : "FAIL",
@@ -1269,11 +1756,12 @@
           <meta charset="utf-8">
           <base href="${baseUrl}">
           <title>Garment Inspection Report - Final - ${escapeHtml(generalId)}</title>
-          <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
           <style>
             *{box-sizing:border-box}
-            body{
-              font-family:'Google Sans',Arial,Helvetica,sans-serif;
+            body {
+      filter: saturate(0.8) !important;
+              font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;
               color:#222;
               margin:0;
               background:#fff;
@@ -1435,7 +1923,7 @@
             }
             .pdf-footer-right{
               text-align:right;
-              font-family:'Google Sans',Arial, Helvetica, sans-serif;
+              font-family:'Plus Jakarta Sans',Arial, Helvetica, sans-serif;
               font-size:12px;
               font-weight:500;
               letter-spacing:.4px;
@@ -1634,6 +2122,7 @@
             <title>Lỗi tải báo cáo</title>
             <style>
               body {
+      filter: saturate(0.8) !important;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 display: flex;
                 flex-direction: column;

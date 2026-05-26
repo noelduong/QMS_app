@@ -1,0 +1,82 @@
+﻿Ah! Yes, the PowerShell script was run, but because `$fabricContent` was already modified by a previous run or matched the wrong thing, it broke the file.
+
+Let's write a robust, clean PowerShell script to rebuild `placeholders/fabric_testing.html` from scratch using `Index_GAS.html`.
+Wait, why don't we do it by:
+1. Copying the structure and style of `fabric_testing.html` (the CSS and HTML head).
+2. Appending the correct CSS from `Index_GAS.html` to the style block.
+3. Replacing the container contents with:
+   - Control Bar (with clean view toggle)
+   - Premium Tab Navigation
+   - Premium History Card (Stats summary, filter bar, charts grid, history table)
+   - Main Report Card Document
+   - Toast notification
+4. Injecting the QMS_API script block.
+5. Injecting the main logic script block.
+6. Applying the desaturated, modern color tokens to the CSS and JS charts.
+
+Let's design the PowerShell script precisely:
+We want to read `Index_GAS.html` and extract specific sections.
+Let's find the exact markers in `Index_GAS.html` for extraction:
+1. **Tabs Navigation HTML**:
+   Starts at: `<!-- Premium Tab Navigation -->`
+   Ends at: `</div>` before `<!-- Premium History Card` (actually, right before `<!-- Premium History Card (Dá»¯ liá»‡u Ä‘Ã£ Ä‘o) -->`).
+2. **History Card HTML**:
+   Starts at: `<!-- Premium History Card (Dá»¯ liá»‡u Ä‘Ã£ Ä‘o) -->`
+   Ends at: `</div>` before `<!-- Main Report Card Document -->` (actually, right before `<!-- Main Report Card Document -->`).
+3. **Report Card HTML**:
+   Starts at: `<!-- Main Report Card Document -->`
+   Ends at: `</div>` before `<!-- Notification Toast -->` (which is around line 1183).
+4. **Toast HTML**:
+   Starts at: `<!-- Notification Toast -->`
+   Ends at: the next line (`<div id="toast" class="toast">...</div>`).
+5. **QMS API Client Script**:
+   Starts at: `<script>` after `<!-- Central QMS Portal Client API -->` (line 1190).
+   Ends at: `</script>` (line 1234).
+6. **Main Javascript Logic Script**:
+   Starts at: `<script>` after the API script (line 1235).
+   Ends at: `</
+<truncated 6943 bytes>
+Analysis"
+
+# Write out the target file
+[System.IO.File]::WriteAllText($targetFile, $fabricContent)
+
+Write-Host "Rebuild fabric_testing.html complete!"
+```
+
+Wait, let's verify if `Index_GAS.html` actually has `(?s)<!-- Central QMS Portal Client API -->.*?<script>.*?</script>.*?<script>(.*?)</script>`.
+Yes, because:
+- The first script block is the API wrapper (lines 1190-1234).
+- The second script block is the onload and page logic (lines 1235-2227).
+Let's double check if there are any other script tags in `Index_GAS.html`.
+Wait, in `Index_GAS.html`, let's search for `<script>` using the previous grep search results:
+- Line 1190: `<script>` (starts the API wrapper)
+- Line 1235: `<script>` (starts the page logic)
+Yes! These are the only two script tags in the entire body of `Index_GAS.html`. So the pattern matching is correct.
+
+Wait! Let's double check the regex for `$mainScriptPattern` and `$apiScriptPattern`.
+Let's make sure the regex matches perfectly.
+Let's write a powershell script to create the file and run it.
+But wait! Let's verify:
+Does `fabric_testing.html` already have any duplicate style blocks or text from previous attempts?
+Yes! Since the styles in `fabric_testing.html` currently do NOT contain the tab styles, our replacement `(?s)(</style>)` with `\n$tabStyles\n$1` will successfully append the tab styles.
+Wait, let's check what styles are currently in `fabric_testing.html`.
+Let's read `fabric_testing.html` around line 590 to make sure the style tag ends exactly with `</style>`.
+In `view_file` output:
+```html
+    </style>
+  </head>
+```
+Wait! On line 594 it has `</style>`.
+And on line 561-598:
+```html
+      @media print {
+...
+      }
+    </style>
+```
+So yes, it ends exactly with `</style>`.
+Wait! If we run the script, will it replace the correct stylesheet? Yes.
+Let's write this script to `d:\QC_APP\scratch\rebuild_fabric_testing.ps1` using the `write_to_file` tool.
+Wait, we should write the script first, and then execute it using the `run_command` tool.
+Let's create the script.

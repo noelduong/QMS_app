@@ -9,28 +9,56 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   
   <style>
     body {
-      font-family: 'Google Sans', sans-serif;
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      filter: saturate(0.8) !important;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
       min-height: 100vh;
       color: #1e293b;
     }
     
-    /* Modern Glass Cards */
+    /* Modern Solid Cards like Fabric Testing */
     .glass-card {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .glass-card:hover {
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.06);
+      transform: translateY(-2px);
+      box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.05);
+      border-color: rgba(92, 112, 153, 0.25);
+    }
+
+    /* Muted Blue Theme Overrides to Match Fabric Testing */
+    .bg-indigo-50 { background-color: #f0f3f9 !important; }
+    .text-indigo-600 { color: #5c7099 !important; }
+    .text-indigo-500 { color: #5c7099 !important; }
+    .bg-indigo-600 { background-color: #5c7099 !important; }
+    .hover\:bg-indigo-700:hover { background-color: #48587d !important; }
+    .border-indigo-500\/20 { border-color: rgba(92, 112, 153, 0.2) !important; }
+    .bg-indigo-500\/10 { background-color: rgba(92, 112, 153, 0.1) !important; }
+    .text-indigo-300 { color: #7a8eb8 !important; }
+    .text-indigo-400 { color: #5c7099 !important; }
+    .bg-indigo-50\/50 { background-color: rgba(240, 243, 249, 0.5) !important; }
+    .shadow-indigo-600\/10 { --tw-shadow-color: rgba(92, 112, 153, 0.1) !important; }
+    .shadow-indigo-600\/20 { --tw-shadow-color: rgba(92, 112, 153, 0.2) !important; }
+
+    /* Active inputs focus outline */
+    .premium-input:focus {
+      outline: none;
+      border-color: #5c7099 !important;
+      box-shadow: 0 0 0 4px rgba(92, 112, 153, 0.12) !important;
+    }
+    .premium-input-no-icon:focus {
+      outline: none;
+      border-color: #5c7099 !important;
+      box-shadow: 0 0 0 4px rgba(92, 112, 153, 0.12) !important;
     }
     
     /* Elegant Inputs */
@@ -111,33 +139,22 @@
 </head>
 <body class="p-4 md:p-8 custom-scrollbar">
 
-  <div class="max-w-6xl mx-auto space-y-6">
+  <div class="w-full space-y-6">
     
-    <!-- Title Section -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-          <span class="p-2.5 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-600/20">
-            <i data-feather="corner-down-left" class="w-6 h-6"></i>
-          </span>
-          RETURN ANALYSIS
-        </h1>
-        <p class="text-sm text-slate-500 mt-1 md:ml-1">Hệ thống quản lý và phân tích hàng trả về từ khách hàng.</p>
-      </div>
-      
-      <!-- Navigation Tabs -->
-      <div class="flex bg-slate-200/60 p-1 rounded-xl self-start md:self-auto shrink-0">
-        <button id="tab-input" onclick="switchTab('input')" class="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-700 bg-white shadow-sm">
-          <i data-feather="edit-3" class="w-3.5 h-3.5"></i> 1. Nhập
+    <!-- Top Tabs Row (Synced with other dashboards) -->
+    <div class="flex justify-end mb-2">
+      <div class="flex bg-slate-200/60 p-1 rounded-xl shrink-0">
+        <button id="tab-analysis" onclick="switchTab('analysis')" class="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-700 bg-white shadow-sm">
+          <i data-feather="bar-chart-2" class="w-3.5 h-3.5"></i> 1. Return Analysis
         </button>
-        <button id="tab-analysis" onclick="switchTab('analysis')" class="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-500 hover:text-slate-700">
-          <i data-feather="bar-chart-2" class="w-3.5 h-3.5"></i> 2. Return Analysis
+        <button id="tab-input" onclick="switchTab('input')" class="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all text-slate-500 hover:text-slate-700">
+          <i data-feather="edit-3" class="w-3.5 h-3.5"></i> 2. Input Data
         </button>
       </div>
     </div>
 
     <!-- TAB 1: NHẬP DỮ LIỆU CONTENT -->
-    <div id="content-input" class="space-y-6">
+    <div id="content-input" class="hidden space-y-6">
       
       <div class="flex justify-end">
         <!-- Date Picker Float -->
@@ -230,12 +247,24 @@
                 </select>
               </div>
 
-              <div class="md:col-span-2">
+              <div>
                 <label class="premium-label">
                   <i data-feather="plus-square" class="w-3.5 h-3.5 text-indigo-500"></i>
                   Số lượng lỗi (Quantity)
                 </label>
                 <input id="quantity" type="number" min="1" step="1" placeholder="Ví dụ: 5" class="premium-input-no-icon" />
+              </div>
+
+              <div>
+                <label class="premium-label">
+                  <i data-feather="message-square" class="w-3.5 h-3.5 text-indigo-500"></i>
+                  Ghi chú (Note)
+                </label>
+                <select id="note" class="premium-input-no-icon cursor-pointer">
+                  <option value="">-- Chọn ghi chú --</option>
+                  <option value="Hoàn về Nhà Máy">Hoàn về Nhà Máy</option>
+                  <option value="Lưu Kho">Lưu Kho</option>
+                </select>
               </div>
 
               <div class="md:col-span-3">
@@ -255,55 +284,55 @@
         <div class="space-y-6">
           
           <!-- Master Autofill Card -->
-          <div class="glass-card rounded-3xl p-6 space-y-4 bg-slate-900 text-slate-100 border-none relative overflow-hidden">
+          <div class="glass-card rounded-3xl p-6 space-y-4 bg-gradient-to-br from-[#4f5b73] via-[#3c475c] to-[#2b3342] text-slate-100 border-none relative overflow-hidden">
             
             <!-- Subtle Glow Background -->
             <div class="absolute -right-16 -top-16 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
             
-            <div class="flex items-center gap-2 pb-2 border-b border-slate-800">
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-700/60">
               <span class="w-2 h-2 bg-indigo-400 rounded-full"></span>
-              <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wider">3. TRA CỨU TỰ ĐỘNG MASTER</h2>
+              <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider">3. TRA CỨU TỰ ĐỘNG MASTER</h2>
             </div>
 
             <div class="space-y-3">
               
               <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Mã PO</label>
+                <label class="text-[11px] font-semibold text-slate-300 block mb-1">Mã PO</label>
                 <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                     <i data-feather="hash" class="w-3.5 h-3.5"></i>
                   </span>
-                  <input id="po" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
+                  <input id="po" type="text" readonly class="w-full bg-slate-950/20 border border-slate-700/50 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
                 </div>
               </div>
 
               <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Supplier / Nhà cung cấp</label>
+                <label class="text-[11px] font-semibold text-slate-300 block mb-1">Supplier / Nhà cung cấp</label>
                 <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                     <i data-feather="briefcase" class="w-3.5 h-3.5"></i>
                   </span>
-                  <input id="supplier" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
+                  <input id="supplier" type="text" readonly class="w-full bg-slate-950/20 border border-slate-700/50 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
                 </div>
               </div>
 
               <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Đơn giá (Unit Price)</label>
+                <label class="text-[11px] font-semibold text-slate-300 block mb-1">Đơn giá (Unit Price)</label>
                 <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                     <i data-feather="dollar-sign" class="w-3.5 h-3.5"></i>
                   </span>
-                  <input id="unitPrice" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
+                  <input id="unitPrice" type="text" readonly class="w-full bg-slate-950/20 border border-slate-700/50 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 focus:outline-none" placeholder="Đang chờ..." />
                 </div>
               </div>
 
               <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Mã lỗi Preview (ID Preview)</label>
+                <label class="text-[11px] font-semibold text-slate-300 block mb-1">Mã lỗi Preview (ID Preview)</label>
                 <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                     <i data-feather="info" class="w-3.5 h-3.5"></i>
                   </span>
-                  <input id="idPreview" type="text" readonly class="w-full bg-slate-950/40 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-[11px] text-slate-300 font-mono focus:outline-none" placeholder="Auto-generated..." />
+                  <input id="idPreview" type="text" readonly class="w-full bg-slate-950/20 border border-slate-700/50 rounded-xl pl-9 pr-3 py-2 text-[11px] text-slate-300 font-mono focus:outline-none" placeholder="Auto-generated..." />
                 </div>
               </div>
 
@@ -369,6 +398,7 @@
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Fabric (Vải)</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Defect (Loại lỗi)</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Qty</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Ghi chú</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Mã PO</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Supplier</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Đơn giá</th>
@@ -377,7 +407,7 @@
             </thead>
             <tbody id="queueBody" class="divide-y divide-slate-100">
               <tr>
-                <td colspan="11" class="py-8 text-center text-sm text-slate-400 font-medium">Chưa có sản phẩm lỗi nào trong danh sách chờ gửi.</td>
+                <td colspan="12" class="py-8 text-center text-sm text-slate-400 font-medium">Chưa có sản phẩm lỗi nào trong danh sách chờ gửi.</td>
               </tr>
             </tbody>
           </table>
@@ -388,122 +418,202 @@
     </div>
 
     <!-- TAB 2: RETURN ANALYSIS & REPORT CONTENT -->
-    <div id="content-analysis" class="hidden space-y-6">
+    <div id="content-analysis" class="space-y-6">
       
-      <!-- Stats / KPIs Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Filters Single Pill -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-white/95 backdrop-blur-md border border-slate-200/70 rounded-full px-6 py-2.5 shadow-sm max-w-full">
+        <div class="flex flex-wrap items-center gap-4 flex-1">
+          <!-- Search input portion -->
+          <div class="flex items-center gap-2 text-slate-400 flex-1 min-w-[180px]">
+            <i data-feather="search" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+            <input id="analysisSearch" type="text" placeholder="Tìm Style, PO, NCC..." class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none w-full focus:ring-0" oninput="renderHistoricalData()" />
+          </div>
+
+          <!-- Vertical Divider -->
+          <div class="hidden md:block h-4 w-[1px] bg-slate-200"></div>
+
+          <!-- Defect Type filter portion -->
+          <div class="flex items-center gap-2 text-slate-400 min-w-[150px]">
+            <i data-feather="alert-circle" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+            <div class="relative w-full">
+              <select id="analysisDefectFilter" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none w-full focus:ring-0" onchange="renderHistoricalData()">
+                <option value="">-- Tất cả loại lỗi --</option>
+                <option value="Production">Sản xuất (Production)</option>
+                <option value="In-Use">Sử dụng (In-Use)</option>
+                <option value="Others">Khác (Others)</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+                <i data-feather="chevron-down" class="w-3 h-3"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vertical Divider -->
+          <div class="hidden lg:block h-4 w-[1px] bg-slate-200"></div>
+
+          <!-- Date Filters Portion -->
+          <div class="flex items-center gap-2 text-slate-400">
+            <i data-feather="calendar" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+            <div class="flex items-center gap-1.5">
+              <input id="analysisStartDate" type="date" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer" onchange="renderHistoricalData()" />
+              <span class="text-[9px] font-black text-slate-400 uppercase text-center w-4">đến</span>
+              <input id="analysisEndDate" type="date" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer" onchange="renderHistoricalData()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2 shrink-0 border-l border-slate-200 pl-4">
+          <button onclick="clearFilters()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all shadow-sm" title="Xóa bộ lọc">
+            <i data-feather="x-circle" class="w-4 h-4"></i>
+          </button>
+          
+          <button onclick="loadHistoricalData()" class="w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center transition-all shadow-md" title="Làm mới dữ liệu">
+            <i data-feather="refresh-cw" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Total Quantity KPI -->
-        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
-          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
-          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng sản phẩm lỗi</span>
-            <div class="text-3xl font-extrabold text-slate-900 leading-none" id="stat-total-qty">0</div>
-            <div class="min-h-[18px] flex items-end">
-              <span class="text-[11px] text-indigo-500 font-semibold leading-none">Sản phẩm bị lỗi trả về</span>
+        <!-- Left Column: Giant Dark Card + 3 Small washed KPI Cards (8/12 width) -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+          
+          <!-- Giant Dark Card -->
+          <div class="rounded-[24px] p-6 flex flex-col justify-between min-h-[220px] relative overflow-hidden bg-gradient-to-br from-[#4f5b73] via-[#3c475c] to-[#2b3342] border border-slate-700/60 shadow-xl text-white">
+            <!-- Subtle wave graph inside the dark card -->
+            <div class="absolute right-6 top-8 w-44 h-24 opacity-25 pointer-events-none">
+              <svg class="w-full h-full" viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 45 C15 35, 25 15, 45 30 C65 45, 80 5, 100 15" stroke="#5c7099" stroke-width="3" stroke-linecap="round"/>
+                <path d="M0 45 C15 35, 25 15, 45 30 C65 45, 80 5, 100 15 L100 50 L0 50 Z" fill="url(#wave-gradient)" opacity="0.1"/>
+                <defs>
+                  <linearGradient id="wave-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#5c7099"/>
+                    <stop offset="100%" stop-color="#5c7099" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <div>
+              <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest block">THIỆT HẠI TÀI CHÍNH DO HÀNG LỖI HOÀN VỀ</span>
+              <div id="stat-total-val" class="text-4xl sm:text-5xl font-black text-rose-300 tracking-tight leading-none mt-4">0 ₫</div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-700/60">
+              <span class="text-[11px] text-slate-300 font-medium">Chi phí tổn thất ước tính dựa trên đơn giá sản phẩm master</span>
+              <div class="flex items-center gap-2">
+                <button onclick="switchTab('input')" class="px-4 py-2 bg-slate-700/40 hover:bg-slate-700/60 text-slate-100 font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5 border border-slate-600/50">
+                  <i data-feather="plus" class="w-3.5 h-3.5"></i> Nhập dữ liệu mới
+                </button>
+              </div>
             </div>
           </div>
-          <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm shadow-indigo-600/5 shrink-0">
-            <i data-feather="package" class="w-6 h-6"></i>
+
+          <!-- 3 Small washed KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            
+            <!-- Card 1: Lavender / Muted Periwinkle washed -->
+            <div class="rounded-2xl p-5 flex flex-col justify-between min-h-[130px] border border-[#dce4f2] bg-[#f0f4fc]">
+              <div>
+                <span class="text-[10px] font-bold text-[#4c5b7f] uppercase tracking-wider block">TỔNG SẢN PHẨM LỖI</span>
+                <div id="stat-total-qty" class="text-3xl font-black text-[#32456e] mt-2 leading-none">0</div>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold mt-4 block">Sản phẩm lỗi trả về</span>
+            </div>
+
+            <!-- Card 2: Sage Green washed -->
+            <div class="rounded-2xl p-5 flex flex-col justify-between min-h-[130px] border border-[#d1ebd9] bg-[#f0faf4]">
+              <div>
+                <span class="text-[10px] font-bold text-[#3d6b4d] uppercase tracking-wider block">TỔNG LỖI SẢN XUẤT</span>
+                <div id="stat-prod-defects" class="text-3xl font-black text-[#2e5e40] mt-2 leading-none">0 pcs</div>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold mt-4 block">Số lượng do sản xuất</span>
+            </div>
+
+            <!-- Card 3: Orange/Peach washed -->
+            <div class="rounded-2xl p-5 flex flex-col justify-between min-h-[130px] border border-[#fbdcb2] bg-[#fffaf0] relative overflow-hidden">
+              <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="stat-defect-glow"></div>
+              <div>
+                <span class="text-[10px] font-bold text-[#8f521b] uppercase tracking-wider block relative z-10">TỶ LỆ LỖI SẢN XUẤT</span>
+                <div id="stat-defect-rate-sub" class="text-3xl font-black text-[#8f521b] mt-2 leading-none relative z-10">0%</div>
+                <div id="stat-defect-alert-sub" class="text-[10px] font-bold text-[#8f521b] mt-2.5 leading-tight relative z-10">✓ Đang tính toán...</div>
+              </div>
+              <!-- Keep hidden fields for compatibility -->
+              <div id="stat-defect-icon-container" class="hidden"><i id="stat-defect-icon"></i></div>
+              <span class="text-[10px] text-slate-400 font-semibold mt-4 block relative z-10">Tỷ trọng lỗi sản xuất</span>
+            </div>
+
           </div>
+
         </div>
 
-        <!-- Total Financial Value KPI -->
-        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
-          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
-          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Thiệt hại tài chính</span>
-            <div class="text-2xl font-extrabold text-slate-900 leading-none" id="stat-total-val">0 ₫</div>
-            <div class="min-h-[18px] flex items-end">
-              <span class="text-[11px] text-emerald-600 font-semibold leading-none">Theo đơn giá sản phẩm</span>
+        <!-- Right Column: Vertical stacked insights (4/12 width) -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+          
+          <!-- Upper Card: Sản Phẩm Lỗi Cao -->
+          <div class="glass-card rounded-[24px] p-6 flex flex-col justify-between bg-white border border-[#cbd5e1] flex-1 min-h-[175px]">
+            <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+                <i data-feather="alert-triangle" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">SẢN PHẨM LỖI CAO</h4>
+                <p class="text-[9px] text-slate-400 font-bold mt-0.5 uppercase tracking-wide">Tỷ lệ lỗi AQL cao nhất</p>
+              </div>
+            </div>
+            <div id="insight-severe-list" class="space-y-2.5 mt-3 overflow-y-auto max-h-[140px] custom-scrollbar flex-1">
+              <div class="text-slate-400 text-xs font-medium py-4 text-center">Đang thống kê...</div>
             </div>
           </div>
-          <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shadow-emerald-600/5 shrink-0">
-            <i data-feather="dollar-sign" class="w-6 h-6"></i>
-          </div>
-        </div>
 
-        <!-- Defect Ratio KPI -->
-        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
-          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="stat-defect-glow"></div>
-          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng Lỗi Sản Xuất</span>
-            <div class="flex items-baseline gap-2 leading-none">
-              <span class="text-3xl font-extrabold text-slate-900" id="stat-prod-defects">0 pcs</span>
-              <span class="text-[11px] font-bold text-slate-400" id="stat-defect-rate-sub">Rate: 0%</span>
+          <!-- Lower Card: Nhà Máy FPR Thấp -->
+          <div class="glass-card rounded-[24px] p-6 flex flex-col justify-between bg-white border border-[#cbd5e1] flex-1 min-h-[175px]" id="stat-top-supplier-card">
+            <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div id="stat-top-supplier-icon-container" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+                <i data-feather="home" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">NHÀ MÁY LỖI NHIỀU NHẤT</h4>
+                <p class="text-[9px] text-slate-400 font-bold mt-0.5 uppercase tracking-wide">Cần cải thiện năng lực kiểm lỗi</p>
+              </div>
             </div>
-            <div class="min-h-[18px] flex items-end">
-              <span class="text-[10px] font-black tracking-wide leading-none block" id="stat-defect-alert-sub">✓ Đang tính toán...</span>
+            <div class="mt-4 flex-1 flex flex-col justify-center min-h-[90px] relative">
+              <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="stat-top-supplier-glow"></div>
+              <div id="stat-top-supplier" class="text-2xl font-black text-slate-800 leading-none truncate max-w-full">N/A</div>
+              <div id="stat-top-supplier-sub" class="text-xs font-bold text-slate-400 mt-2 block truncate">Chưa có dữ liệu nhà máy</div>
             </div>
           </div>
-          <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm transition-all duration-300 shrink-0" id="stat-defect-icon-container">
-            <i data-feather="alert-circle" id="stat-defect-icon" class="w-6 h-6"></i>
-          </div>
-        </div>
 
-        <!-- Top Defective Factory KPI -->
-        <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="stat-top-supplier-card">
-          <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="stat-top-supplier-glow"></div>
-          <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Nhà máy lỗi nhiều nhất</span>
-            <div class="text-2xl font-extrabold text-slate-500 leading-none truncate max-w-[170px]" id="stat-top-supplier">N/A</div>
-            <div class="min-h-[18px] flex items-end">
-              <span class="text-[11px] text-slate-400 font-semibold leading-none" id="stat-top-supplier-sub">Chưa có dữ liệu</span>
-            </div>
-          </div>
-          <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0" id="stat-top-supplier-icon-container">
-            <i data-feather="home" class="w-6 h-6"></i>
-          </div>
         </div>
 
       </div>
 
-      <!-- Actionable Insights Dashboard -->
+      <!-- Actionable Insights Dashboard (Horizontal Charts & Consumer Insights) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Left Column: Reports Stack (7/12 width) -->
-        <div class="lg:col-span-7 flex flex-col gap-6">
+        <!-- Left Column: Consumer In-Use Insights (7/12 width) -->
+        <div class="lg:col-span-7 glass-card rounded-[24px] p-6 bg-white border border-[#cbd5e1]">
+          <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <div class="p-1.5 bg-[#f0f3f9] text-[#5c7099] rounded-lg">
+              <i data-feather="trending-up" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">INSIGHT TỪ KHÁCH HÀNG (IN-USE)</h3>
+              <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Phân tích lỗi phát sinh sau khi sử dụng/giặt ủi</p>
+            </div>
+          </div>
           
-          <!-- Top highly defective production products -->
-          <div class="glass-card rounded-3xl p-6 space-y-4 border-l-4 border-l-rose-500 relative overflow-hidden flex-1">
-            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-              <div class="p-1.5 bg-rose-50 text-rose-600 rounded-lg">
-                <i data-feather="alert-triangle" class="w-4 h-4 animate-pulse"></i>
-              </div>
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">TOP SẢN PHẨM LỖI SẢN XUẤT CAO</h3>
-                <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Sản phẩm phát hiện lỗi nhiều nhất tại xưởng sản xuất</p>
-              </div>
-            </div>
-            
-            <div id="insight-severe-list" class="space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar">
-              <div class="text-center py-6 text-sm text-slate-400 font-medium">Đang phân tích dữ liệu...</div>
-            </div>
+          <div id="insight-consumer-list" class="space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar mt-4">
+            <div class="text-center py-6 text-sm text-slate-400 font-medium">Đang phân tích dữ liệu...</div>
           </div>
-
-          <!-- Insight từ khách hàng (In-Use) -->
-          <div class="glass-card rounded-3xl p-6 space-y-4 border-l-4 border-l-indigo-500 relative overflow-hidden flex-1">
-            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-              <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-                <i data-feather="trending-up" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">INSIGHT TỪ KHÁCH HÀNG (IN-USE)</h3>
-                <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Phân tích lỗi phát sinh sau khi sử dụng/giặt ủi</p>
-              </div>
-            </div>
-            
-            <div id="insight-consumer-list" class="space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar">
-              <div class="text-center py-6 text-sm text-slate-400 font-medium">Đang phân tích dữ liệu...</div>
-            </div>
-          </div>
-
         </div>
 
-        <!-- Right Column: Factory Defect Chart & Premium HTML Legend (5/12 width) -->
-        <div class="lg:col-span-5 glass-card rounded-3xl p-6 border-l-4 border-l-emerald-500 relative overflow-hidden flex flex-col justify-between">
+        <!-- Right Column: Factory Defect Chart (5/12 width) -->
+        <div class="lg:col-span-5 glass-card rounded-[24px] p-6 bg-white border border-[#cbd5e1] flex flex-col justify-between min-h-[300px]">
           <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-            <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+            <div class="p-1.5 bg-[#f0f3f9] text-[#5c7099] rounded-lg">
               <i data-feather="pie-chart" class="w-4 h-4"></i>
             </div>
             <div>
@@ -512,9 +622,9 @@
             </div>
           </div>
           
-          <div class="relative flex items-center justify-center h-[200px] my-4">
+          <div class="relative flex items-center justify-center h-[170px] my-3">
             <canvas id="factoryChart" class="max-h-full max-w-full"></canvas>
-            <div id="factoryChartEmpty" class="hidden flex flex-col items-center justify-center text-center text-slate-400 space-y-1.5 py-8">
+            <div id="factoryChartEmpty" class="hidden flex flex-col items-center justify-center text-center text-slate-400 space-y-1.5 py-6">
               <div class="p-2 bg-slate-100 text-slate-400 rounded-full">
                 <i data-feather="database" class="w-5 h-5"></i>
               </div>
@@ -522,63 +632,9 @@
             </div>
           </div>
 
-          <!-- Premium Custom HTML Legend list -->
-          <div id="factoryLegendContainer" class="space-y-2 mt-2 pt-2 border-t border-slate-100 max-h-[160px] overflow-y-auto custom-scrollbar">
+          <div id="factoryLegendContainer" class="space-y-2 mt-2 pt-2 border-t border-slate-100 max-h-[120px] overflow-y-auto custom-scrollbar">
             <div class="text-center text-xs text-slate-400 font-medium">Đang tải chú thích...</div>
           </div>
-        </div>
-
-      </div>
-
-      <!-- Filters Panel -->
-      <div class="glass-card rounded-3xl p-5 space-y-4">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          
-          <!-- Search Input -->
-          <div class="relative w-full">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-              <i data-feather="search" class="w-4 h-4"></i>
-            </span>
-            <input id="analysisSearch" type="text" placeholder="Tìm Style, PO, NCC..." class="premium-input" oninput="renderHistoricalData()" />
-          </div>
-
-          <!-- Defect Filter -->
-          <div>
-            <select id="analysisDefectFilter" class="premium-input-no-icon cursor-pointer" onchange="renderHistoricalData()">
-              <option value="">-- Tất cả loại lỗi --</option>
-              <option value="Production">Production (Sản xuất)</option>
-              <option value="In-Use">In-Use (Sử dụng)</option>
-              <option value="Others">Others (Khác)</option>
-            </select>
-          </div>
-
-          <!-- Start Date -->
-          <div class="relative w-full">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
-              <i data-feather="calendar" class="w-4 h-4"></i>
-            </span>
-            <input id="analysisStartDate" type="date" class="premium-input pl-10" onchange="renderHistoricalData()" placeholder="Từ ngày" />
-          </div>
-
-          <!-- End Date -->
-          <div class="relative w-full">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
-              <i data-feather="calendar" class="w-4 h-4"></i>
-            </span>
-            <input id="analysisEndDate" type="date" class="premium-input pl-10" onchange="renderHistoricalData()" placeholder="Đến ngày" />
-          </div>
-
-        </div>
-
-        <div class="flex items-center justify-between border-t border-slate-100 pt-3">
-          <button onclick="clearFilters()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
-            <i data-feather="x-circle" class="w-3.5 h-3.5"></i> Xóa bộ lọc
-          </button>
-          
-          <button onclick="loadHistoricalData()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10">
-            <i data-feather="refresh-cw" class="w-3.5 h-3.5"></i> Làm mới dữ liệu
-          </button>
         </div>
 
       </div>
@@ -610,12 +666,13 @@
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">SL</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Đơn giá</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Thành tiền</th>
+                <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Ghi chú</th>
                 <th class="py-3 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Mô tả chi tiết</th>
               </tr>
             </thead>
             <tbody id="analysisTableBody" class="divide-y divide-slate-100">
               <tr>
-                <td colspan="10" class="py-12 text-center text-sm text-slate-400 font-medium">Đang chờ tải dữ liệu từ Sheets...</td>
+                <td colspan="11" class="py-12 text-center text-sm text-slate-400 font-medium">Đang chờ tải dữ liệu từ Sheets...</td>
               </tr>
             </tbody>
           </table>
@@ -646,10 +703,10 @@
       // Switch tab based on URL query parameter
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
-      if (tabParam === 'analysis') {
-        switchTab('analysis');
-      } else {
+      if (tabParam === 'input') {
         switchTab('input');
+      } else {
+        switchTab('analysis');
       }
 
       feather.replace();
@@ -682,7 +739,7 @@
       const tbody = document.getElementById("analysisTableBody");
       tbody.innerHTML = `
         <tr>
-          <td colspan="10" class="py-12 text-center text-sm text-slate-400 font-medium">
+          <td colspan="11" class="py-12 text-center text-sm text-slate-400 font-medium">
             <div class="flex flex-col items-center gap-3 justify-center">
               <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
               <span>Đang tải dữ liệu từ Google Sheets...</span>
@@ -699,7 +756,7 @@
           } else {
             tbody.innerHTML = `
               <tr>
-                <td colspan="10" class="py-8 text-center text-sm text-rose-500 font-semibold">
+                <td colspan="11" class="py-8 text-center text-sm text-rose-500 font-semibold">
                   Lỗi khi tải dữ liệu: ${res.message || "Không xác định"}
                 </td>
               </tr>
@@ -709,7 +766,7 @@
         .catch(e => {
           tbody.innerHTML = `
             <tr>
-              <td colspan="10" class="py-8 text-center text-sm text-rose-500 font-semibold">
+              <td colspan="11" class="py-8 text-center text-sm text-rose-500 font-semibold">
                 Lỗi kết nối API: ${e.message}
               </td>
             </tr>
@@ -773,7 +830,7 @@
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="10" class="py-12 text-center text-sm text-slate-400 font-medium">Không tìm thấy dữ liệu hàng trả trùng khớp.</td>
+            <td colspan="11" class="py-12 text-center text-sm text-slate-400 font-medium">Không tìm thấy dữ liệu hàng trả trùng khớp.</td>
           </tr>
         `;
         return;
@@ -790,9 +847,12 @@
             <td class="py-3.5 px-4 text-xs font-semibold text-slate-500 font-mono">${idx + 1}</td>
             <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">${escapeHtml(formattedDate)}</td>
             <td class="py-3.5 px-4 text-sm font-bold text-slate-800">${escapeHtml(row.style)}</td>
-            <td class="py-3.5 px-4 text-xs">
-              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded font-medium">${escapeHtml(row.size)}</span>
-              <span class="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded font-medium ml-1">${escapeHtml(row.art)}</span>
+            <td class="py-3.5 px-4 text-xs whitespace-nowrap">
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded font-bold">${escapeHtml(row.size)}</span>
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 text-slate-700 rounded-full font-bold ml-1.5 border border-slate-200/80">
+                <span class="w-2.5 h-2.5 rounded-full border border-slate-300 shadow-sm shrink-0" style="background-color: ${getColorHex(row.art)}"></span>
+                ${escapeHtml(row.art)}
+              </span>
             </td>
             <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">${escapeHtml(row.fabric)}</td>
             <td class="py-3.5 px-4 text-xs">
@@ -804,6 +864,12 @@
             <td class="py-3.5 px-4 text-xs font-bold text-slate-800 text-center">${qty}</td>
             <td class="py-3.5 px-4 text-xs font-bold text-slate-600 text-right">${formatCurrency(price)}</td>
             <td class="py-3.5 px-4 text-xs font-bold text-emerald-600 text-right">${formatCurrency(total)}</td>
+            <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                String(row.note || "").trim() === 'Hoàn về Nhà Máy' ? 'bg-rose-100 text-rose-800' :
+                String(row.note || "").trim() === 'Lưu Kho' ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-800'
+              }">${escapeHtml(row.note || "-")}</span>
+            </td>
             <td class="py-3.5 px-4 text-xs text-slate-500 max-w-[200px] truncate" title="${escapeHtml(row.description)}">${escapeHtml(row.description || "-")}</td>
           </tr>
         `;
@@ -898,7 +964,7 @@
       
       // Tổng lỗi sản xuất & Tỷ lệ lỗi (Rate)
       document.getElementById("stat-prod-defects").textContent = prodCount.toLocaleString("vi-VN") + " pcs";
-      document.getElementById("stat-defect-rate-sub").textContent = `Rate: ${defectRatio}%`;
+      document.getElementById("stat-defect-rate-sub").textContent = `${defectRatio}%`;
       
       const alertSubEl = document.getElementById("stat-defect-alert-sub");
       const iconContainerEl = document.getElementById("stat-defect-icon-container");
@@ -908,21 +974,21 @@
       if (defectRatio > 25) {
         // Trạng thái cảnh báo khi tỷ lệ lỗi vượt quá 25% (Tone màu pastel rose cực đẹp)
         alertSubEl.textContent = "⚠️ Cần phản hồi với nhà máy";
-        alertSubEl.className = "text-[10px] font-black mt-0.5 tracking-wide text-rose-500 animate-pulse";
+        alertSubEl.className = "text-[9px] font-bold mt-1 tracking-wide text-rose-500 animate-pulse";
         
-        iconContainerEl.className = "p-4 bg-rose-100/50 text-rose-500 rounded-2xl shadow-sm shadow-rose-500/10";
+        iconContainerEl.className = "bg-rose-50 text-rose-500 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-rose-100/50 relative z-10";
         iconEl.className = "w-6 h-6";
         iconEl.setAttribute("data-feather", "alert-triangle");
-        glowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+        if (glowEl) glowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
       } else {
         // Trạng thái an toàn dưới hoặc bằng 25% (Tone màu pastel mint cực đẹp)
         alertSubEl.textContent = "✓ Tỷ lệ lỗi trong mức an toàn";
-        alertSubEl.className = "text-[10px] font-black mt-0.5 tracking-wide text-emerald-500";
+        alertSubEl.className = "text-[9px] font-bold mt-1 tracking-wide text-emerald-500";
         
-        iconContainerEl.className = "p-4 bg-emerald-100/50 text-emerald-500 rounded-2xl shadow-sm shadow-emerald-500/10";
+        iconContainerEl.className = "bg-emerald-50 text-emerald-500 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-emerald-100/50 relative z-10";
         iconEl.className = "w-6 h-6";
         iconEl.setAttribute("data-feather", "check-circle");
-        glowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
+        if (glowEl) glowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
       }
       
       const supplierCardEl = document.getElementById("stat-top-supplier");
@@ -938,27 +1004,24 @@
 
         if (topSupplierQty > 20) {
           // Warning/Alert State: Red/Rose
-          supplierCardEl.className = "text-2xl font-extrabold text-rose-600 leading-none truncate max-w-[170px]";
-          supplierSubEl.className = "text-[11px] text-rose-500 font-bold leading-none animate-pulse";
-          if (supplierContainerEl) supplierContainerEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+          supplierCardEl.className = "text-2xl font-black text-rose-500 leading-none mt-1 truncate";
+          supplierSubEl.className = "text-xs font-bold text-rose-500 leading-none mt-2 animate-pulse truncate block";
           if (supplierGlowEl) supplierGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
-          if (supplierIconContainerEl) supplierIconContainerEl.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+          if (supplierIconContainerEl) supplierIconContainerEl.className = "w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0";
         } else {
           // Healthy State: Soft Slate
-          supplierCardEl.className = "text-2xl font-extrabold text-slate-800 leading-none truncate max-w-[170px]";
-          supplierSubEl.className = "text-[11px] text-slate-500 font-semibold leading-none";
-          if (supplierContainerEl) supplierContainerEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-          if (supplierGlowEl) supplierGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-400/5 rounded-full blur-xl pointer-events-none";
-          if (supplierIconContainerEl) supplierIconContainerEl.className = "p-4 bg-slate-100 text-slate-500 rounded-2xl shadow-sm shrink-0";
+          supplierCardEl.className = "text-2xl font-black text-slate-800 leading-none mt-1 truncate";
+          supplierSubEl.className = "text-xs font-bold text-slate-400 mt-2 block truncate";
+          if (supplierGlowEl) supplierGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
+          if (supplierIconContainerEl) supplierIconContainerEl.className = "w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center shrink-0";
         }
       } else {
         supplierCardEl.textContent = "N/A";
-        supplierCardEl.className = "text-2xl font-extrabold text-slate-500 leading-none truncate max-w-[170px]";
+        supplierCardEl.className = "text-2xl font-black text-slate-500 leading-none mt-1 truncate";
         supplierSubEl.textContent = "Chưa có dữ liệu";
-        supplierSubEl.className = "text-[11px] text-slate-400 font-semibold leading-none";
-        if (supplierContainerEl) supplierContainerEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
+        supplierSubEl.className = "text-xs font-semibold text-slate-400 block mt-2 truncate";
         if (supplierGlowEl) supplierGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
-        if (supplierIconContainerEl) supplierIconContainerEl.className = "p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0";
+        if (supplierIconContainerEl) supplierIconContainerEl.className = "w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center shrink-0";
       }
 
       // ---- RENDER INSIGHT 1: TOP SẢN PHẨM LỖI SẢN XUẤT CAO ----
@@ -1169,8 +1232,9 @@
 
     // removeAccents
     function removeAccents(str) {
-      if (!str) return "";
-      return str
+      if (str === null || str === undefined) return "";
+      const s = String(str);
+      return s
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/đ/g, "d")
@@ -1179,8 +1243,10 @@
 
     // cleanFieldForId
     function cleanFieldForId(str) {
-      if (!str) return "";
-      return removeAccents(str)
+      if (str === null || str === undefined) return "";
+      const s = String(str);
+      if (!s) return "";
+      return removeAccents(s)
         .toUpperCase()
         .replace(/[^A-Z0-9-]/g, "") // Chỉ giữ chữ in hoa, số và gạch ngang nếu có
         .replace(/\s+/g, "");        // Viết liền không khoảng trắng
@@ -1247,7 +1313,6 @@
           });
       }, 350);
     }
-
     // getPayload
     function getPayload() {
       return {
@@ -1258,6 +1323,7 @@
         defectType: document.getElementById("defectType").value,
         quantity: document.getElementById("quantity").value,
         description: document.getElementById("description").value.trim(),
+        note: document.getElementById("note").value,
         inspectionDate: document.getElementById("inspectionDate").value,
 
         poPreview: document.getElementById("po").value.trim(),
@@ -1275,6 +1341,7 @@
       if (!p.fabric) return "Vui lòng điền Chất liệu vải (Fabric).";
       if (!p.defectType) return "Vui lòng chọn loại lỗi (Defect Type).";
       if (!p.quantity || Number(p.quantity) <= 0) return "Vui lòng điền Số lượng lỗi hợp lệ.";
+      if (!p.note) return "Vui lòng chọn Ghi chú (Hoàn về Nhà Máy / Lưu Kho).";
       if (!p.inspectionDate) return "Vui lòng điền Ngày kiểm tra hàng hoàn.";
       if (!p.poPreview) return "Chưa tra cứu được PO từ Master. Vui lòng kiểm tra lại tên sản phẩm.";
       return "";
@@ -1289,6 +1356,7 @@
         "fabric",
         "quantity",
         "description",
+        "note",
         "po",
         "supplier",
         "unitPrice",
@@ -1320,6 +1388,7 @@
         defectType: payload.defectType,
         quantity: payload.quantity,
         description: payload.description,
+        note: payload.note,
         inspectionDate: payload.inspectionDate,
         poPreview: payload.poPreview,
         supplierPreview: payload.supplierPreview,
@@ -1364,7 +1433,7 @@
       if (queueItems.length === 0) {
         body.innerHTML = `
           <tr>
-            <td colspan="11" class="py-8 text-center text-sm text-slate-400 font-medium">Chưa có sản phẩm lỗi nào trong danh sách chờ gửi.</td>
+            <td colspan="12" class="py-8 text-center text-sm text-slate-400 font-medium">Chưa có sản phẩm lỗi nào trong danh sách chờ gửi.</td>
           </tr>
         `;
         return;
@@ -1375,7 +1444,12 @@
           <td class="py-3.5 px-4 text-xs font-semibold text-slate-500 font-mono">${index + 1}</td>
           <td class="py-3.5 px-4 text-sm font-bold text-slate-800">${escapeHtml(item.style)}</td>
           <td class="py-3.5 px-4 text-xs font-bold text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg inline-block my-1.5">${escapeHtml(item.size)}</td>
-          <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">${escapeHtml(item.art)}</td>
+          <td class="py-3.5 px-4 text-xs font-semibold text-slate-600 whitespace-nowrap">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 text-slate-700 rounded-full font-bold border border-slate-200/80">
+              <span class="w-2.5 h-2.5 rounded-full border border-slate-300 shadow-sm shrink-0" style="background-color: ${getColorHex(item.art)}"></span>
+              ${escapeHtml(item.art)}
+            </span>
+          </td>
           <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">${escapeHtml(item.fabric)}</td>
           <td class="py-3.5 px-4 text-xs font-semibold">
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -1384,6 +1458,12 @@
             }">${escapeHtml(item.defectType)}</span>
           </td>
           <td class="py-3.5 px-4 text-xs font-bold text-slate-800 text-center">${escapeHtml(String(item.quantity))}</td>
+          <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              item.note === 'Hoàn về Nhà Máy' ? 'bg-rose-100 text-rose-800' :
+              item.note === 'Lưu Kho' ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-800'
+            }">${escapeHtml(item.note || '')}</span>
+          </td>
           <td class="py-3.5 px-4 text-xs font-mono font-bold text-slate-500">${escapeHtml(item.poPreview)}</td>
           <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">${escapeHtml(item.supplierPreview)}</td>
           <td class="py-3.5 px-4 text-xs font-bold text-emerald-600 text-right">${escapeHtml(item.unitPricePreview)}</td>
@@ -1416,6 +1496,7 @@
         defectType: item.defectType,
         quantity: item.quantity,
         description: item.description,
+        note: item.note,
         inspectionDate: item.inspectionDate
       }));
 
@@ -1449,6 +1530,41 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
     }
+
+    // getColorHex
+    function getColorHex(colorStr) {
+      if (!colorStr) return "#cbd5e1"; // Muted gray fallback
+      const norm = removeAccents(colorStr).toLowerCase().trim();
+
+      if (norm.includes("navy")) return "#1e3a8a"; // Deep Blue / Navy
+      if (norm.includes("den") || norm.includes("black")) return "#0f172a"; // Rich black
+      if (norm.includes("trang") || norm.includes("white")) return "#ffffff";
+      if (norm.includes("xam") || norm.includes("grey") || norm.includes("gray")) return "#64748b";
+      if (norm.includes("do") || norm.includes("red")) return "#ef4444";
+      if (norm.includes("cam") || norm.includes("orange")) return "#f97316";
+      if (norm.includes("vang") || norm.includes("yellow")) return "#eab308";
+      if (norm.includes("xanh la") || norm.includes("green") || norm.includes("olive")) return "#16a34a";
+      if (norm.includes("xanh duong") || norm.includes("blue") || norm.includes("xanh coban")) return "#2563eb";
+      if (norm.includes("xanh") || norm.includes("cyan")) return "#06b6d4";
+      if (norm.includes("hong") || norm.includes("pink")) return "#db2777";
+      if (norm.includes("tim") || norm.includes("purple") || norm.includes("violet")) return "#7c3aed";
+      if (norm.includes("nau") || norm.includes("brown")) return "#78350f";
+      if (norm.includes("be") || norm.includes("beige") || norm.includes("kem") || norm.includes("cream")) return "#f5f5dc";
+
+      // Match hex format if user typed it directly
+      const hexMatch = colorStr.match(/#[0-9a-fA-F]{3,6}/);
+      if (hexMatch) return hexMatch[0];
+
+      // Safe fallback color using stable string hashing
+      let hash = 0;
+      for (let i = 0; i < norm.length; i++) {
+        hash = norm.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+      return "#" + "00000".substring(0, 6 - c.length) + c;
+    }
   </script>
 </body>
 </html>
+
+

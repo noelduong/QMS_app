@@ -1,192 +1,223 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QMS Portal - Polo Manor</title>
+  <title>QMS - POLOMANOR</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Premium Dark Navy Sidebar Overrides */
+    aside {
+      --text-inactive: #94a3b8 !important; /* slate-400 */
+      --text-active: #ffffff !important; /* white */
+      --sidebar-active-bg: rgba(255, 255, 255, 0.12) !important; /* semi-transparent white */
+    }
+    aside .sidebar-item {
+      color: var(--text-inactive) !important;
+    }
+    aside .sidebar-item:hover {
+      background-color: rgba(255, 255, 255, 0.06) !important;
+      color: #f8fafc !important;
+    }
+    aside .sidebar-item.active {
+      color: var(--text-active) !important;
+      background-color: var(--sidebar-active-bg) !important;
+    }
+    aside .sidebar-item.active i {
+      color: var(--text-active) !important;
+    }
+    /* section titles in sidebar */
+    aside span.text-slate-400 {
+      color: #64748b !important; /* silver gray */
+      opacity: 0.8;
+    }
+    /* bottom actions text */
+    aside .sidebar-item.text-slate-400 {
+      color: #94a3b8 !important;
+    }
+    /* dark theme toggle card */
+    aside div.bg-slate-50 {
+      background-color: rgba(255, 255, 255, 0.04) !important;
+      border-color: rgba(255, 255, 255, 0.05) !important;
+    }
+    aside div.bg-slate-50 span {
+      color: #94a3b8 !important;
+    }
+    /* border dividers */
+    aside div.border-slate-100, aside div.border-t {
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    aside .sidebar-item.text-rose-500:hover {
+      background-color: rgba(239, 68, 68, 0.1) !important;
+      color: #f87171 !important;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 h-screen overflow-hidden flex flex-col font-sans text-slate-800">
 
-  <!-- Top Navigation Bar -->
-  <header class="topbar shrink-0 z-30 transition-all duration-400 ease-[cubic-bezier(.4,0,.2,1)]">
+<body class="bg-[#f4f5f8] h-screen overflow-hidden flex font-sans text-slate-800">
 
-    <!-- Row 1: Brand + Toggle + Actions -->
-    <div class="topbar-main">
-      <div class="flex items-center gap-3">
-        <div class="brand-icon">
-          <i data-feather="shield" class="w-5 h-5"></i>
+  <!-- Left Sidebar Navigation -->
+  <aside
+    class="w-[260px] h-screen border-r border-white/5 flex flex-col justify-between p-6 shrink-0 z-30 transition-all duration-300"
+    style="background: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%) !important;">
+    <div class="space-y-6">
+
+      <!-- Logo Brand -->
+      <div class="flex flex-col items-center gap-2.5 text-center px-2">
+        <div class="w-14 h-14 flex items-center justify-center">
+          <img src="assets/logo.png" alt="Logo" class="w-full h-full object-contain">
         </div>
         <div class="leading-tight">
-          <h1 class="text-white font-bold text-[15px] tracking-wide">QMS Portal</h1>
-          <p class="text-[10px] text-slate-400 font-medium tracking-[.15em] uppercase">Polo Manor</p>
+          <h1 class="text-slate-100 font-extrabold text-[13px] tracking-wider uppercase">QUALITY MANAGEMENT</h1>
         </div>
       </div>
 
-      <!-- Center: Navigation Pills -->
-      <nav class="topbar-nav" id="topbar-nav">
 
-        <!-- Overall -->
-        <a href="#" onclick="loadModule('overall')" class="pill active" id="nav-overall">
-          <i data-feather="layout" class="w-4 h-4"></i>
-          <span>OVERALL</span>
-        </a>
-
-        <!-- Inspection (dropdown) -->
-        <div class="pill-group" id="group-inspection">
-          <button onclick="toggleDropdown('inspection')" class="pill" id="nav-inspection">
-            <i data-feather="check-square" class="w-4 h-4"></i>
-            <span>INSPECTION</span>
-            <i data-feather="chevron-down" class="w-3 h-3 dd-arrow" id="icon-inspection"></i>
-          </button>
-          <div class="dropdown" id="dd-inspection">
-            <a href="#" onclick="loadModule('inspection_final')" class="dropdown-item" id="nav-inspection_final">
-              <span class="dd-dot"></span> FINAL RESULT
-            </a>
-            <a href="#" onclick="loadModule('inspection_inline')" class="dropdown-item" id="nav-inspection_inline">
-              <span class="dd-dot"></span> INLINE RESULT
-            </a>
-            <a href="#" onclick="loadModule('inspection_form')" class="dropdown-item" id="nav-inspection_form">
-              <span class="dd-dot"></span> INSPECTION FORM
-            </a>
-          </div>
-        </div>
-
-        <!-- Data Analysis (dropdown) -->
-        <div class="pill-group" id="group-data-analysis">
-          <button onclick="toggleDropdown('data-analysis')" class="pill" id="nav-data-analysis">
-            <i data-feather="pie-chart" class="w-4 h-4"></i>
-            <span>DATA ANALYSIS</span>
-            <i data-feather="chevron-down" class="w-3 h-3 dd-arrow" id="icon-data-analysis"></i>
-          </button>
-          <div class="dropdown" id="dd-data-analysis">
-            <a href="#" onclick="loadModule('return')" class="dropdown-item" id="nav-return">
-              <span class="dd-dot"></span> RETURN
-            </a>
-            <a href="#" onclick="loadModule('feedback')" class="dropdown-item" id="nav-feedback">
-              <span class="dd-dot"></span> FEEDBACK RATE
-            </a>
-          </div>
-        </div>
-
-        <!-- Plan -->
-        <a href="#" onclick="loadModule('plan')" class="pill" id="nav-plan">
-          <i data-feather="calendar" class="w-4 h-4"></i>
-          <span>PLAN</span>
-        </a>
-      </nav>
-
-      <!-- Right actions -->
-      <div class="flex items-center gap-2">
-        <button onclick="toggleTopbar()" class="topbar-toggle-btn" id="topbar-toggle" title="Ẩn/hiện menu">
-          <i data-feather="chevron-up" class="w-4 h-4 transition-transform duration-300" id="toggle-icon"></i>
-        </button>
-        <button class="action-btn"><i data-feather="bell" class="w-[18px] h-[18px]"></i></button>
-        <button class="action-btn"><i data-feather="settings" class="w-[18px] h-[18px]"></i></button>
-        <div class="user-avatar" title="Admin User">AD</div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Mobile Navigation Drawer -->
-  <div id="mobile-drawer" class="fixed inset-0 z-50 pointer-events-none md:hidden">
-    <!-- Overlay backdrop -->
-    <div id="drawer-overlay" class="absolute inset-0 bg-slate-950/60 opacity-0 transition-opacity duration-300 ease-in-out pointer-events-none" onclick="toggleMobileDrawer(false)"></div>
-    <!-- Drawer Panel -->
-    <div id="drawer-panel" class="absolute top-0 left-0 bottom-0 w-[280px] bg-slate-900 text-slate-100 flex flex-col shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out pointer-events-none">
-      <!-- Drawer Header -->
-      <div class="h-[60px] border-b border-slate-800 flex items-center justify-between px-5 shrink-0">
-        <div class="flex items-center gap-3">
-          <div class="brand-icon bg-indigo-600/20 text-indigo-400">
-            <i data-feather="shield" class="w-5 h-5"></i>
-          </div>
-          <div class="leading-tight">
-            <h1 class="text-white font-bold text-[15px] tracking-wide">QMS Portal</h1>
-            <p class="text-[10px] text-slate-400 font-medium tracking-[.15em] uppercase">Polo Manor</p>
-          </div>
-        </div>
-        <button onclick="toggleMobileDrawer(false)" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
-          <i data-feather="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      
-      <!-- Drawer Content -->
-      <div class="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
-        <!-- Section: GENERAL -->
-        <div class="mb-5">
-          <div class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">General</div>
-          <div onclick="loadMobileModule('overall')" class="mobile-drawer-item cursor-pointer active" id="mobile-nav-overall">
+      <!-- Navigation Menu -->
+      <nav class="space-y-4">
+        <!-- Section: Overview -->
+        <div>
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5 px-3">OVERVIEW</span>
+          <a href="#" onclick="loadModule('overall')" class="sidebar-item active" id="nav-overall">
             <i data-feather="layout" class="w-4 h-4"></i>
-            <span>OVERALL DASHBOARD</span>
+            <span>Overall Dashboard</span>
+          </a>
+        </div>
+
+        <!-- Section: Inspection -->
+        <div>
+          <span
+            class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5 px-3">INSPECTION</span>
+          <div class="space-y-0.5">
+            <a href="#" onclick="loadModule('inspection_final')" class="sidebar-item" id="nav-inspection_final">
+              <i data-feather="file-text" class="w-4 h-4"></i>
+              <span>Final Result</span>
+            </a>
+            <a href="#" onclick="loadModule('inspection_inline')" class="sidebar-item" id="nav-inspection_inline">
+              <i data-feather="activity" class="w-4 h-4"></i>
+              <span>Inline Result</span>
+            </a>
+            <a href="#" onclick="loadModule('inspection_form')" class="sidebar-item" id="nav-inspection_form">
+              <i data-feather="check-square" class="w-4 h-4"></i>
+              <span>Inspection Form</span>
+            </a>
           </div>
-          <div onclick="loadMobileModule('plan')" class="mobile-drawer-item cursor-pointer" id="mobile-nav-plan">
+        </div>
+
+        <!-- Section: Data Analysis -->
+        <div>
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5 px-3">DATA
+            ANALYSIS</span>
+          <div class="space-y-0.5">
+            <a href="#" onclick="loadModule('return')" class="sidebar-item" id="nav-return">
+              <i data-feather="repeat" class="w-4 h-4"></i>
+              <span>Return Analysis</span>
+            </a>
+            <a href="#" onclick="loadModule('feedback')" class="sidebar-item" id="nav-feedback">
+              <i data-feather="pie-chart" class="w-4 h-4"></i>
+              <span>Feedback Rate</span>
+            </a>
+            <a href="#" onclick="loadModule('materials_approval')" class="sidebar-item" id="nav-materials_approval">
+              <i data-feather="scissors" class="w-4 h-4"></i>
+              <span>Fabric Testing</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Section: Planning -->
+        <div>
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5 px-3">PLANNING</span>
+          <a href="#" onclick="loadModule('plan')" class="sidebar-item" id="nav-plan">
             <i data-feather="calendar" class="w-4 h-4"></i>
-            <span>PLAN / SCHEDULE</span>
-          </div>
+            <span>Work Plan</span>
+          </a>
         </div>
-        
-        <!-- Section: INSPECTION -->
-        <div class="mb-5">
-          <div class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Inspection</div>
-          <div onclick="loadMobileModule('inspection_final')" class="mobile-drawer-item cursor-pointer" id="mobile-nav-inspection_final">
-            <i data-feather="file-text" class="w-4 h-4"></i>
-            <span>FINAL RESULT</span>
-          </div>
-          <div onclick="loadMobileModule('inspection_inline')" class="mobile-drawer-item cursor-pointer" id="mobile-nav-inspection_inline">
-            <i data-feather="activity" class="w-4 h-4"></i>
-            <span>INLINE RESULT</span>
-          </div>
-          <div onclick="loadMobileModule('inspection_form')" class="mobile-drawer-item cursor-pointer" id="mobile-nav-inspection_form">
-            <i data-feather="check-square" class="w-4 h-4"></i>
-            <span>INSPECTION FORM</span>
-          </div>
-        </div>
-        
-        <!-- Section: DATA ANALYSIS -->
-        <div class="mb-5">
-          <div class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Data Analysis</div>
-          <div onclick="loadMobileModule('return')" class="mobile-drawer-item cursor-pointer" id="mobile-nav-return">
-            <i data-feather="repeat" class="w-4 h-4"></i>
-            <span>RETURN ANALYSIS</span>
-          </div>
-          <div onclick="loadMobileModule('feedback')" class="mobile-drawer-item cursor-pointer" id="mobile-nav-feedback">
-            <i data-feather="pie-chart" class="w-4 h-4"></i>
-            <span>FEEDBACK RATE</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Drawer Footer -->
-      <div class="p-4 border-t border-slate-800 shrink-0 text-center text-[10px] text-slate-500">
-        POLOMANOR QMS v2.0
-      </div>
+      </nav>
     </div>
-  </div>
 
-  <!-- Page Title Bar -->
-  <div class="title-bar shrink-0 z-10">
-    <div class="flex items-center gap-3">
-      <!-- Mobile menu button -->
-      <button id="mobile-menu-btn" class="md:hidden text-slate-500 hover:text-slate-800">
-        <i data-feather="menu" class="w-5 h-5"></i>
-      </button>
-      <h2 id="page-title" class="text-lg font-bold text-slate-800 tracking-tight">OVERALL DASHBOARD</h2>
-    </div>
-  </div>
+    <!-- Bottom Actions -->
+    <div class="space-y-3 pt-3 border-t border-slate-100">
+      <div class="space-y-0.5">
+        <a href="#" class="sidebar-item text-slate-400">
+          <i data-feather="help-circle" class="w-4 h-4"></i>
+          <span>Support</span>
+        </a>
+        <a href="#" class="sidebar-item text-slate-400">
+          <i data-feather="settings" class="w-4 h-4"></i>
+          <span>Settings</span>
+        </a>
+      </div>
 
-  <!-- Main Content Area -->
-  <main class="flex-1 relative w-full h-full overflow-hidden bg-slate-50 min-w-0">
-    <!-- Loading overlay -->
-    <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
-      <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-      <p class="mt-4 text-sm font-medium text-slate-500">Đang tải phân hệ...</p>
+      <!-- Theme Switcher -->
+      <div class="flex items-center justify-between px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100/60">
+        <span class="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">Dark Theme</span>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" class="sr-only peer" id="dark-theme-toggle">
+          <div
+            class="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-slate-900">
+          </div>
+        </label>
+      </div>
+
+      <a href="#" class="sidebar-item text-rose-500 hover:bg-rose-50 hover:text-rose-600">
+        <i data-feather="log-out" class="w-4 h-4"></i>
+        <span>Sign out</span>
+      </a>
     </div>
-    
-    <iframe id="main-frame" src="placeholders/overall.html" class="w-full h-full border-none" allowfullscreen></iframe>
-  </main>
+  </aside>
+
+  <!-- Right Main Area -->
+  <div class="flex-1 flex flex-col h-screen overflow-hidden min-w-0 p-5 pl-0">
+
+    <!-- Top Header of Workspace Canvas -->
+    <header class="flex items-center justify-between mb-4 px-4 h-12 shrink-0">
+      <div class="flex items-center gap-3">
+        <h2 id="page-title" class="text-lg font-black text-slate-800 tracking-tight">OVERALL DASHBOARD</h2>
+        <span
+          class="px-2 py-0.5 bg-slate-100 rounded-md text-[9px] font-bold text-slate-500 uppercase tracking-wider">Live</span>
+      </div>
+
+      <!-- Search, Notifications, Actions -->
+      <div class="flex items-center gap-3">
+        <div class="relative w-44">
+          <input type="text" placeholder="Search report..."
+            class="w-full bg-white border border-slate-100/80 rounded-full py-1.5 pl-8 pr-3 text-[10px] text-slate-500 font-bold focus:outline-none focus:border-slate-300 shadow-sm placeholder-slate-300 transition-all duration-200">
+          <i data-feather="search" class="w-3.5 h-3.5 text-slate-300 absolute left-3 top-2.5"></i>
+        </div>
+        <button
+          class="w-8 h-8 rounded-full bg-white border border-slate-100/80 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-200 shadow-sm transition-all duration-200">
+          <i data-feather="bell" class="w-4 h-4"></i>
+        </button>
+        <button
+          class="w-8 h-8 rounded-full bg-white border border-slate-100/80 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-200 shadow-sm transition-all duration-200">
+          <i data-feather="message-circle" class="w-4 h-4"></i>
+        </button>
+        <button
+          class="w-8 h-8 rounded-full bg-white border border-slate-100/80 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-200 shadow-sm transition-all duration-200">
+          <i data-feather="settings" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Nested White Dynamic Workspace Canvas -->
+    <main
+      class="flex-1 bg-white rounded-[32px] shadow-[0_10px_35px_rgba(0,0,0,0.02)] border border-slate-100/60 overflow-hidden relative flex flex-col">
+      <!-- Loading overlay -->
+      <div id="loader"
+        class="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div class="w-10 h-10 border-[3.5px] border-slate-100 border-t-slate-900 rounded-full animate-spin"></div>
+        <p class="mt-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Loading component...</p>
+      </div>
+
+      <iframe id="main-frame" src="placeholders/overall.html" class="w-full h-full border-none"
+        allowfullscreen></iframe>
+    </main>
+  </div>
 
   <script src="app.js"></script>
   <script>
@@ -194,4 +225,5 @@
   </script>
 
 </body>
+
 </html>

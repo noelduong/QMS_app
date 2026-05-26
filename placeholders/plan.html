@@ -13,6 +13,7 @@
 
   <style>
     body {
+      filter: saturate(0.8) !important;
       font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #f8fafc;
       min-height: 100vh;
@@ -37,21 +38,10 @@
 <body class="p-3 sm:p-5 lg:p-6">
 
   <!-- Main Container -->
-  <div class="max-w-7xl mx-auto space-y-6">
+  <div class="w-full space-y-6">
     
     <!-- TOP HEADER ROW -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <div class="flex items-center gap-2 mb-1">
-          <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-            <i data-feather="calendar" class="w-4 h-4"></i>
-          </div>
-          <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Quality Operations</span>
-        </div>
-        <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">LẬP KẾ HOẠCH & PHÂN BỔ CÔNG VIỆC</h1>
-        <p class="text-xs text-slate-400 font-medium mt-0.5">Lập lịch kiểm hàng, đo lường năng lực và đồng bộ hóa hệ thống</p>
-      </div>
-
+    <div class="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
       <!-- Action Button -->
       <button onclick="openPlannerModal()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs px-5 py-3.5 rounded-xl shadow-md transition-all cursor-pointer">
         <i data-feather="plus" class="w-4 h-4"></i> Lập Kế Hoạch Tuần
@@ -178,11 +168,14 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-slate-100">
           <span class="text-xs font-black text-slate-700" id="board-date-range">Tuần này</span>
           
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button onclick="resetDayFilter()" id="btn-show-all" class="hidden text-[9px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-full transition-all">
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+            <select id="filter-creator" onchange="applyFilters()" class="text-[9px] font-black text-slate-600 bg-white border border-slate-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer transition-all">
+              <option value="">Tất cả người lập</option>
+            </select>
+            <button onclick="resetDayFilter()" id="btn-show-all" class="hidden text-[9px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2.5 py-1.5 rounded-full transition-all">
               Hiển thị cả tuần
             </button>
-            <button onclick="navigateWeek(0)" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full font-bold text-[9px] transition-all">
+            <button onclick="navigateWeek(0)" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full font-bold text-[9px] transition-all">
               Tuần này
             </button>
             <div class="flex items-center bg-white border border-slate-200 rounded-full p-0.5">
@@ -285,6 +278,12 @@
             </div>
           </div>
 
+          <!-- Creator Name Field -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700 block">Người lập lịch / Phân công <span class="text-rose-500">*</span></label>
+            <input type="text" id="form-creator" required placeholder="Họ và tên người lập lịch" class="w-full text-xs font-semibold text-slate-800 bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+          </div>
+
           <!-- Description Field -->
           <div class="space-y-1">
             <label id="lbl-description" class="text-xs font-bold text-slate-700 block">Ghi chú kiểm hàng</label>
@@ -340,7 +339,7 @@
           throw new Error("QMS API chưa được cấu hình. Vui lòng kiểm tra api.js");
         }
 
-        const res = await QMS_API.getPlanData();
+        const res = await QMS_API.getScheduleData();
         if (res && res.ok) {
           allPlans = res.data || [];
         } else {
@@ -348,12 +347,37 @@
         }
 
         // Apply rendering and updates
+        populateCreatorFilter();
         renderMiniCalendar();
         renderWeekCalendar();
         applyFilters();
       } catch (err) {
         console.error("Lỗi lấy lịch trình:", err);
         showBoardError(err.message);
+      }
+    }
+
+    function populateCreatorFilter() {
+      const select = document.getElementById('filter-creator');
+      if (!select) return;
+      
+      const currentVal = select.value;
+      
+      // Get unique creators, filtering out falsy/empty values
+      const creators = [...new Set(allPlans.map(p => p.creator).filter(Boolean))].sort();
+      
+      let html = '<option value="">Tất cả người lập</option>';
+      creators.forEach(c => {
+        html += `<option value="${c}">${c}</option>`;
+      });
+      
+      select.innerHTML = html;
+      
+      // Restore previous selection if it still exists in the list, otherwise reset
+      if (creators.includes(currentVal)) {
+        select.value = currentVal;
+      } else {
+        select.value = "";
       }
     }
 
@@ -406,14 +430,20 @@
       }
 
       const todayIso = new Date().toISOString().split('T')[0];
+      const creatorSelect = document.getElementById('filter-creator');
+      const selectedCreator = creatorSelect ? creatorSelect.value : "";
 
       // Render days
       for (let day = 1; day <= totalDays; day++) {
         const loopDate = new Date(year, month, day);
         const loopIso = loopDate.toISOString().split('T')[0];
         
-        // Count tasks on this day
-        const dayTasksCount = allPlans.filter(p => p.date === loopIso).length;
+        // Count tasks on this day matching selected creator
+        const dayTasksCount = allPlans.filter(p => {
+          if (p.date !== loopIso) return false;
+          if (selectedCreator && p.creator !== selectedCreator) return false;
+          return true;
+        }).length;
         
         const isToday = loopIso === todayIso;
         const isSelected = selectedDay === loopIso;
@@ -475,13 +505,21 @@
     }
 
     function applyFilters() {
+      const creatorSelect = document.getElementById('filter-creator');
+      const selectedCreator = creatorSelect ? creatorSelect.value : "";
+
       // Calculate plans matching viewed week
       const weekStart = new Date(currentDate.getTime());
       const weekEnd = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
 
       const weekPlans = allPlans.filter(p => {
         const planDate = new Date(p.date + 'T12:00:00');
-        return planDate >= weekStart && planDate <= weekEnd;
+        const matchesWeek = planDate >= weekStart && planDate <= weekEnd;
+        if (!matchesWeek) return false;
+        
+        if (selectedCreator && p.creator !== selectedCreator) return false;
+        
+        return true;
       });
 
       // 1. Update workload statistics
@@ -492,6 +530,9 @@
 
       // 3. Render board schedule columns
       renderScheduleGrid(weekPlans);
+
+      // 4. Update mini calendar dots based on active filters
+      renderMiniCalendar();
     }
 
     function updateStats(weekPlans) {
@@ -549,7 +590,7 @@
                 </div>
                 <div class="text-xs font-bold leading-tight truncate">
                   <p class="${isComp ? 'line-through text-slate-400 font-semibold' : 'text-slate-700'}">${p.factory} - PO: ${p.order_no}</p>
-                  <span class="text-[9px] text-slate-400 font-medium">${formatDateDMY(new Date(p.date + 'T12:00:00'))} | ${p.color}</span>
+                  <span class="text-[9px] text-slate-400 font-medium">${formatDateDMY(new Date(p.date + 'T12:00:00'))} | ${p.color}${p.creator ? ` | Lập bởi: ${p.creator}` : ''}</span>
                 </div>
               </label>
               
@@ -577,7 +618,7 @@
                 </div>
                 <div class="text-xs font-bold leading-tight truncate">
                   <p class="${isComp ? 'line-through text-slate-400 font-semibold' : 'text-slate-700'}">${p.description}</p>
-                  <span class="text-[9px] text-slate-400 font-medium">${formatDateDMY(new Date(p.date + 'T12:00:00'))}</span>
+                  <span class="text-[9px] text-slate-400 font-medium">${formatDateDMY(new Date(p.date + 'T12:00:00'))}${p.creator ? ` | Lập bởi: ${p.creator}` : ''}</span>
                 </div>
               </label>
               
@@ -668,6 +709,7 @@
                   <!-- Inspector Avatars footer -->
                   <div class="flex items-center justify-between gap-1 pt-1 border-t border-slate-200/50">
                     <span class="text-[8px] font-semibold opacity-60 uppercase">Kiểm Hàng</span>
+                    ${plan.creator ? `<span class="text-[8px] text-indigo-700/80 font-bold bg-indigo-100/50 px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-feather="user" class="w-2 h-2 shrink-0"></i> <span class="max-w-[50px] truncate" title="${plan.creator}">${plan.creator}</span></span>` : ''}
                   </div>
                 </div>
               `;
@@ -695,6 +737,7 @@
 
                   <div class="flex items-center justify-between gap-1 pt-1 border-t border-slate-200/50">
                     <span class="text-[8px] font-semibold opacity-60 uppercase">Công Việc Khác</span>
+                    ${plan.creator ? `<span class="text-[8px] text-amber-700/80 font-bold bg-amber-100/50 px-1.5 py-0.5 rounded flex items-center gap-0.5"><i data-feather="user" class="w-2 h-2 shrink-0"></i> <span class="max-w-[50px] truncate" title="${plan.creator}">${plan.creator}</span></span>` : ''}
                   </div>
                 </div>
               `;
@@ -757,6 +800,9 @@
       
       // Default to selected mini calendar day or today
       document.getElementById('form-date').value = selectedDay || new Date().toISOString().split('T')[0];
+
+      // Auto-fill last creator name
+      document.getElementById('form-creator').value = localStorage.getItem('qms_last_creator') || '';
 
       modal.classList.remove('opacity-0', 'pointer-events-none');
       container.classList.remove('scale-95');
@@ -828,12 +874,14 @@
         color: document.getElementById('form-color').value,
         quantity: document.getElementById('form-qty').value,
         description: document.getElementById('form-description').value,
-        status: "Pending"
+        status: "Pending",
+        creator: document.getElementById('form-creator').value.trim()
       };
 
       try {
         const res = await QMS_API.submitPlan(payload);
         if (res && res.ok) {
+          localStorage.setItem('qms_last_creator', payload.creator);
           alert("Lên kế hoạch thành công!");
           closePlannerModal();
           await loadPlanData();

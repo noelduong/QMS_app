@@ -1,198 +1,77 @@
-/* app.js for QMS Portal — Horizontal Top Nav */
+/* app.js - Sidebar Routing and Shell Logic */
 
 const MODULES = {
-  'inspection_final': {
-    title: 'FINAL RESULT',
-    url: 'placeholders/final_result.html'
-  },
-  'inspection_inline': {
-    title: 'INLINE RESULT',
-    url: 'placeholders/inline_result.html'
-  },
-  'inspection_form': {
-    title: 'INSPECTION FORM',
-    url: 'inspection_form/index.html'
-  },
-  'return': {
-    title: 'RETURN ANALYSIS',
-    url: 'placeholders/return.html'
-  },
-  'feedback': {
-    title: 'FEEDBACK RATE',
-    url: 'placeholders/feedback.html'
-  },
-  'plan': {
-    title: 'PLANNING',
-    url: 'placeholders/plan.html'
-  },
   'overall': {
     title: 'OVERALL DASHBOARD',
     url: 'placeholders/overall.html'
+  },
+  'inspection_final': {
+    title: 'FINAL RESULT ANALYTICS',
+    url: 'placeholders/final_result.html'
+  },
+  'inspection_inline': {
+    title: 'INLINE INSPECTION RESULTS',
+    url: 'placeholders/inline_result.html'
+  },
+  'inspection_form': {
+    title: 'DIRECT QC INSPECTION FORM',
+    url: 'inspection_form/index.html'
+  },
+  'return': {
+    title: 'RETURN ANALYSIS INSIGHTS',
+    url: 'placeholders/return.html'
+  },
+  'feedback': {
+    title: 'CUSTOMER FEEDBACK ANALYTICS',
+    url: 'placeholders/feedback.html'
+  },
+  'materials_approval': {
+    title: 'FABRIC TESTING LOGS',
+    url: 'placeholders/fabric_testing.html'
+  },
+  'plan': {
+    title: 'PRODUCTION WORK PLANNING',
+    url: 'placeholders/plan.html'
   }
 };
 
-/* ---- Load Module ---- */
+/* ---- Core Module Loader ---- */
 function loadModule(moduleId) {
   const mod = MODULES[moduleId];
   if (!mod) return;
 
-  // Clear all active states
-  document.querySelectorAll('.pill, .dropdown-item').forEach(el => {
+  // Remove active class from all sidebar links
+  document.querySelectorAll('.sidebar-item').forEach(el => {
     el.classList.remove('active');
   });
 
-  // Set active on the clicked item
+  // Activate the correct sidebar element
   const navItem = document.getElementById('nav-' + moduleId);
   if (navItem) {
     navItem.classList.add('active');
-
-    // If it's a dropdown item, also activate its parent pill
-    if (moduleId.startsWith('inspection_')) {
-      document.getElementById('nav-inspection').classList.add('active');
-    } else if (moduleId === 'return' || moduleId === 'feedback') {
-      document.getElementById('nav-data-analysis').classList.add('active');
-    }
-
-    // Sync mobile drawer active classes too
-    document.querySelectorAll('.mobile-drawer-item').forEach(el => {
-      el.classList.remove('active');
-    });
-    const mNav = document.getElementById('mobile-nav-' + moduleId);
-    if (mNav) {
-      mNav.classList.add('active');
-    }
   }
 
-  // Update page title
-  document.getElementById('page-title').textContent = mod.title;
+  // Update shell header page title
+  const titleEl = document.getElementById('page-title');
+  if (titleEl) {
+    titleEl.textContent = mod.title;
+  }
 
-  // Show loader
+  // Handle workspace dynamic loader animation
   const loader = document.getElementById('loader');
   const iframe = document.getElementById('main-frame');
 
-  loader.classList.remove('opacity-0', 'pointer-events-none');
+  if (loader) {
+    loader.classList.remove('opacity-0', 'pointer-events-none');
+  }
 
-  // Load URL
-  iframe.src = mod.url;
-
-  // Hide loader when loaded
-  iframe.onload = () => {
-    loader.classList.add('opacity-0', 'pointer-events-none');
-  };
-
-  // Close any open dropdowns
-  closeAllDropdowns();
-
-  // Close mobile menu if open
-  if (window.innerWidth <= 768) {
-    document.querySelector('.topbar').classList.remove('mobile-open');
+  // Load target iframe URL
+  if (iframe) {
+    iframe.src = mod.url;
+    iframe.onload = () => {
+      if (loader) {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+      }
+    };
   }
 }
-
-/* ---- Dropdown Toggle ---- */
-function toggleDropdown(id) {
-  const group = document.getElementById('group-' + id);
-  const isOpen = group.classList.contains('open');
-
-  // Close all other dropdowns first
-  closeAllDropdowns();
-
-  if (!isOpen) {
-    group.classList.add('open');
-  }
-}
-
-function closeAllDropdowns() {
-  document.querySelectorAll('.pill-group').forEach(g => {
-    g.classList.remove('open');
-  });
-}
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.pill-group')) {
-    closeAllDropdowns();
-  }
-});
-
-/* ---- Topbar Toggle (Hide/Show) ---- */
-function toggleTopbar() {
-  const topbar = document.querySelector('.topbar');
-  const floatBtn = document.getElementById('float-toggle');
-  const icon = document.getElementById('toggle-icon');
-  
-  topbar.classList.toggle('collapsed');
-  
-  if (topbar.classList.contains('collapsed')) {
-    icon.style.transform = 'rotate(180deg)';
-    // Show floating toggle button
-    setTimeout(() => {
-      if (floatBtn) floatBtn.classList.add('visible');
-    }, 300);
-  } else {
-    icon.style.transform = 'rotate(0deg)';
-    if (floatBtn) floatBtn.classList.remove('visible');
-  }
-}
-
-function showTopbar() {
-  const topbar = document.querySelector('.topbar');
-  const floatBtn = document.getElementById('float-toggle');
-  const icon = document.getElementById('toggle-icon');
-  
-  topbar.classList.remove('collapsed');
-  icon.style.transform = 'rotate(0deg)';
-  if (floatBtn) floatBtn.classList.remove('visible');
-}
-
-/* ---- Create floating toggle button dynamically ---- */
-(function createFloatToggle() {
-  const btn = document.createElement('button');
-  btn.id = 'float-toggle';
-  btn.className = 'collapsed-toggle-float';
-  btn.title = 'Hiện menu';
-  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
-  btn.onclick = showTopbar;
-  document.body.appendChild(btn);
-})();
-
-/* ---- Mobile Navigation Drawer ---- */
-function toggleMobileDrawer(isOpen) {
-  const drawer = document.getElementById('mobile-drawer');
-  const overlay = document.getElementById('drawer-overlay');
-  const panel = document.getElementById('drawer-panel');
-  if (!drawer || !overlay || !panel) return;
-
-  if (isOpen) {
-    drawer.classList.remove('pointer-events-none');
-    drawer.classList.add('pointer-events-auto');
-    
-    overlay.classList.remove('opacity-0', 'pointer-events-none');
-    overlay.classList.add('opacity-100', 'pointer-events-auto');
-    
-    panel.classList.remove('-translate-x-full', 'pointer-events-none');
-    panel.classList.add('translate-x-0', 'pointer-events-auto');
-  } else {
-    drawer.classList.remove('pointer-events-auto');
-    drawer.classList.add('pointer-events-none');
-    
-    overlay.classList.remove('opacity-100', 'pointer-events-auto');
-    overlay.classList.add('opacity-0', 'pointer-events-none');
-    
-    panel.classList.remove('translate-x-0', 'pointer-events-auto');
-    panel.classList.add('-translate-x-full', 'pointer-events-none');
-  }
-}
-
-function loadMobileModule(moduleId) {
-  // Call the core loader
-  loadModule(moduleId);
-
-  // Auto-close drawer
-  toggleMobileDrawer(false);
-}
-
-/* ---- Mobile Menu Trigger ---- */
-document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
-  toggleMobileDrawer(true);
-});

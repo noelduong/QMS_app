@@ -8,7 +8,7 @@
 }
 
 body { 
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; 
   background: var(--bg-gradient); 
   background-attachment: fixed;
   margin: 0; 

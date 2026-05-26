@@ -719,11 +719,11 @@ function exportInspectionPDF() {
     <meta charset="utf-8">
     <base href="${baseUrl}">
     <title>Garment Inspection Report - Final</title>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
       *{box-sizing:border-box}
       body{
-        font-family:'Google Sans',Arial,Helvetica,sans-serif;
+        font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
         color:#222;
         margin:0;
         background:#fff;
@@ -916,7 +916,7 @@ function exportInspectionPDF() {
 
       .pdf-footer-right{
       text-align:right;
-      font-family:'Google Sans',Arial, Helvetica, sans-serif;
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       font-size:12px;
       font-weight:500;
       letter-spacing:.4px;

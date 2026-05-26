@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -11,11 +11,12 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- QMS API Client -->
   <script src="../api.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <style>
-    body { 
-      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    body {
+      filter: saturate(0.8) !important; 
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
       background-color: #f8fafc;
       -webkit-font-smoothing: antialiased;
     }
@@ -77,21 +78,8 @@
 </head>
 <body class="p-6 md:p-8 space-y-8 min-h-screen text-slate-800">
 
-  <!-- Header Section -->
+  <!-- Filter & Refresh Actions -->
   <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6 fade-in-up">
-    <div>
-      <div class="flex items-center gap-2 text-indigo-600 font-bold text-xs uppercase tracking-widest">
-        <span class="flex h-2 w-2 relative">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-        </span>
-        Overall Quality Performance
-      </div>
-      <h1 class="text-3xl font-black text-slate-900 tracking-tight mt-1">BÁO CÁO HIỆU SUẤT TỔNG HỢP (OVERALL)</h1>
-      <p class="text-slate-400 text-xs font-semibold mt-0.5">Thống kê toàn cảnh kế hoạch sản xuất, tỷ lệ bao phủ và hiệu suất chất lượng kiểm hàng.</p>
-    </div>
-
-    <!-- Filter & Refresh Actions -->
     <div class="flex flex-wrap items-center gap-3 self-start xl:self-auto">
       <!-- Filter Mode Selector (Ngày / Tuần / Tháng) -->
       <div class="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200">
@@ -162,63 +150,67 @@
 
   <!-- KPI Grid (4 Cards) -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 fade-in-up">
-    <!-- Card 1: Inspection Coverage -->
-    <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="card-coverage">
-      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
-      <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-        <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Inspection Coverage</span>
-        <div class="text-3xl font-extrabold text-indigo-600 leading-none" id="kpi-coverage">0%</div>
+    <!-- Card 1: Inspection Coverage (Dusty Sage Green) -->
+    <div class="rounded-[24px] p-6 flex items-center justify-between min-h-[160px] relative overflow-hidden bg-gradient-to-br from-[#e1ede5] to-[#c8dad0] border border-[#c8dad0] shadow-[0_4px_25px_rgba(45,62,107,0.01)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_35px_rgba(45,62,107,0.03)]" id="card-coverage">
+      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+      <div class="flex flex-col justify-between h-[108px] w-full pr-2">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Inspection Coverage</span>
+        <div class="text-3xl font-black text-[#2d3e33] leading-none" id="kpi-coverage">0%</div>
         <div class="min-h-[18px] flex items-end">
-          <span class="text-[10px] text-slate-400 font-bold leading-none" id="kpi-coverage-sub">0/0 PO đã kiểm (Kế hoạch)</span>
+          <span class="text-[10px] text-slate-500 font-bold leading-none" id="kpi-coverage-sub">0/0 PO đã kiểm (Kế hoạch)</span>
         </div>
+        <div id="kpi-coverage-trend" class="min-h-[16px] flex items-center text-xs font-bold text-[#2d3e33]"></div>
       </div>
-      <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm shrink-0">
+      <div class="p-4 bg-slate-200/50 text-[#2d3e33] rounded-2xl shadow-sm shrink-0 border border-slate-300/20">
         <i data-feather="check-square" class="w-6 h-6"></i>
       </div>
     </div>
 
-    <!-- Card 2: Total Plans KPI -->
-    <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="card-plans">
-      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none"></div>
-      <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-        <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng PO Kế Hoạch (Plan)</span>
-        <div class="text-3xl font-extrabold text-blue-600 leading-none" id="kpi-plans">0</div>
+    <!-- Card 2: Total Plans KPI (Dusty Slate Blue) -->
+    <div class="rounded-[24px] p-6 flex items-center justify-between min-h-[160px] relative overflow-hidden bg-gradient-to-br from-[#e4e9f2] to-[#cbd4e5] border border-[#cbd4e5] shadow-[0_4px_25px_rgba(45,62,107,0.01)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_35px_rgba(45,62,107,0.03)]" id="card-plans">
+      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
+      <div class="flex flex-col justify-between h-[108px] w-full pr-2">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng PO Kế Hoạch (Plan)</span>
+        <div class="text-3xl font-black text-[#2b3445] leading-none" id="kpi-plans">0</div>
         <div class="min-h-[18px] flex items-end">
-          <span class="text-[10px] text-slate-400 font-bold leading-none" id="kpi-plans-sub">Đơn hàng cần kiểm</span>
+          <span class="text-[10px] text-slate-500 font-bold leading-none" id="kpi-plans-sub">Đơn hàng cần kiểm</span>
         </div>
+        <div id="kpi-plans-trend" class="min-h-[16px] flex items-center text-xs font-bold text-[#2b3445]"></div>
       </div>
-      <div class="p-4 bg-blue-50 text-blue-600 rounded-2xl shadow-sm shrink-0">
+      <div class="p-4 bg-slate-200/50 text-[#2b3445] rounded-2xl shadow-sm shrink-0 border border-slate-300/20">
         <i data-feather="calendar" class="w-6 h-6"></i>
       </div>
     </div>
 
-    <!-- Card 3: Total Inspections KPI -->
-    <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="card-inspections">
-      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-violet-500/10 rounded-full blur-xl pointer-events-none"></div>
-      <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-        <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng Đợt Kiểm Thực Tế</span>
-        <div class="text-3xl font-extrabold text-violet-600 leading-none" id="kpi-inspections">0</div>
+    <!-- Card 3: Total Inspections KPI (Dusty Terracotta) -->
+    <div class="rounded-[24px] p-6 flex items-center justify-between min-h-[160px] relative overflow-hidden bg-gradient-to-br from-[#f5ede9] to-[#ebd7ce] border border-[#ebd7ce] shadow-[0_4px_25px_rgba(249,115,22,0.01)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_35px_rgba(249,115,22,0.03)]" id="card-inspections">
+      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-orange-500/5 rounded-full blur-xl pointer-events-none"></div>
+      <div class="flex flex-col justify-between h-[108px] w-full pr-2">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng Đợt Kiểm Thực Tế</span>
+        <div class="text-3xl font-black text-[#4a352b] leading-none" id="kpi-inspections">0</div>
         <div class="min-h-[18px] flex items-end">
-          <span class="text-[10px] text-slate-400 font-bold leading-none" id="kpi-inspections-sub">Tổng số lượt chạy kiểm</span>
+          <span class="text-[10px] text-slate-500 font-bold leading-none" id="kpi-inspections-sub">Tổng số lượt chạy kiểm</span>
         </div>
+        <div id="kpi-inspections-trend" class="min-h-[16px] flex items-center text-xs font-bold text-[#4a352b]"></div>
       </div>
-      <div class="p-4 bg-violet-50 text-violet-600 rounded-2xl shadow-sm shrink-0">
+      <div class="p-4 bg-slate-200/50 text-[#4a352b] rounded-2xl shadow-sm shrink-0 border border-slate-300/20">
         <i data-feather="activity" class="w-6 h-6"></i>
       </div>
     </div>
 
-    <!-- Card 4: Overall Pass Rate KPI -->
-    <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="card-passrate">
-      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
-      <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-        <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tỷ Lệ Đạt (Overall Pass)</span>
-        <div class="text-3xl font-extrabold text-emerald-600 leading-none" id="kpi-passrate">0%</div>
+    <!-- Card 4: Overall Pass Rate KPI (Smoky Grey Card) -->
+    <div class="rounded-[24px] p-6 flex items-center justify-between min-h-[160px] relative overflow-hidden bg-gradient-to-br from-[#3a3b40] via-[#2d2e33] to-[#212226] border border-[#48494f] shadow-[0_10px_30px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)]" id="card-passrate">
+      <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none"></div>
+      <div class="flex flex-col justify-between h-[108px] w-full pr-2">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tỷ Lệ Đạt (First Pass Rate)</span>
+        <div class="text-3xl font-black text-white leading-none animate-fade-in" id="kpi-passrate">0%</div>
         <div class="min-h-[18px] flex items-end">
-          <span class="text-[10px] font-bold leading-none" id="kpi-passrate-sub">Chất lượng hoàn thiện</span>
+          <span class="text-[10px] text-slate-400 font-bold leading-none" id="kpi-passrate-sub">Chất lượng hoàn thiện</span>
         </div>
+        <div id="kpi-passrate-trend" class="min-h-[16px] flex items-center text-xs font-bold text-[#546de5]"></div>
       </div>
-      <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0">
-        <i data-feather="award" class="w-6 h-6"></i>
+      <div class="p-4 bg-slate-700/50 text-[#a4b0be] rounded-2xl shadow-sm shrink-0 border border-slate-650/40">
+        <i data-feather="award" class="w-6 h-6 animate-pulse"></i>
       </div>
     </div>
   </div>
@@ -226,39 +218,71 @@
   <!-- Performance Comparison Section -->
   <div class="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 gap-6 fade-in-up">
     <!-- Panel 1: PO Status Donut Chart -->
-    <div class="glass-card rounded-3xl p-6 space-y-6 flex flex-col justify-between">
+    <div class="glass-card rounded-[28px] p-6 space-y-6 flex flex-col justify-between bg-gradient-to-br from-white to-slate-50/50 border border-slate-200/60 shadow-[0_4px_25px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] min-h-[320px]">
       <div>
         <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-          <i data-feather="pie-chart" class="w-4 h-4 text-indigo-500"></i> TRẠNG THÁI KIỂM HÀNG ĐƠN HÀNG (PO STATUS)
+          <i data-feather="pie-chart" class="w-4 h-4 text-indigo-600"></i> TRẠNG THÁI KIỂM HÀNG ĐƠN HÀNG (PO STATUS)
         </h3>
         <p class="text-[10px] text-slate-400 font-bold mt-1">Tỷ lệ số PO đã được kiểm đạt tiêu chuẩn so với kế hoạch</p>
       </div>
       
-      <div class="flex justify-center py-4 relative grow">
-        <canvas id="overallDonutChart" class="max-w-[180px] max-h-[180px] my-auto"></canvas>
+      <div style="position: relative; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-grow: 1;">
+        <!-- Left Column: Giant Presentation Typography -->
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding-left: 4px; pointer-events: none;">
+          <span id="overallPassValBig" style="font-size: 48px; font-weight: 800; color: #1d4ed8; line-height: 0.95; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 4px 20px rgba(59,130,246,0.15);">100%</span>
+          <span style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px; margin-bottom: 6px;">ĐẠT ĐƠN HÀNG (AQL)</span>
+          <div id="overallQualityBadge" style="align-self: flex-start; padding: 4px 8px; border-radius: 8px; font-size: 8px; font-weight: 900; background: rgba(59, 130, 246, 0.1); color: #1d4ed8; border: 1.5px solid rgba(59, 130, 246, 0.2); text-transform: uppercase; letter-spacing: 0.05em; display: inline-block;">XUẤT SẮC</div>
+        </div>
+
+        <!-- Right Column: Sliced Pie Chart with Speech-Bubble Badges -->
+        <div style="width: 170px; height: 170px; position: relative; display: flex; justify-content: center; align-items: center; shrink: 0;">
+          <!-- Glowing Orb Background -->
+          <div id="overallGlow" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 130px; height: 130px; background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(20, 184, 166, 0.05) 50%, rgba(255, 255, 255, 0) 70%); filter: blur(10px); border-radius: 50%; pointer-events: none; z-index: 1;"></div>
+          
+          <canvas id="overallDonutChart" style="max-width: 155px; max-height: 155px; z-index: 2;"></canvas>
+          
+          <!-- Center Tiny Clean Indicator Badge -->
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 28px; height: 28px; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 50%; border: 1px solid rgba(255,255,255,0.6); z-index: 3; box-shadow: 0 4px 10px rgba(0,0,0,0.02); pointer-events: none;"></div>
+
+          <!-- Floating Speech-Bubble 1 (Đạt - PASS) -->
+          <div id="overallBadgePass" style="position: absolute; right: -12px; top: -5px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; padding: 4px 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8); border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; align-items: flex-start; z-index: 10; pointer-events: none; min-width: 76px;">
+            <span style="font-size: 7px; font-weight: 900; color: #1d4ed8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 3px;">
+              <span style="width: 4px; height: 4px; background: #1d4ed8; border-radius: 50%;"></span>ĐẠT PO
+            </span>
+            <span id="overallPassSub" style="font-size: 10px; font-weight: 800; color: #1e293b; margin-top: 1px;">0 PO</span>
+          </div>
+
+          <!-- Floating Speech-Bubble 2 (Lỗi - FAIL) -->
+          <div id="overallBadgeFail" style="position: absolute; left: -12px; bottom: -5px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; padding: 4px 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8); border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; align-items: flex-start; z-index: 10; pointer-events: none; min-width: 76px;">
+            <span style="font-size: 7px; font-weight: 900; color: #be123c; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 3px;">
+              <span style="width: 4px; height: 4px; background: #be123c; border-radius: 50%;"></span>LỖI PO
+            </span>
+            <span id="overallFailSub" style="font-size: 10px; font-weight: 800; color: #1e293b; margin-top: 1px;">0 PO</span>
+          </div>
+        </div>
       </div>
       
       <div class="space-y-2.5 border-t border-slate-100 pt-4">
         <div class="flex justify-between items-center text-xs">
-          <span class="flex items-center gap-2 font-semibold text-slate-600"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>Đã kiểm đạt (PASS)</span>
+          <span class="flex items-center gap-2 font-semibold text-slate-600"><span class="w-2.5 h-2.5 rounded-full bg-[#1d4ed8]"></span>Đã kiểm đạt (PASS)</span>
           <span class="font-extrabold text-slate-800" id="legend-pass-count">0 PO</span>
         </div>
         <div class="flex justify-between items-center text-xs">
-          <span class="flex items-center gap-2 font-semibold text-slate-600"><span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>Đã kiểm không đạt (FAIL)</span>
+          <span class="flex items-center gap-2 font-semibold text-slate-600"><span class="w-2.5 h-2.5 rounded-full bg-[#be123c]"></span>Đã kiểm không đạt (FAIL)</span>
           <span class="font-extrabold text-slate-800" id="legend-fail-count">0 PO</span>
         </div>
         <div class="flex justify-between items-center text-xs">
-          <span class="flex items-center gap-2 font-semibold text-slate-600"><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>Chưa kiểm (Chờ)</span>
+          <span class="flex items-center gap-2 font-semibold text-slate-600"><span class="w-2.5 h-2.5 rounded-full bg-[#64748b]"></span>Chưa kiểm (Chờ)</span>
           <span class="font-extrabold text-slate-800" id="legend-pending-count">0 PO</span>
         </div>
       </div>
     </div>
 
     <!-- Panel 2: Factory Quality Bar Chart (New) -->
-    <div class="glass-card rounded-3xl p-6 space-y-6 flex flex-col justify-between">
+    <div class="glass-card rounded-[28px] p-6 space-y-6 flex flex-col justify-between bg-gradient-to-br from-white to-slate-50/50 border border-slate-200/60 shadow-[0_4px_25px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] min-h-[320px]">
       <div>
         <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-          <i data-feather="bar-chart-2" class="w-4 h-4 text-indigo-500"></i> HIỆU SUẤT CHẤT LƯỢNG NHÀ MÁY (FACTORY QUALITY)
+          <i data-feather="bar-chart-2" class="w-4 h-4 text-indigo-600"></i> HIỆU SUẤT CHẤT LƯỢNG NHÀ MÁY (FACTORY QUALITY)
         </h3>
         <p class="text-[10px] text-slate-400 font-bold mt-1">So sánh số đợt kiểm ĐẠT (PASS) vs LỖI (FAIL) theo từng nhà máy</p>
       </div>
@@ -268,16 +292,16 @@
       </div>
 
       <div class="flex items-center justify-center gap-6 border-t border-slate-100 pt-4 text-xs font-semibold text-slate-500">
-        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-indigo-500"></span>Đạt (PASS)</span>
-        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-rose-400"></span>Lỗi (FAIL)</span>
+        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#1d4ed8]"></span>Đạt (PASS)</span>
+        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#be123c]"></span>Lỗi (FAIL)</span>
       </div>
     </div>
 
     <!-- Panel 3: Factory coverage progress list -->
-    <div class="glass-card rounded-3xl p-6 space-y-6 flex flex-col justify-between">
+    <div class="glass-card rounded-[28px] p-6 space-y-6 flex flex-col justify-between bg-gradient-to-br from-white to-slate-50/50 border border-slate-200/60 shadow-[0_4px_25px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
       <div class="flex justify-between items-center">
         <div>
-          <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+          <h3 class="text-xs font-black text-slate-850 uppercase tracking-wider flex items-center gap-1.5">
             <i data-feather="trending-up" class="w-4 h-4 text-indigo-500"></i> TIẾN ĐỘ KẾ HOẠCH THEO NHÀ MÁY (FACTORY PROGRESS)
           </h3>
           <p class="text-[10px] text-slate-400 font-bold mt-1">Click vào nhà máy để xem chi tiết đợt kiểm tra</p>
@@ -388,6 +412,12 @@
     let overallDonutInstance = null;
     let factoryQualityBarInstance = null;
 
+    // Helper: Normalize factory name for matching/grouping (casing, spaces, trimming)
+    function normalizeFactoryName(name) {
+      if (!name || name === "-" || name === "0") return "";
+      return String(name).trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
     // Filters state
     let currentFilterMode = 'day'; // 'day' | 'week' | 'month'
     let weekOptions = [];
@@ -453,15 +483,15 @@
         
         // Add factories from plan sheet
         allPlans.forEach(p => {
-          const fac = String(p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "").trim();
-          if (fac && fac !== "-" && fac !== "0") factories.add(fac);
+          const rawFac = p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "";
+          const fac = normalizeFactoryName(rawFac);
+          if (fac) factories.add(fac);
         });
 
         // Add factories from actual inspections
         allFinalGens.forEach(row => {
-          if (row.fob_supplier && row.fob_supplier.trim() !== "-") {
-            factories.add(row.fob_supplier.trim());
-          }
+          const fac = normalizeFactoryName(row.fob_supplier);
+          if (fac) factories.add(fac);
         });
 
         const activeSelection = factoryFilter.value;
@@ -708,7 +738,7 @@
       
       const { startDate, endDate } = getActiveDateRange();
 
-      // Filter plans by Date (Plan sheet has no factory column — skip factory filter for plans)
+      // Filter plans by Date and Factory
       let filteredPlans = allPlans;
       if (startDate || endDate) {
         filteredPlans = filteredPlans.filter(p => {
@@ -719,12 +749,18 @@
           return true;
         });
       }
+      if (selectedFactory) {
+        filteredPlans = filteredPlans.filter(p => {
+          const fac = normalizeFactoryName(p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "");
+          return fac === normalizeFactoryName(selectedFactory);
+        });
+      }
 
       // Filter actual inspections by Factory and Date
       let filteredInspections = allFinalGens;
       if (selectedFactory) {
         filteredInspections = allFinalGens.filter(row => {
-          return String(row.fob_supplier || "").trim().toUpperCase() === selectedFactory.trim().toUpperCase();
+          return normalizeFactoryName(row.fob_supplier) === normalizeFactoryName(selectedFactory);
         });
       }
       if (startDate || endDate) {
@@ -743,6 +779,145 @@
     // Helper: get product name from plan record (for matching against inspections)
     function getPlanProductName(p) {
       return String(p["tên sp"] || p.order_no || p.description || "").trim().toUpperCase();
+    }
+
+    function calculateKpis(dataList, planList) {
+      const plannedSet = new Set();
+      planList.forEach(p => {
+        const key = getPlanProductName(p);
+        if (key && key !== "-" && key !== "0") {
+          plannedSet.add(key);
+        }
+      });
+      const totalPlanned = plannedSet.size;
+
+      const inspectedMap = {};
+      dataList.forEach(row => {
+        const key = String(row.product_name || "Unknown").trim().toUpperCase();
+        const sum = allSummaryMap[row.general_id] || {};
+        if (!inspectedMap[key]) {
+          inspectedMap[key] = { pass: 0, fail: 0, pending: 0 };
+        }
+        if (sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true) {
+          inspectedMap[key].pass++;
+        } else if (sum.final_fail === '1' || sum.final_fail === 'TRUE' || sum.final_fail === true) {
+          inspectedMap[key].fail++;
+        } else {
+          inspectedMap[key].pending++;
+        }
+      });
+      const inspectedSet = new Set(Object.keys(inspectedMap));
+
+      let matchCount = 0;
+      plannedSet.forEach(pk => {
+        if (inspectedSet.has(pk)) {
+          matchCount++;
+        }
+      });
+      const coveragePct = totalPlanned > 0 ? Math.min(Math.round((matchCount / totalPlanned) * 100), 100) : 0;
+
+      let totalPass = 0;
+      let totalFail = 0;
+      dataList.forEach(row => {
+        const sum = allSummaryMap[row.general_id] || {};
+        if (sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true) {
+          totalPass++;
+        } else if (sum.final_fail === '1' || sum.final_fail === 'TRUE' || sum.final_fail === true) {
+          totalFail++;
+        }
+      });
+      const totalRated = totalPass + totalFail;
+      let overallPassRate = 0;
+      if (totalRated > 0) {
+        overallPassRate = Math.round((totalPass / totalRated) * 100);
+      } else if (dataList.length > 0) {
+        overallPassRate = 100;
+      }
+
+      return {
+        totalPlanned,
+        totalInspections: dataList.length,
+        coveragePct,
+        overallPassRate,
+        matchCount
+      };
+    }
+
+    function renderTrend(elementId, currentValue, prevValue, type, periodLabel) {
+      const container = document.getElementById(elementId);
+      if (!container) return;
+
+      if (prevValue === undefined || prevValue === null) {
+        container.innerHTML = `<span class="text-[10px] text-slate-400 font-semibold">— Không có dữ liệu so sánh</span>`;
+        return;
+      }
+
+      let diff = currentValue - prevValue;
+      let html = "";
+      const isDarkCard = elementId === 'kpi-passrate-trend';
+
+      if (type === 'pct') {
+        if (diff > 0) {
+          const textClass = isDarkCard ? 'text-emerald-400' : 'text-[#2e7d32]';
+          const bgClass = isDarkCard ? 'bg-white/5 border border-emerald-400/20' : 'bg-emerald-50 border border-emerald-100/50';
+          html = `
+            <span class="text-[10px] font-bold ${textClass} ${bgClass} px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <i data-feather="trending-up" class="w-3 h-3 inline"></i>
+              +${diff}% ${periodLabel}
+            </span>
+          `;
+        } else if (diff < 0) {
+          const textClass = isDarkCard ? 'text-rose-400' : 'text-[#c62828]';
+          const bgClass = isDarkCard ? 'bg-white/5 border border-rose-400/20' : 'bg-rose-50 border border-rose-100/50';
+          html = `
+            <span class="text-[10px] font-bold ${textClass} ${bgClass} px-2 py-0.5 rounded-full flex items-center gap-0.5 animate-pulse">
+              <i data-feather="trending-down" class="w-3 h-3 inline"></i>
+              ${diff}% ${periodLabel}
+            </span>
+          `;
+        } else {
+          const textClass = isDarkCard ? 'text-slate-400' : 'text-slate-500';
+          const bgClass = isDarkCard ? 'bg-white/5 border border-slate-400/20' : 'bg-slate-50 border border-slate-100/50';
+          html = `
+            <span class="text-[10px] font-bold ${textClass} ${bgClass} px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <i data-feather="minus" class="w-3 h-3 inline"></i>
+              Không đổi ${periodLabel}
+            </span>
+          `;
+        }
+      } else {
+        if (diff > 0) {
+          const textClass = isDarkCard ? 'text-emerald-400' : 'text-[#2e7d32]';
+          const bgClass = isDarkCard ? 'bg-white/5 border border-emerald-400/20' : 'bg-emerald-50 border border-emerald-100/50';
+          html = `
+            <span class="text-[10px] font-bold ${textClass} ${bgClass} px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <i data-feather="trending-up" class="w-3 h-3 inline"></i>
+              +${diff} ${periodLabel}
+            </span>
+          `;
+        } else if (diff < 0) {
+          const textClass = isDarkCard ? 'text-rose-400' : 'text-[#c62828]';
+          const bgClass = isDarkCard ? 'bg-white/5 border border-rose-400/20' : 'bg-rose-50 border border-rose-100/50';
+          html = `
+            <span class="text-[10px] font-bold ${textClass} ${bgClass} px-2 py-0.5 rounded-full flex items-center gap-0.5 animate-pulse">
+              <i data-feather="trending-down" class="w-3 h-3 inline"></i>
+              ${diff} ${periodLabel}
+            </span>
+          `;
+        } else {
+          const textClass = isDarkCard ? 'text-slate-400' : 'text-slate-500';
+          const bgClass = isDarkCard ? 'bg-white/5 border border-slate-400/20' : 'bg-slate-50 border border-slate-100/50';
+          html = `
+            <span class="text-[10px] font-bold ${textClass} ${bgClass} px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <i data-feather="minus" class="w-3 h-3 inline"></i>
+              Không đổi ${periodLabel}
+            </span>
+          `;
+        }
+      }
+
+      container.innerHTML = html;
+      if (typeof feather !== 'undefined') feather.replace();
     }
 
     function calculateAndRender(dataList, planList, factoryFilter) {
@@ -794,37 +969,78 @@
       document.getElementById('kpi-coverage').textContent = `${coveragePct}%`;
       document.getElementById('kpi-coverage-sub').textContent = `${matchCount}/${totalPlanned} PO đã kiểm (Kế hoạch)`;
 
-      // 5. Pass / Fail / Pending counts — per inspection run (general_id)
-      let totalPass = 0;
-      let totalFail = 0;
-      dataList.forEach(row => {
+      // 4.5. Build Global First Attempt Map (chronological earliest inspection per PO across ALL records in allFinalGens)
+      const globalFirstAttemptMap = {};
+      allFinalGens.forEach(row => {
+        const prodKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.color || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.po_qty || "0") + "_" + 
+                        normalizeFactoryName(row.fob_supplier || "Unknown");
+        
+        const insDate = parseDate(row.inspection_date);
+        const submitDate = parseDate(row.timestamp || row.submit_time);
+        
+        const primaryTime = insDate ? insDate.getTime() : (submitDate ? submitDate.getTime() : 0);
+        const secondaryTime = submitDate ? submitDate.getTime() : 0;
+        
         const sum = allSummaryMap[row.general_id] || {};
-        if (sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true) {
-          totalPass++;
-        } else if (sum.final_fail === '1' || sum.final_fail === 'TRUE' || sum.final_fail === true) {
-          totalFail++;
+        const isPass = sum.final_pass === '1' || sum.final_pass === 'TRUE' || sum.final_pass === true;
+        
+        if (!globalFirstAttemptMap[prodKey]) {
+          globalFirstAttemptMap[prodKey] = {
+            primaryTime,
+            secondaryTime,
+            isPass
+          };
+        } else {
+          let isEarlier = false;
+          if (primaryTime !== globalFirstAttemptMap[prodKey].primaryTime) {
+            isEarlier = primaryTime < globalFirstAttemptMap[prodKey].primaryTime;
+          } else {
+            isEarlier = secondaryTime < globalFirstAttemptMap[prodKey].secondaryTime;
+          }
+          
+          if (isEarlier) {
+            globalFirstAttemptMap[prodKey] = {
+              primaryTime,
+              secondaryTime,
+              isPass
+            };
+          }
         }
       });
 
-      const totalRated = totalPass + totalFail;
-      let overallPassRate = 0;
-      if (totalRated > 0) {
-        overallPassRate = Math.round((totalPass / totalRated) * 100);
-      } else if (dataList.length > 0) {
-        overallPassRate = 100;
-      }
+      // Get unique PO keys inspected in the current filtered list (dataList)
+      const inspectedPOKeys = new Set();
+      dataList.forEach(row => {
+        const prodKey = String(row.product_name || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.color || "Unknown").trim().toUpperCase() + "_" + 
+                        String(row.po_qty || "0") + "_" + 
+                        normalizeFactoryName(row.fob_supplier || "Unknown");
+        inspectedPOKeys.add(prodKey);
+      });
+      
+      let firstPassCount = 0;
+      inspectedPOKeys.forEach(prodKey => {
+        const globalAtt = globalFirstAttemptMap[prodKey];
+        if (globalAtt && globalAtt.isPass) {
+          firstPassCount++;
+        }
+      });
+      
+      let overallPassRate = inspectedPOKeys.size > 0 ? Math.round((firstPassCount / inspectedPOKeys.size) * 100) : 0;
       document.getElementById('kpi-passrate').textContent = `${overallPassRate}%`;
 
       const passRateSub = document.getElementById('kpi-passrate-sub');
       if (overallPassRate >= 90) {
         passRateSub.textContent = "✓ Hiệu suất chất lượng rất tốt";
-        passRateSub.className = "text-[10px] font-bold leading-none text-emerald-600";
+        passRateSub.className = "text-[10px] font-bold leading-none text-emerald-400";
       } else if (overallPassRate >= 75) {
         passRateSub.textContent = "⚠️ Cần theo dõi chất lượng";
-        passRateSub.className = "text-[10px] font-bold leading-none text-amber-600";
+        passRateSub.className = "text-[10px] font-bold leading-none text-amber-400";
       } else {
         passRateSub.textContent = "🚨 Cảnh báo chất lượng kém";
-        passRateSub.className = "text-[10px] font-bold leading-none text-rose-600 animate-pulse";
+        passRateSub.className = "text-[10px] font-bold leading-none text-rose-400 animate-pulse";
       }
 
       // 6. Donut chart — PO level: PASS / FAIL / PENDING(chưa kiểm)
@@ -839,6 +1055,86 @@
       document.getElementById('legend-pass-count').textContent = `${poPass} PO`;
       document.getElementById('legend-fail-count').textContent = `${poFail} PO`;
       document.getElementById('legend-pending-count').textContent = `${pendingPos} PO`;
+
+      // --- Calculate and Render Trends ---
+      let prevStartDate = null;
+      let prevEndDate = null;
+      let periodLabel = "so với chu kỳ trước";
+
+      const { startDate, endDate } = getActiveDateRange();
+
+      if (currentFilterMode === 'day') {
+        if (startDate && endDate) {
+          const durationMs = endDate.getTime() - startDate.getTime();
+          prevStartDate = new Date(startDate.getTime() - durationMs - 1000);
+          prevEndDate = new Date(startDate.getTime() - 1000);
+          const isSingleDay = startDate.toDateString() === endDate.toDateString();
+          periodLabel = isSingleDay ? "so với ngày trước" : "so với chu kỳ trước";
+        } else {
+          // default yesterday vs today if no range selected
+          const today = new Date();
+          prevStartDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 0, 0, 0);
+          prevEndDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 23, 59, 59);
+          periodLabel = "so với ngày trước";
+        }
+      } else if (currentFilterMode === 'week') {
+        const weekSelect = document.getElementById('filter-week');
+        const weekIdx = weekSelect ? parseInt(weekSelect.value, 10) : NaN;
+        if (!isNaN(weekIdx) && weekIdx > 0 && weekOptions[weekIdx - 1]) {
+          prevStartDate = weekOptions[weekIdx - 1].start;
+          prevEndDate = weekOptions[weekIdx - 1].end;
+          periodLabel = "so với tuần trước";
+        }
+      } else if (currentFilterMode === 'month') {
+        const monthSelect = document.getElementById('filter-month');
+        const monthIdx = monthSelect ? parseInt(monthSelect.value, 10) : NaN;
+        if (!isNaN(monthIdx) && monthIdx > 0 && monthOptions[monthIdx - 1]) {
+          prevStartDate = monthOptions[monthIdx - 1].start;
+          prevEndDate = monthOptions[monthIdx - 1].end;
+          periodLabel = "so với tháng trước";
+        }
+      }
+
+      let prevKpis = null;
+      if (prevStartDate && prevEndDate) {
+        // Filter previous plans by date and factory (if factory filter is active)
+        let prevPlans = allPlans.filter(p => {
+          const pDate = parseDate(p["t.gian giao"] || p.date);
+          if (!pDate) return false;
+          if (pDate < prevStartDate || pDate > prevEndDate) return false;
+          if (factoryFilter) {
+            const fac = normalizeFactoryName(p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "");
+            return fac === normalizeFactoryName(factoryFilter);
+          }
+          return true;
+        });
+
+        // Filter previous inspections by date and factory (if factory filter is active)
+        let prevInspections = allFinalGens.filter(row => {
+          const insDate = parseDate(row.inspection_date);
+          if (!insDate) return false;
+          if (insDate < prevStartDate || insDate > prevEndDate) return false;
+          if (factoryFilter) {
+            return normalizeFactoryName(row.fob_supplier) === normalizeFactoryName(factoryFilter);
+          }
+          return true;
+        });
+
+        prevKpis = calculateKpis(prevInspections, prevPlans);
+      }
+
+      // Render the trends
+      if (prevKpis) {
+        renderTrend('kpi-coverage-trend', coveragePct, prevKpis.coveragePct, 'pct', periodLabel);
+        renderTrend('kpi-plans-trend', totalPlanned, prevKpis.totalPlanned, 'count', periodLabel);
+        renderTrend('kpi-inspections-trend', dataList.length, prevKpis.totalInspections, 'count', periodLabel);
+        renderTrend('kpi-passrate-trend', overallPassRate, prevKpis.overallPassRate, 'pct', periodLabel);
+      } else {
+        renderTrend('kpi-coverage-trend', coveragePct, null, 'pct', periodLabel);
+        renderTrend('kpi-plans-trend', totalPlanned, null, 'count', periodLabel);
+        renderTrend('kpi-inspections-trend', dataList.length, null, 'count', periodLabel);
+        renderTrend('kpi-passrate-trend', overallPassRate, null, 'pct', periodLabel);
+      }
 
       // Render Charts & Factory List
       renderDonutChart(poPass, poFail, pendingPos);
@@ -857,10 +1153,68 @@
       }
 
       const total = pass + fail + pending;
+      
+      // Update central text nodes and dynamic glow
+      const overallPassValBig = document.getElementById('overallPassValBig');
+      const overallPassSub = document.getElementById('overallPassSub');
+      const overallFailSub = document.getElementById('overallFailSub');
+      const overallQualityBadge = document.getElementById('overallQualityBadge');
+      const overallGlow = document.getElementById('overallGlow');
+
+      const passPct = total > 0 ? Math.round((pass / total) * 100) : 0;
+      const failPct = total > 0 ? Math.round((fail / total) * 100) : 0;
+
+      if (overallPassValBig) overallPassValBig.textContent = passPct + '%';
+      if (overallPassSub) overallPassSub.textContent = pass + ' PO';
+      if (overallFailSub) overallFailSub.textContent = fail + ' PO';
+
+      if (overallGlow) {
+        if (passPct >= 90) {
+          overallGlow.style.background = 'radial-gradient(circle, rgba(45, 62, 107, 0.25) 0%, rgba(20, 184, 166, 0.04) 50%, rgba(255, 255, 255, 0) 70%)';
+          if (overallPassValBig) {
+            overallPassValBig.style.background = 'linear-gradient(135deg, #425a94 0%, #2d3e6b 100%)';
+            overallPassValBig.style.webkitBackgroundClip = 'text';
+            overallPassValBig.style.webkitTextFillColor = 'transparent';
+          }
+          if (overallQualityBadge) {
+            overallQualityBadge.textContent = 'XUẤT SẮC';
+            overallQualityBadge.style.color = '#2d3e6b';
+            overallQualityBadge.style.background = 'rgba(45, 62, 107, 0.08)';
+            overallQualityBadge.style.borderColor = 'rgba(45, 62, 107, 0.2)';
+          }
+        } else if (passPct >= 75) {
+          overallGlow.style.background = 'radial-gradient(circle, rgba(217, 119, 6, 0.25) 0%, rgba(217, 119, 6, 0.05) 50%, rgba(255, 255, 255, 0) 70%)';
+          if (overallPassValBig) {
+            overallPassValBig.style.background = 'linear-gradient(135deg, #d97706 0%, #b45309 100%)';
+            overallPassValBig.style.webkitBackgroundClip = 'text';
+            overallPassValBig.style.webkitTextFillColor = 'transparent';
+          }
+          if (overallQualityBadge) {
+            overallQualityBadge.textContent = 'ĐẠT YÊU CẦU';
+            overallQualityBadge.style.color = '#b45309';
+            overallQualityBadge.style.background = 'rgba(217, 119, 6, 0.08)';
+            overallQualityBadge.style.borderColor = 'rgba(217, 119, 6, 0.2)';
+          }
+        } else {
+          overallGlow.style.background = 'radial-gradient(circle, rgba(115, 42, 59, 0.25) 0%, rgba(115, 42, 59, 0.05) 50%, rgba(255, 255, 255, 0) 70%)';
+          if (overallPassValBig) {
+            overallPassValBig.style.background = 'linear-gradient(135deg, #803748 0%, #4b1722 100%)';
+            overallPassValBig.style.webkitBackgroundClip = 'text';
+            overallPassValBig.style.webkitTextFillColor = 'transparent';
+          }
+          if (overallQualityBadge) {
+            overallQualityBadge.textContent = 'CẢNH BÁO';
+            overallQualityBadge.style.color = '#732a3b';
+            overallQualityBadge.style.background = 'rgba(115, 42, 59, 0.08)';
+            overallQualityBadge.style.borderColor = 'rgba(115, 42, 59, 0.2)';
+          }
+        }
+      }
+
       if (total === 0) {
         // Fallback placeholder chart
         overallDonutInstance = new Chart(ctx, {
-          type: 'doughnut',
+          type: 'pie',
           data: {
             labels: ['Chưa có dữ liệu'],
             datasets: [{
@@ -870,7 +1224,6 @@
             }]
           },
           options: {
-            cutout: '75%',
             responsive: true,
             plugins: { legend: { display: false } }
           }
@@ -879,23 +1232,37 @@
       }
 
       overallDonutInstance = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: ['Đạt (PASS)', 'Lỗi (FAIL)', 'Chờ kiểm'],
           datasets: [{
             data: [pass, fail, pending],
-            backgroundColor: ['#34d399', '#f87171', '#cbd5e1'],
-            hoverBackgroundColor: ['#10b981', '#f87171', '#94a3b8'],
-            borderWidth: 3,
-            borderColor: '#ffffff'
+            backgroundColor: ['#2d3e6b', '#732a3b', '#606d80'], // Modern Dusty Blue, Dusty Burgundy, Dusty Charcoal
+            hoverBackgroundColor: ['#1e2b4d', '#501d29', '#4a5361'],
+            borderWidth: 5,
+            borderColor: '#ffffff',
+            hoverBorderWidth: 5,
+            hoverBorderColor: '#ffffff',
+            hoverOffset: 10
           }]
         },
         options: {
-          cutout: '75%',
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.98)',
+              titleColor: '#1e293b',
+              bodyColor: '#475569',
+              borderColor: 'rgba(226, 232, 240, 0.8)',
+              borderWidth: 1,
+              padding: 10,
+              boxPadding: 6,
+              usePointStyle: true,
+              cornerRadius: 12,
+              titleFont: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' },
+              bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
               callbacks: {
                 label: function(context) {
                   const val = context.raw || 0;
@@ -919,7 +1286,7 @@
 
       const factoryMap = {};
       inspections.forEach(row => {
-        const fac = String(row.fob_supplier || "Khác").trim();
+        const fac = normalizeFactoryName(row.fob_supplier) || "KHÁC";
         if (!factoryMap[fac]) {
           factoryMap[fac] = { pass: 0, fail: 0 };
         }
@@ -959,14 +1326,26 @@
             {
               label: 'Đạt (PASS)',
               data: passes,
-              backgroundColor: '#6366f1',
+              backgroundColor: (() => {
+                const barCtx = ctx.getContext('2d');
+                const g = barCtx.createLinearGradient(0, 0, 0, 190);
+                g.addColorStop(0, '#425a94'); // Modern Dusty Blue
+                g.addColorStop(1, '#233359');
+                return g;
+              })(),
               borderRadius: 6,
               barThickness: 12
             },
             {
               label: 'Lỗi (FAIL)',
               data: fails,
-              backgroundColor: '#f87171',
+              backgroundColor: (() => {
+                const barCtx = ctx.getContext('2d');
+                const g = barCtx.createLinearGradient(0, 0, 0, 190);
+                g.addColorStop(0, '#803748'); // Dusty Burgundy
+                g.addColorStop(1, '#4b1722');
+                return g;
+              })(),
               borderRadius: 6,
               barThickness: 12
             }
@@ -976,17 +1355,35 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.98)',
+              titleColor: '#1e293b',
+              bodyColor: '#475569',
+              borderColor: 'rgba(226, 232, 240, 0.8)',
+              borderWidth: 1,
+              padding: 10,
+              boxPadding: 6,
+              usePointStyle: true,
+              cornerRadius: 12,
+              titleFont: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' },
+              bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
+              callbacks: {
+                label: function(context) {
+                  return ` ${context.dataset.label}: ${context.raw} PO`;
+                }
+              }
+            }
           },
           scales: {
             x: {
               grid: { display: false },
-              ticks: { font: { family: 'Outfit', weight: 'bold', size: 9 }, color: '#64748b' }
+              ticks: { font: { family: 'Plus Jakarta Sans', weight: 'bold', size: 9 }, color: '#94a3b8' }
             },
             y: {
               beginAtZero: true,
-              grid: { color: '#f1f5f9' },
-              ticks: { stepSize: 1, font: { family: 'Outfit', size: 9 }, color: '#64748b' }
+              grid: { color: '#f1f5f9', drawBorder: false },
+              ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans', size: 9 }, color: '#94a3b8' }
             }
           }
         }
@@ -999,18 +1396,22 @@
 
       const factoryMap = {};
 
-      // 1. Build global planned set from Plan sheet (no factory column available)
-      const globalPlannedSet = new Set();
+      // 1. Group active plans by factory
       activePlans.forEach(p => {
+        const rawFac = p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "KHÁC";
+        const fac = normalizeFactoryName(rawFac) || "KHÁC";
+        if (!factoryMap[fac]) {
+          factoryMap[fac] = { planned: new Set(), inspected: new Set(), passCount: 0, failCount: 0 };
+        }
         const key = getPlanProductName(p);
         if (key && key !== "-" && key !== "0") {
-          globalPlannedSet.add(key);
+          factoryMap[fac].planned.add(key);
         }
       });
 
-      // 2. Group active actuals by factory
+      // 2. Group active inspections by factory
       activeInspections.forEach(row => {
-        const fac = String(row.fob_supplier || "Khác").trim();
+        const fac = normalizeFactoryName(row.fob_supplier) || "KHÁC";
         if (!factoryMap[fac]) {
           factoryMap[fac] = { planned: new Set(), inspected: new Set(), passCount: 0, failCount: 0 };
         }
@@ -1026,19 +1427,10 @@
         }
       });
 
-      // 3. For each factory, determine planned POs by matching against global plan
-      Object.keys(factoryMap).forEach(fac => {
-        factoryMap[fac].inspected.forEach(prodName => {
-          if (globalPlannedSet.has(prodName)) {
-            factoryMap[fac].planned.add(prodName);
-          }
-        });
-      });
-
       // Filter down to the single factory if filter is active
-      let factoryNames = Object.keys(factoryMap).filter(name => name !== "Khác" || factoryMap[name].inspected.size > 0);
+      let factoryNames = Object.keys(factoryMap).filter(name => name !== "KHÁC" || factoryMap[name].planned.size > 0 || factoryMap[name].inspected.size > 0);
       if (factoryFilter) {
-        factoryNames = factoryNames.filter(name => name.toUpperCase() === factoryFilter.toUpperCase());
+        factoryNames = factoryNames.filter(name => normalizeFactoryName(name) === normalizeFactoryName(factoryFilter));
       }
 
       document.getElementById('factory-count').textContent = `${factoryNames.length} nhà máy`;
@@ -1116,8 +1508,11 @@
       // Get filtered plans & inspections specifically for this factory
       const { startDate, endDate } = getActiveDateRange();
 
-      // Plans filtered by date only (no factory column in Plan sheet)
+      // Plans filtered by date and factory
       const facPlans = allPlans.filter(p => {
+        const rawFac = p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "KHÁC";
+        const fac = normalizeFactoryName(rawFac) || "KHÁC";
+        if (fac !== normalizeFactoryName(factoryName)) return false;
         const pDate = parseDate(p["t.gian giao"] || p.date);
         if (!pDate) return false;
         if (startDate && pDate < startDate) return false;
@@ -1127,8 +1522,8 @@
 
       // Inspections for this factory
       const facInspections = allFinalGens.filter(row => {
-        const fName = String(row.fob_supplier || "").trim().toUpperCase();
-        if (fName !== factoryName.toUpperCase()) return false;
+        const fac = normalizeFactoryName(row.fob_supplier) || "KHÁC";
+        if (fac !== normalizeFactoryName(factoryName)) return false;
         const insDate = parseDate(row.inspection_date);
         if (!insDate) return false;
         if (startDate && insDate < startDate) return false;
@@ -1270,7 +1665,8 @@
       });
 
       filteredPlans.forEach(p => {
-        const fac = String(p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "Khác").trim();
+        const rawFac = p.factory || p.fob || p.supplier || p["nhà máy"] || p.fob_supplier || "KHÁC";
+        const fac = normalizeFactoryName(rawFac) || "KHÁC";
         if (!factoryMap[fac]) {
           factoryMap[fac] = { planned: new Set(), inspected: new Set(), passCount: 0, failCount: 0 };
         }
@@ -1279,7 +1675,7 @@
       });
 
       filteredInspections.forEach(row => {
-        const fac = String(row.fob_supplier || "Khác").trim();
+        const fac = normalizeFactoryName(row.fob_supplier) || "KHÁC";
         if (!factoryMap[fac]) {
           factoryMap[fac] = { planned: new Set(), inspected: new Set(), passCount: 0, failCount: 0 };
         }
@@ -1291,9 +1687,9 @@
         else if (sum.final_fail === '1' || sum.final_fail === 'TRUE' || sum.final_fail === true) factoryMap[fac].failCount++;
       });
 
-      let factoryNames = Object.keys(factoryMap).filter(name => name !== "Khác" || factoryMap[name].planned.size > 0);
+      let factoryNames = Object.keys(factoryMap).filter(name => name !== "KHÁC" || factoryMap[name].planned.size > 0);
       if (factoryFilter) {
-        factoryNames = factoryNames.filter(name => name.toUpperCase() === factoryFilter.toUpperCase());
+        factoryNames = factoryNames.filter(name => normalizeFactoryName(name) === normalizeFactoryName(factoryFilter));
       }
 
       // Generate CSV string (using tab or comma separator, including BOM for Vietnamese compatibility)
@@ -1333,15 +1729,26 @@
     function parseDate(str) {
       if (!str || str === "-") return null;
       if (str instanceof Date) return str;
-      const parts = str.split(/[-/.]/);
-      if (parts.length === 3) {
-        const d = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10) - 1;
-        const y = parseInt(parts[2], 10);
-        if (y > 1000) return new Date(y, m, d);
+      const s = String(str).trim().split(' ')[0];
+      
+      // ISO format: YYYY-MM-DD
+      const iso = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+      if (iso) {
+        return new Date(parseInt(iso[1], 10), parseInt(iso[2], 10) - 1, parseInt(iso[3], 10), 12, 0, 0);
       }
-      const parsed = Date.parse(str);
-      return isNaN(parsed) ? null : new Date(parsed);
+      
+      // VN format: DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+      const vn = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+      if (vn) {
+        return new Date(parseInt(vn[3], 10), parseInt(vn[2], 10) - 1, parseInt(vn[1], 10), 12, 0, 0);
+      }
+      
+      const parsed = Date.parse(s);
+      if (!isNaN(parsed)) {
+        const d = new Date(parsed);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0);
+      }
+      return null;
     }
   </script>
 </body>

@@ -8,12 +8,13 @@
 
 const QMS_API = (() => {
 
-  const API_URL = 'https://script.google.com/macros/s/AKfycbz8lgi8wXdgg5xoZehK9uVkwux77bXFvoVE3rCwTBwAqCWUk777g4zI-kbTqCoKCpoW/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbx7OLkhCNm45PTfd92NmyEgOc82713CES2pEqtHJVlBdhZFA1lxOxDuJSUtj5n-Acu6/exec';
 
   /* ---- Helper: GET request ---- */
   async function get(params = {}) {
     const url = new URL(API_URL);
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    url.searchParams.set('_t', Date.now()); // Tránh trình duyệt cache kết quả từ GAS
 
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -26,7 +27,7 @@ const QMS_API = (() => {
   async function post(action, payload) {
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action, payload })
     });
 
@@ -104,10 +105,18 @@ const QMS_API = (() => {
     /** GET: Load all final inspection results from General and Summary sheets */
     async getFinalResults() {
       const res = await get({ action: 'getFinalResults' });
-      if (res && res.ok && Array.isArray(res.general)) {
-        res.general = res.general.filter(row => {
-          return !isTestRecord(row.fob_supplier, row.po_no || row.product_name, row.style_no);
-        });
+      if (res && res.ok) {
+        if (Array.isArray(res.general)) {
+          res.general = res.general.filter(row => {
+            if (!row.general_id || !row.general_id.trim()) return false;
+            return !isTestRecord(row.fob_supplier, row.po_no || row.product_name, row.style_no);
+          });
+        }
+        if (Array.isArray(res.summary)) {
+          res.summary = res.summary.filter(row => {
+            return row.general_id && row.general_id.trim();
+          });
+        }
       }
       return res;
     },
@@ -208,6 +217,22 @@ const QMS_API = (() => {
     },
 
     /**
+     * GET: Fetch schedule data from Schedule sheet
+     */
+    async getScheduleData() {
+      const res = await get({ action: 'getScheduleData' });
+      if (res && res.ok && Array.isArray(res.data)) {
+        res.data = res.data.filter(p => {
+          const fob = p.fob || p.supplier || p.factory || p["nhà máy"] || p.fob_supplier || "";
+          const po = p.po || p.po_number || p["po number"] || p["mã po"] || "";
+          const style = p.style || p.product_code || p.product_name || "";
+          return !isTestRecord(fob, po, style);
+        });
+      }
+      return res;
+    },
+
+    /**
      * POST: Submit return analysis batch
      * payload: Array of return items
      */
@@ -245,6 +270,27 @@ const QMS_API = (() => {
      */
     async updatePlanStatus(planId, status) {
       return await post('updatePlanStatus', { plan_id: planId, status: status });
+    },
+
+    /**
+     * POST: Submit Materials Approval (NPL) record with optional testing data
+     */
+    async submitNPL(payload) {
+      return await post('submitNPL', payload);
+    },
+
+    /**
+     * POST: Submit Fabric Shrinkage & Appearance Testing report directly
+     */
+    async submitFabricTesting(payload) {
+      return await post('submitFabricTesting', payload);
+    },
+
+    /**
+     * GET: Fetch all historical fabric testing reports
+     */
+    async getFabricTesting() {
+      return await get({ action: 'getFabricTesting' });
     }
   };
 })();

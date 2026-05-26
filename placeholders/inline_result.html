@@ -8,9 +8,11 @@
   <script src="https://unpkg.com/feather-icons"></script>
   <!-- QMS API Client -->
   <script src="../api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    body {
+      filter: saturate(0.8) !important; 
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; 
       background: transparent; 
       -webkit-font-smoothing: antialiased;
     }
@@ -32,61 +34,55 @@
 </head>
 <body class="p-4 md:p-8">
 
-  <div class="max-w-6xl mx-auto">
-    <!-- Header Area -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-      <div>
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">INLINE INSPECTION RESULTS</h2>
-        <p class="text-sm text-slate-500 mt-1 font-medium tracking-wide">Lịch sử đánh giá chất lượng trong quá trình sản xuất</p>
+  <div class="w-full max-w-full">
+
+
+    <!-- Filters Single Pill -->
+    <div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 bg-white/95 backdrop-blur-md border border-slate-200/70 rounded-full px-6 py-2.5 shadow-sm w-fit mx-auto max-w-full mb-6">
+      <!-- Factory Filter Portion -->
+      <div class="flex items-center gap-2 text-slate-400">
+        <i data-feather="home" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+        <div class="relative">
+          <select id="filter-factory" onchange="applyFilters()" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none focus:ring-0">
+            <option value="">Tất cả nhà máy</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+            <i data-feather="chevron-down" class="w-3 h-3"></i>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Filters Panel -->
-    <div class="glass-panel rounded-2xl p-4 md:p-6 mb-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Nhà máy filter -->
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nhà máy / Nhà gia công</label>
-          <div class="relative">
-            <select id="filter-factory" onchange="applyFilters()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-              <option value="">Tất cả nhà máy</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-              <i data-feather="chevron-down" class="w-4 h-4"></i>
-            </div>
+      <!-- Vertical Divider -->
+      <div class="hidden sm:block h-4 w-[1px] bg-slate-200"></div>
+
+      <!-- Time Preset Portion -->
+      <div class="flex items-center gap-2 text-slate-400">
+        <i data-feather="calendar" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+        <div class="relative">
+          <select id="filter-time-preset" onchange="onTimePresetChange()" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none focus:ring-0">
+            <option value="all">Tất cả thời gian</option>
+            <option value="today">Hôm nay</option>
+            <option value="yesterday">Hôm qua</option>
+            <option value="this-week">Tuần này</option>
+            <option value="last-week">Tuần trước</option>
+            <option value="this-month">Tháng này</option>
+            <option value="last-month">Tháng trước</option>
+            <option value="custom">Tùy chọn ngày...</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+            <i data-feather="chevron-down" class="w-3 h-3"></i>
           </div>
         </div>
+      </div>
 
-        <!-- Filter theo Thời gian (Tháng, Tuần, Ngày) -->
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Khoảng thời gian</label>
-          <div class="relative">
-            <select id="filter-time-preset" onchange="onTimePresetChange()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer">
-              <option value="all">Tất cả thời gian</option>
-              <option value="today">Hôm nay</option>
-              <option value="yesterday">Hôm qua</option>
-              <option value="this-week">Tuần này</option>
-              <option value="last-week">Tuần trước</option>
-              <option value="this-month">Tháng này</option>
-              <option value="last-month">Tháng trước</option>
-              <option value="custom">Tùy chọn ngày...</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-              <i data-feather="chevron-down" class="w-4 h-4"></i>
-            </div>
-          </div>
+      <!-- Custom Date Inputs (Displays inline when preset is custom) -->
+      <div class="flex items-center gap-2">
+        <div id="custom-date-start-container" class="hidden flex items-center gap-1.5 animate-fade-in pl-3 border-l border-slate-200/80">
+          <input type="date" id="filter-date-start" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer">
+          <span class="text-[9px] font-black text-slate-400 uppercase">đến</span>
         </div>
-
-        <!-- Ngày bắt đầu (Cho Custom) -->
-        <div id="custom-date-start-container" class="hidden">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Từ ngày</label>
-          <input type="date" id="filter-date-start" onchange="applyFilters()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
-        </div>
-
-        <!-- Ngày kết thúc (Cho Custom) -->
-        <div id="custom-date-end-container" class="hidden">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Đến ngày</label>
-          <input type="date" id="filter-date-end" onchange="applyFilters()" class="w-full bg-white/60 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
+        <div id="custom-date-end-container" class="hidden flex items-center gap-1.5 animate-fade-in">
+          <input type="date" id="filter-date-end" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer">
         </div>
       </div>
     </div>
@@ -126,6 +122,12 @@
   <script>
     let allInlineGens = [];
     let allSummaryMap = {};
+
+    // Helper: Normalize factory name for matching/grouping (casing, spaces, trimming)
+    function normalizeFactoryName(name) {
+      if (!name || name === "-" || name === "0") return "";
+      return String(name).trim().replace(/\s+/g, ' ').toUpperCase();
+    }
 
     async function loadData() {
       try {
@@ -177,8 +179,9 @@
       // Tìm danh sách nhà máy độc nhất
       const factories = new Set();
       allInlineGens.forEach(row => {
-        if (row.fob_supplier && row.fob_supplier.trim()) {
-          factories.add(row.fob_supplier.trim());
+        const fac = normalizeFactoryName(row.fob_supplier);
+        if (fac) {
+          factories.add(fac);
         }
       });
 
@@ -357,7 +360,7 @@
 
       const filtered = allInlineGens.filter(row => {
         // Lọc theo Nhà máy
-        if (factory && row.fob_supplier && row.fob_supplier.trim() !== factory) {
+        if (factory && normalizeFactoryName(row.fob_supplier) !== normalizeFactoryName(factory)) {
           return false;
         }
 
@@ -407,7 +410,8 @@
           <title>Đang tải báo cáo...</title>
           <style>
             body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      filter: saturate(0.8) !important;
+              font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
               display: flex;
               flex-direction: column;
               align-items: center;
@@ -564,7 +568,18 @@
           meas_result: measPass ? "PASS" : "FAIL",
 
           app_qty: s.app_total_qty || 0,
-          app_rate: s.app_defect_rate ? (parseFloat(s.app_defect_rate) * 100).toFixed(2) + "%" : "0.00%",
+          app_rate: (() => {
+            const rawRate = parseFloat(s.app_defect_rate || 0);
+            if (rawRate > 1.0) {
+              const totalQty = parseInt(s.app_total_qty || 0, 10);
+              const sampleSize = parseInt(s.sample_size || 0, 10);
+              if (sampleSize > 0) {
+                return ((totalQty / sampleSize) * 100).toFixed(2) + "%";
+              }
+              return "0.00%";
+            }
+            return (rawRate * 100).toFixed(2) + "%";
+          })(),
           app_cause: s.app_cause || "",
           app_impact: aImpactStr,
           app_result: appPass ? "PASS" : "FAIL",
@@ -675,11 +690,12 @@
           <meta charset="utf-8">
           <base href="${baseUrl}">
           <title>Garment Inspection Report - Inline - ${escapeHtml(generalId)}</title>
-          <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700;800&display=swap" rel="stylesheet">
           <style>
             *{box-sizing:border-box}
-            body{
-              font-family:'Google Sans',Arial,Helvetica,sans-serif;
+            body {
+      filter: saturate(0.8) !important;
+              font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;
               color:#222;
               margin:0;
               background:#fff;
@@ -841,7 +857,7 @@
             }
             .pdf-footer-right{
               text-align:right;
-              font-family:'Google Sans',Arial, Helvetica, sans-serif;
+              font-family:'Plus Jakarta Sans',Arial, Helvetica, sans-serif;
               font-size:12px;
               font-weight:500;
               letter-spacing:.4px;
@@ -1040,7 +1056,8 @@
             <title>Lỗi tải báo cáo</title>
             <style>
               body {
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      filter: saturate(0.8) !important;
+                font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 display: flex;
                 flex-direction: column;
                 align-items: center;

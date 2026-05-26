@@ -9,10 +9,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- QMS API Client -->
   <script src="../api.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      filter: saturate(0.8) !important;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: transparent;
       -webkit-font-smoothing: antialiased;
     }
@@ -66,223 +67,223 @@
 </head>
 <body class="p-4 md:p-8 text-slate-700 min-h-screen bg-slate-50/50">
 
-  <div class="max-w-6xl mx-auto space-y-6">
+  <div class="w-full max-w-full space-y-6">
 
-    <!-- Header Area -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">CUSTOMER REVIEW ANALYTICS (R&D)</h2>
-        <p class="text-xs text-slate-500 mt-1 font-medium tracking-wide">Phân tích phản hồi khách hàng mua sản phẩm - Giám sát chất lượng & lỗi kỹ thuật R&D</p>
+
+
+    <!-- Filters Single Pill -->
+    <div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 bg-white/95 backdrop-blur-md border border-slate-200/70 rounded-full px-6 py-2.5 shadow-sm w-fit mx-auto max-w-full">
+      <!-- Channel Filter Portion -->
+      <div class="flex items-center gap-2 text-slate-400">
+        <i data-feather="shopping-bag" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+        <div class="relative">
+          <select id="filter-channel" onchange="applyFilters()" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none focus:ring-0">
+            <option value="">Tất cả kênh</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+            <i data-feather="chevron-down" class="w-3 h-3"></i>
+          </div>
+        </div>
       </div>
-      
-      <!-- Date Sync Indicator -->
-      <div id="sync-indicator" class="flex items-center text-xs font-semibold text-slate-400 bg-white/60 px-3.5 py-1.5 rounded-full border border-slate-100 shadow-sm">
-        <div class="w-1.5 h-1.5 rounded-full bg-indigo-400 mr-2 animate-pulse"></div>
-        <span>Đồng bộ từ Google Sheets</span>
+
+      <!-- Vertical Divider -->
+      <div class="hidden sm:block h-4 w-[1px] bg-slate-200"></div>
+
+      <!-- Condition Filter Portion -->
+      <div class="flex items-center gap-2 text-slate-400">
+        <i data-feather="tag" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+        <div class="relative">
+          <select id="filter-condition" onchange="applyFilters()" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none focus:ring-0">
+            <option value="">Tất cả tình trạng</option>
+            <option value="Đã giặt">Đã giặt / Đã sử dụng</option>
+            <option value="Mới">Mới / Chưa sử dụng</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+            <i data-feather="chevron-down" class="w-3 h-3"></i>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Filters Panel -->
-    <div class="glass-card rounded-3xl p-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Kênh filter -->
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Kênh Bán Hàng</label>
-          <div class="relative">
-            <select id="filter-channel" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="">Tất cả kênh</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-              <i data-feather="chevron-down" class="w-4 h-4"></i>
-            </div>
+      <!-- Vertical Divider -->
+      <div class="hidden sm:block h-4 w-[1px] bg-slate-200"></div>
+
+      <!-- Time Preset Portion -->
+      <div class="flex items-center gap-2 text-slate-400">
+        <i data-feather="calendar" class="w-3.5 h-3.5 shrink-0 text-slate-400"></i>
+        <div class="relative">
+          <select id="filter-time-preset" onchange="onTimePresetChange()" class="bg-transparent border-none text-[11px] font-black text-slate-700 outline-none cursor-pointer pr-5 py-0.5 appearance-none focus:ring-0">
+            <option value="all" selected>Tất cả thời gian</option>
+            <option value="today">Hôm nay</option>
+            <option value="this-week">Tuần này</option>
+            <option value="this-month">Tháng này</option>
+            <option value="last-month">Tháng trước</option>
+            <option value="custom">Tùy chọn ngày...</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none text-slate-400">
+            <i data-feather="chevron-down" class="w-3 h-3"></i>
           </div>
         </div>
+      </div>
 
-        <!-- Tình trạng filter -->
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tình Trạng Sử Dụng</label>
-          <div class="relative">
-            <select id="filter-condition" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="">Tất cả tình trạng</option>
-              <option value="Đã giặt">Đã giặt / Đã sử dụng</option>
-              <option value="Mới">Mới / Chưa sử dụng</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-              <i data-feather="chevron-down" class="w-4 h-4"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filter theo Thời gian -->
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Khoảng thời gian</label>
-          <div class="relative">
-            <select id="filter-time-preset" onchange="onTimePresetChange()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="all" selected>Tất cả thời gian</option>
-              <option value="today">Hôm nay</option>
-              <option value="this-week">Tuần này</option>
-              <option value="this-month">Tháng này</option>
-              <option value="last-month">Tháng trước</option>
-              <option value="custom">Tùy chọn ngày...</option>
-            </select>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-              <i data-feather="chevron-down" class="w-4 h-4"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ngày bắt đầu & kết thúc (Cho Custom) -->
-        <div id="custom-date-container" class="hidden sm:col-span-2 lg:col-span-1 grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Từ ngày</label>
-            <input type="date" id="filter-date-start" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Đến ngày</label>
-            <input type="date" id="filter-date-end" onchange="applyFilters()" class="w-full bg-white/80 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer">
-          </div>
-        </div>
+      <!-- Custom Date Inputs (Displays inline when preset is custom) -->
+      <div id="custom-date-container" class="hidden flex items-center gap-2 animate-fade-in pl-3 border-l border-slate-200/80">
+        <input type="date" id="filter-date-start" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer">
+        <span class="text-[9px] font-black text-slate-400 uppercase">đến</span>
+        <input type="date" id="filter-date-end" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-600 outline-none cursor-pointer">
       </div>
     </div>
 
-    <!-- KPI Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      
-      <!-- Total Reviews KPI -->
-      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
-        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
-        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tổng Đánh Giá R&D</span>
-          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-total">0</div>
-          <div class="min-h-[18px] flex items-end">
-            <span class="text-[11px] text-indigo-500 font-semibold leading-none">Toàn bộ phản hồi thuộc R&D</span>
-          </div>
-        </div>
-        <div class="p-4 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm shrink-0">
-          <i data-feather="message-circle" class="w-6 h-6"></i>
-        </div>
-      </div>
-
-      <!-- Positive Reviews KPI -->
-      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden">
-        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
-        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Đánh Giá Tích Cực</span>
-          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-positive">0</div>
-          <div class="min-h-[18px] flex items-end">
-            <span class="text-[11px] text-emerald-600 font-semibold leading-none" id="kpi-positive-pct">0% tổng số</span>
-          </div>
-        </div>
-        <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0">
-          <i data-feather="smile" class="w-6 h-6"></i>
-        </div>
-      </div>
-
-      <!-- Negative Reviews KPI -->
-      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-negative-card">
-        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-negative-glow"></div>
-        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Đánh Giá Tiêu Cực</span>
-          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-negative">0</div>
-          <div class="min-h-[18px] flex items-end">
-            <span class="text-[11px] text-slate-400 font-semibold leading-none" id="kpi-negative-pct">0% tổng số</span>
-          </div>
-        </div>
-        <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0" id="kpi-negative-icon-container">
-          <i data-feather="frown" class="w-6 h-6"></i>
-        </div>
-      </div>
-
-      <!-- Positive Feedback Rate KPI -->
-      <div class="glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden" id="kpi-rate-card">
-        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-rate-glow"></div>
-        <div class="flex flex-col justify-between h-[90px] w-full pr-2">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block leading-tight min-h-[30px] flex items-center">Tỷ Lệ Tích Cực</span>
-          <div class="text-3xl font-extrabold text-slate-900 leading-none" id="kpi-rate">0%</div>
-          <div class="min-h-[18px] flex items-end">
-            <span class="text-[10px] font-black tracking-wide leading-none" id="kpi-rate-sub">Đang tính toán...</span>
-          </div>
-        </div>
-        <div class="p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0" id="kpi-rate-icon-container">
-          <i data-feather="award" id="kpi-rate-icon" class="w-6 h-6"></i>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Analytics Section -->
+    <!-- Asymmetrical Korean-style Dashboard Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
-      <!-- Issue Breakdown progress bars -->
-      <div class="glass-card rounded-3xl p-6 space-y-6">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">PHÂN LOẠI VẤN ĐỀ CHẤT LƯỢNG</h3>
-          <p class="text-xs text-slate-400 font-medium">Xếp hạng tần suất lỗi sản phẩm từ phản hồi khách hàng</p>
-        </div>
-
-        <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1" id="issue-bars-container">
-          <div class="text-center py-10 text-sm text-slate-400">Đang thống kê dữ liệu...</div>
-        </div>
-      </div>
-
-      <!-- Product reviews comparison -->
-      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6 flex flex-col justify-between">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">TỶ LỆ ĐÁNH GIÁ THEO SẢN PHẨM (STYLE)</h3>
-          <p class="text-xs text-slate-400 font-medium">So sánh tỷ lệ Đánh giá Tích cực (5★) vs Tiêu cực (1-3★) của từng sản phẩm</p>
-        </div>
-
-        <div class="space-y-5 overflow-y-auto pr-1 flex-1 max-h-[290px]" id="product-sentiment-container">
-          <div class="text-center py-10 text-sm text-slate-400">Đang thống kê dữ liệu...</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Donut Chart & Channel distribution row -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Donut Chart -->
-      <div class="glass-card rounded-3xl p-6 flex flex-col justify-between min-h-[320px]">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">CƠ CẤU ĐIỂM ĐÁNH GIÁ (SAO)</h3>
-          <p class="text-xs text-slate-400 font-medium">Tỷ lệ phân bố số sao đánh giá của khách hàng</p>
-        </div>
-
-        <div class="relative w-44 h-44 mx-auto my-2 flex items-center justify-center">
-          <canvas id="donut-chart" class="z-10"></canvas>
-        </div>
-
-        <div class="flex justify-center items-center gap-4 text-[11px] font-bold">
-          <div class="flex items-center">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#a7f3d0] mr-1.5"></span>
-            <span>Tích cực (5★)</span>
+      <!-- LEFT SECTION: PRIMARY METRICS & MAIN CHARTS (Takes 2/3 width) -->
+      <div class="lg:col-span-2 space-y-6 flex flex-col justify-between">
+        
+        <!-- Top row: Donut Chart & Key Quality KPIs side-by-side -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Card 1: Overall Satisfaction (Reviews Donut) -->
+          <div class="glass-card rounded-3xl overflow-hidden flex flex-col justify-between min-h-[260px] bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+            <div class="p-5 bg-gradient-to-br from-slate-50/90 to-indigo-50/20 relative h-full flex flex-col justify-between">
+              <div class="flex justify-between items-center mb-1">
+                <div class="flex items-center gap-1.5">
+                  <div>
+                    <span class="text-[10px] font-extrabold text-indigo-600 uppercase tracking-widest block leading-none">Cơ cấu điểm đánh giá (Sao)</span>
+                    <p class="text-[9px] text-slate-400 font-bold mt-1">ĐÁNH GIÁ TÍCH CỰC (5★): <span id="kpi-positive">0</span> (<span id="kpi-positive-pct">0%</span>)</p>
+                  </div>
+                </div>
+                <div id="donutQualityBadge" class="px-2 py-0.5 rounded-lg text-[9px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 uppercase tracking-wide">XUẤT SẮC</div>
+              </div>
+              
+              <div class="flex items-center justify-between gap-2 mt-3 my-1">
+                <!-- Left giant text & counter -->
+                <div class="pointer-events-none">
+                  <span id="donutPassValBig" class="text-4xl font-extrabold text-emerald-600 leading-none block">100%</span>
+                  <span class="text-[8px] font-black text-slate-400 block mt-1 uppercase">Tổng R&D: <span id="kpi-total" class="font-extrabold text-slate-700">0</span></span>
+                </div>
+                
+                <!-- Sliced pie chart -->
+                <div class="w-[100px] h-[100px] relative flex justify-center items-center shrink-0">
+                  <div id="donutGlow" class="absolute inset-0 bg-radial-gradient blur-md rounded-full pointer-events-none scale-75 z-1"></div>
+                  <canvas id="donut-chart" class="max-w-[85px] max-height-[85px] z-2"></canvas>
+                  
+                  <!-- Floating tiny speech bubble counts -->
+                  <div id="donutBadgePass" class="absolute -right-3 -top-2 bg-white/95 backdrop-blur-md rounded-lg py-0.5 px-1.5 shadow-sm border border-slate-100 flex flex-col z-10 scale-75 transform origin-top-right">
+                    <span class="text-[6px] font-black text-[#59936f] tracking-wider text-left">TÍCH CỰC</span>
+                    <span id="donutPassSub" class="text-[9px] font-black text-slate-800 leading-none text-left">0 rev</span>
+                  </div>
+                  <div id="donutBadgeFail" class="absolute -left-3 -bottom-2 bg-white/95 backdrop-blur-md rounded-lg py-0.5 px-1.5 shadow-sm border border-slate-100 flex flex-col z-10 scale-75 transform origin-bottom-left">
+                    <span class="text-[6px] font-black text-[#c75466] tracking-wider text-left">TIÊU CỰC</span>
+                    <span id="donutFailSub" class="text-[9px] font-black text-slate-800 leading-none text-left">0 rev</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex justify-center items-center gap-3 text-[9px] font-bold mt-2">
+                <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-[#59936f] mr-1"></span><span>Tích cực</span></div>
+                <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-[#c75466] mr-1"></span><span>Tiêu cực</span></div>
+                <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-[#94a3b8] mr-1"></span><span>Khác</span></div>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#fca5a5] mr-1.5"></span>
-            <span>Tiêu cực (1-3★)</span>
+
+          <!-- Card 2: Key KPIs (Tỷ Lệ Tích Cực & Tiêu Cực) -->
+          <div class="flex flex-col gap-4 justify-between h-full">
+            <!-- KPI 1: Tỷ Lệ Tích Cực -->
+            <div class="rounded-3xl p-5 bg-gradient-to-br from-[#e1ede5] to-[#c8dad0] border border-[#c8dad0] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1" id="kpi-rate-card">
+              <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-rate-glow"></div>
+              <div class="flex justify-between items-start w-full">
+                <div>
+                  <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block leading-none">Tỷ Lệ Tích Cực</span>
+                  <div class="text-3xl font-extrabold text-[#2d3e33] leading-none mt-2" id="kpi-rate">0%</div>
+                  <span class="text-[9px] text-[#59936f] font-bold block mt-1.5" id="kpi-rate-sub">Đang tính toán...</span>
+                </div>
+                <div class="p-3 bg-slate-200/50 text-[#2d3e33] rounded-xl border border-slate-300/40" id="kpi-rate-icon-container">
+                  <i data-feather="award" id="kpi-rate-icon" class="w-5 h-5"></i>
+                </div>
+              </div>
+            </div>
+            
+            <!-- KPI 2: Đánh Giá Tiêu Cực -->
+            <div class="rounded-3xl p-5 bg-gradient-to-br from-[#f5ede9] to-[#ebd7ce] border border-[#ebd7ce] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1" id="kpi-negative-card">
+              <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-slate-500/5 rounded-full blur-xl pointer-events-none" id="kpi-negative-glow"></div>
+              <div class="flex justify-between items-start w-full">
+                <div>
+                  <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block leading-none">Đánh Giá Tiêu Cực</span>
+                  <div class="text-3xl font-extrabold text-[#4a352b] leading-none mt-2" id="kpi-negative">0</div>
+                  <span class="text-[9px] text-[#a37f70] font-bold block mt-1.5" id="kpi-negative-pct">0% tổng số</span>
+                </div>
+                <div class="p-3 bg-slate-200/50 text-[#4a352b] rounded-xl border border-slate-300/40" id="kpi-negative-icon-container">
+                  <i data-feather="frown" class="w-5 h-5"></i>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#cbd5e1] mr-1.5"></span>
-            <span>Khác (4★)</span>
+
+        </div>
+
+        <!-- Bottom row: Defect Classification (R&D Issues) -->
+        <div class="glass-card rounded-3xl p-6 bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex-1">
+          <div class="space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="text-[11px] font-bold text-indigo-600 uppercase tracking-widest">PHÂN LOẠI VẤN ĐỀ CHẤT LƯỢNG KHÁCH HÀNG PHẢN HỒI</h4>
+                <p class="text-[10px] text-slate-400 font-medium">Xếp hạng tần suất khiếu nại, phản ánh chất lượng từ khách hàng tiêu dùng</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-lg text-[9px] font-black bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 uppercase tracking-wide">PHÂN TÍCH</span>
+            </div>
+            <div class="relative w-full" style="min-height: 180px">
+              <canvas id="issue-bar-chart"></canvas>
+              <div id="issue-bars-empty" class="absolute inset-0 flex items-center justify-center text-xs text-slate-400 font-medium">Đang thống kê...</div>
+            </div>
           </div>
         </div>
+
       </div>
 
-      <!-- Channel & Platform performance -->
-      <div class="glass-card rounded-3xl p-6 lg:col-span-2 space-y-6 flex flex-col justify-between">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 tracking-tight">HIỆU SUẤT CHẤT LƯỢNG THEO KÊNH BÁN</h3>
-          <p class="text-xs text-slate-400 font-medium">Đo lường mức độ phản hồi tiêu cực trên từng nền tảng</p>
+      <!-- RIGHT SECTION: Platform Performance & Sentiment Rankings (Takes 1/3 width) -->
+      <div class="lg:col-span-1 flex flex-col gap-6">
+        
+        <!-- Card 1: HIỆU SUẤT THEO KÊNH BÁN -->
+        <div class="glass-card rounded-3xl p-6 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex-1 flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">HIỆU SUẤT THEO KÊNH BÁN</h4>
+                <p class="text-[10px] text-slate-400 font-medium">Tần suất phản hồi tiêu cực trên từng nền tảng</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-lg text-[9px] font-black bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 uppercase tracking-wide">KÊNH BÁN</span>
+            </div>
+            
+            <div class="flex flex-col gap-2.5" id="channel-cards-container">
+              <!-- Channel stats populated dynamically -->
+            </div>
+            
+            <div class="text-[9px] text-slate-400 font-medium bg-slate-50 p-2.5 rounded-2xl border border-slate-100 leading-relaxed mt-1">
+              💡 Shopee/Tiktok thường nhận đánh giá co rút, phai màu nhanh hơn do thói quen giặt online. Hãy chỉnh bo thun và bền màu sớm.
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="channel-cards-container">
-          <!-- Channel stats populated dynamically -->
+        <!-- Card 2: TỶ LỆ ĐÁNH GIÁ THEO SẢN PHẨM -->
+        <div class="glass-card rounded-3xl p-6 bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex-1 flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">TỶ LỆ ĐÁNH GIÁ THEO SẢN PHẨM</h4>
+                <p class="text-[10px] text-slate-400 font-medium">So sánh tích cực (5★) vs tiêu cực (1-3★)</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-lg text-[9px] font-black bg-rose-500/10 text-rose-600 border border-rose-500/20 uppercase tracking-wide">R&D RANKING</span>
+            </div>
+            
+            <div class="space-y-2.5 overflow-y-auto max-h-[190px] pr-1" id="product-sentiment-container">
+              <div class="text-center py-6 text-xs text-slate-400">Đang thống kê...</div>
+            </div>
+          </div>
         </div>
 
-        <div class="text-xs text-slate-400 font-medium bg-slate-50 p-3 rounded-2xl border border-slate-100 leading-relaxed">
-          💡 <strong>Tip của R&D:</strong> Các kênh TMĐT như Shopee/Tiktok thường ghi nhận đánh giá co rút, phai màu nhanh hơn do thói quen giặt giũ của khách hàng online. Hãy điều chỉnh kỹ thuật bo thun và kiểm tra độ bền màu sớm hơn.
-        </div>
       </div>
+
     </div>
 
     <!-- Table Section -->
@@ -389,6 +390,7 @@
     let allReviews = [];
     let filteredReviews = [];
     let donutChartInstance = null;
+    let issueChartInstance = null;
 
     async function loadData() {
       try {
@@ -510,6 +512,102 @@
       
       const d = new Date(dateOnly + 'T12:00:00');
       return isNaN(d.getTime()) ? null : d;
+    }
+
+    // Helper: Map Vietnamese color string to exact hex color
+    function getActualProductColorHex(colorName) {
+      if (!colorName) return { hex: '#94a3b8', hasBorder: false };
+      
+      const normalized = colorName.trim().toLowerCase();
+      
+      // Black / Đen
+      if (normalized.includes('đen') || normalized.includes('black') || normalized.includes('charcoal')) {
+        return { hex: '#0f172a', hasBorder: false };
+      }
+      // Navy / Xanh đậm / Xanh đen
+      if (normalized.includes('navy') || normalized.includes('xanh đậm') || normalized.includes('xanh đen') || normalized.includes('xanh thẫm')) {
+        return { hex: '#1e3b8a', hasBorder: false };
+      }
+      // Indigo
+      if (normalized.includes('indigo')) {
+        return { hex: '#312e81', hasBorder: false };
+      }
+      // Xanh nhạt / Light Blue
+      if (normalized.includes('xanh nhạt') || normalized.includes('light blue') || normalized.includes('xanh lơ')) {
+        return { hex: '#bae6fd', hasBorder: false };
+      }
+      // Xanh khói / Smoke Blue
+      if (normalized.includes('xanh khói') || normalized.includes('smoke blue')) {
+        return { hex: '#94a3b8', hasBorder: false };
+      }
+      // Xanh lá / Green
+      if (normalized.includes('xanh lá') || normalized.includes('green')) {
+        return { hex: '#16a34a', hasBorder: false };
+      }
+      // Rêu / Moss
+      if (normalized.includes('rêu') || normalized.includes('moss')) {
+        return { hex: '#14532d', hasBorder: false };
+      }
+      // Oliu / Olive
+      if (normalized.includes('oliu') || normalized.includes('olive')) {
+        return { hex: '#3f6212', hasBorder: false };
+      }
+      // Mint / Bạc hà
+      if (normalized.includes('mint') || normalized.includes('bạc hà')) {
+        return { hex: '#a7f3d0', hasBorder: true };
+      }
+      // Trắng / White
+      if (normalized.includes('trắng') || normalized.includes('white')) {
+        return { hex: '#ffffff', hasBorder: true };
+      }
+      // Đỏ nâu / Đỏ / Red / Maroon / Chilli / Đỏ đô
+      if (normalized.includes('đỏ') || normalized.includes('red') || normalized.includes('maroon') || normalized.includes('chilli') || normalized.includes('đỏ đô') || normalized.includes('đỏ nâu')) {
+        return { hex: '#991b1b', hasBorder: false };
+      }
+      // Nâu nhạt / Nâu / Brown
+      if (normalized.includes('nâu') || normalized.includes('brown')) {
+        if (normalized.includes('nâu nhạt')) {
+          return { hex: '#b45309', hasBorder: false };
+        }
+        return { hex: '#78350f', hasBorder: false };
+      }
+      // Khaki / Kaki
+      if (normalized.includes('khaki') || normalized.includes('kaki')) {
+        return { hex: '#c5a880', hasBorder: false };
+      }
+      // Denim
+      if (normalized.includes('denim')) {
+        return { hex: '#3b82f6', hasBorder: false };
+      }
+      // Cafe / Cà phê
+      if (normalized.includes('cafe') || normalized.includes('cà phê')) {
+        return { hex: '#451a03', hasBorder: false };
+      }
+      // Đất
+      if (normalized.includes('đất')) {
+        return { hex: '#a16207', hasBorder: false };
+      }
+      // Xám nhạt / Light Gray / Xám
+      if (normalized.includes('xám') || normalized.includes('gray') || normalized.includes('grey')) {
+        if (normalized.includes('xám đậm')) {
+          return { hex: '#475569', hasBorder: false };
+        }
+        return { hex: '#cbd5e1', hasBorder: true };
+      }
+      // Be hồng
+      if (normalized.includes('be hồng')) {
+        return { hex: '#fbcfe8', hasBorder: true };
+      }
+      // Cream / Kem / Beige / Be / Be nhạt
+      if (normalized.includes('kem') || normalized.includes('beige') || normalized.includes('be') || normalized.includes('cream')) {
+        if (normalized.includes('be đậm')) {
+          return { hex: '#d2b48c', hasBorder: false };
+        }
+        return { hex: '#fafaf9', hasBorder: true };
+      }
+      
+      // Default: Slate-400
+      return { hex: '#94a3b8', hasBorder: false };
     }
 
     function applyFilters() {
@@ -638,31 +736,31 @@
       const negValEl = document.getElementById('kpi-negative');
 
       if (totalCount === 0 || negativeCount === 0) {
-        if (negValEl) negValEl.className = "text-3xl font-extrabold text-slate-900 leading-none";
+        if (negValEl) negValEl.className = "text-3xl font-extrabold text-[#4a352b] leading-none";
         if (negSubEl) {
-          negSubEl.className = "text-[11px] text-slate-400 font-semibold leading-none";
+          negSubEl.className = "text-[11px] text-[#a37f70] font-semibold leading-none";
           negSubEl.textContent = "0% tổng số";
         }
-        if (negCardEl) negCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        if (negGlowEl) negGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
-        if (negIconContainerEl) negIconContainerEl.className = "p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0";
+        if (negCardEl) negCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-[#f5ede9] to-[#ebd7ce] border border-[#ebd7ce] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1";
+        if (negGlowEl) negGlowEl.className = "absolute -right-6 -bottom-6 w-20 h-20 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
+        if (negIconContainerEl) negIconContainerEl.className = "p-3 bg-slate-200/50 text-[#4a352b] rounded-xl border border-slate-300/40 shrink-0";
       } else {
         if (negSubEl) negSubEl.textContent = `${negativePct}% tổng số`;
         
         if (negativePct > 15) {
           // Warning/Alert State: Red/Rose
-          if (negValEl) negValEl.className = "text-3xl font-extrabold text-rose-600 leading-none";
-          if (negSubEl) negSubEl.className = "text-[11px] text-rose-600 font-semibold leading-none animate-pulse";
-          if (negCardEl) negCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-          if (negGlowEl) negGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
-          if (negIconContainerEl) negIconContainerEl.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+          if (negValEl) negValEl.className = "text-3xl font-extrabold text-[#c75466] leading-none";
+          if (negSubEl) negSubEl.className = "text-[11px] text-[#c75466] font-semibold leading-none animate-pulse";
+          if (negCardEl) negCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-[#f5ede9] to-[#ebd7ce] border border-[#ebd7ce] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1";
+          if (negGlowEl) negGlowEl.className = "absolute -right-6 -bottom-6 w-20 h-20 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
+          if (negIconContainerEl) negIconContainerEl.className = "p-3 bg-slate-200/50 text-[#c75466] rounded-xl border border-slate-300/40 shrink-0";
         } else {
           // Healthy State: Soft Slate
-          if (negValEl) negValEl.className = "text-3xl font-extrabold text-slate-800 leading-none";
-          if (negSubEl) negSubEl.className = "text-[11px] text-slate-500 font-semibold leading-none";
-          if (negCardEl) negCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-          if (negGlowEl) negGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-400/5 rounded-full blur-xl pointer-events-none";
-          if (negIconContainerEl) negIconContainerEl.className = "p-4 bg-slate-100 text-slate-500 rounded-2xl shadow-sm shrink-0";
+          if (negValEl) negValEl.className = "text-3xl font-extrabold text-[#4a352b] leading-none";
+          if (negSubEl) negSubEl.className = "text-[11px] text-[#a37f70] font-semibold leading-none";
+          if (negCardEl) negCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-[#f5ede9] to-[#ebd7ce] border border-[#ebd7ce] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1";
+          if (negGlowEl) negGlowEl.className = "absolute -right-6 -bottom-6 w-20 h-20 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
+          if (negIconContainerEl) negIconContainerEl.className = "p-3 bg-slate-200/50 text-[#4a352b] rounded-xl border border-slate-300/40 shrink-0";
         }
       }
 
@@ -675,27 +773,27 @@
       if (totalCount === 0) {
         rateSubEl.textContent = "Chưa có dữ liệu";
         rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-slate-400";
-        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
-        rateIconContainerEl.className = "p-4 bg-slate-50 text-slate-400 rounded-2xl shadow-sm shrink-0";
+        rateCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-[#e1ede5] to-[#c8dad0] border border-[#c8dad0] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1";
+        rateGlowEl.className = "absolute -right-6 -bottom-6 w-20 h-20 bg-slate-500/5 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-3 bg-slate-200/50 text-[#2d3e33] rounded-xl border border-slate-300/40 shrink-0";
       } else if (positivePct >= 80) {
         rateSubEl.textContent = "✓ Đạt mục tiêu chất lượng (>80%)";
-        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-emerald-500";
-        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none";
-        rateIconContainerEl.className = "p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm shrink-0";
+        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-[#59936f]";
+        rateCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-[#e1ede5] to-[#c8dad0] border border-[#c8dad0] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1";
+        rateGlowEl.className = "absolute -right-6 -bottom-6 w-20 h-20 bg-[#59936f]/10 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-3 bg-slate-200/50 text-[#59936f] rounded-xl border border-slate-300/40 shrink-0";
       } else if (positivePct >= 60) {
         rateSubEl.textContent = "⚠️ Cần kiểm nghiệm chất lượng (60%-80%)";
-        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-amber-500";
-        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none";
-        rateIconContainerEl.className = "p-4 bg-amber-50 text-amber-600 rounded-2xl shadow-sm shrink-0";
+        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-[#d6a74c]";
+        rateCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-[#e1ede5] to-[#c8dad0] border border-[#c8dad0] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1";
+        rateGlowEl.className = "absolute -right-6 -bottom-6 w-20 h-20 bg-[#d6a74c]/10 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-3 bg-slate-200/50 text-[#d6a74c] rounded-xl border border-slate-300/40 shrink-0";
       } else {
         rateSubEl.textContent = "🚨 Báo động đỏ về chất lượng R&D (<60%)";
-        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-rose-500 animate-pulse";
-        rateCardEl.className = "glass-card rounded-3xl p-6 flex items-center justify-between min-h-[142px] relative overflow-hidden";
-        rateGlowEl.className = "absolute -right-8 -bottom-8 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none";
-        rateIconContainerEl.className = "p-4 bg-rose-50 text-rose-600 rounded-2xl shadow-sm shrink-0";
+        rateSubEl.className = "text-[10px] font-black tracking-wide leading-none text-[#c75466] animate-pulse";
+        rateCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-[#e1ede5] to-[#c8dad0] border border-[#c8dad0] shadow-sm relative overflow-hidden flex flex-col justify-between flex-1";
+        rateGlowEl.className = "absolute -right-6 -bottom-6 w-20 h-20 bg-[#c75466]/10 rounded-full blur-xl pointer-events-none";
+        rateIconContainerEl.className = "p-3 bg-slate-200/50 text-[#c75466] rounded-xl border border-slate-300/40 shrink-0";
       }
 
       // Render các mục phân tích
@@ -707,41 +805,113 @@
     }
 
     function renderIssueBreakdown(stats) {
-      const container = document.getElementById('issue-bars-container');
-      if (!container) return;
+      const ctx = document.getElementById('issue-bar-chart');
+      const emptyEl = document.getElementById('issue-bars-empty');
+      if (!ctx) return;
 
       const issues = Object.keys(stats);
       if (issues.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 font-medium">Không ghi nhận lỗi chất lượng R&D nào.</div>`;
+        if (emptyEl) { emptyEl.textContent = 'Không ghi nhận lỗi chất lượng R&D nào.'; emptyEl.style.display = 'flex'; }
+        if (issueChartInstance) { issueChartInstance.destroy(); issueChartInstance = null; }
         return;
       }
+      if (emptyEl) emptyEl.style.display = 'none';
 
-      // Tính phần trăm và sắp xếp giảm dần
       const totalIssues = Object.values(stats).reduce((a, b) => a + b, 0);
       const list = issues.map(name => {
         const count = stats[name];
-        const pct = Math.round((count / totalIssues) * 100);
+        const pct = totalIssues > 0 ? Math.round((count / totalIssues) * 100) : 0;
         return { name, count, pct };
-      }).sort((a, b) => b.count - a.count);
+      }).sort((a, b) => b.count - a.count).slice(0, 7);
 
-      const palette = ["bg-indigo-400", "bg-sky-400", "bg-purple-400", "bg-amber-400", "bg-emerald-400"];
+      const labels = list.map(i => i.name.length > 18 ? i.name.substring(0, 16) + '…' : i.name);
+      const data = list.map(i => i.count);
 
-      container.innerHTML = list.map((item, idx) => {
-        const colorClass = palette[idx % palette.length];
-        return `
-          <div class="space-y-1">
-            <div class="flex justify-between items-center text-xs font-semibold text-slate-600">
-              <span class="text-slate-800">${item.name}</span>
-              <div class="text-slate-400">
-                <span class="text-slate-700 font-bold">${item.count} khiếu nại</span> (${item.pct}%)
-              </div>
-            </div>
-            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-              <div class="${colorClass} h-full rounded-full" style="width: ${item.pct}%"></div>
-            </div>
-          </div>
-        `;
-      }).join("");
+      const barColors = [
+        'rgba(66,90,148,0.75)',
+        'rgba(89,147,111,0.75)',
+        'rgba(163,127,112,0.75)',
+        'rgba(214,167,76,0.75)',
+        'rgba(199,84,102,0.75)',
+        'rgba(58,59,64,0.75)',
+        'rgba(148,163,184,0.75)'
+      ];
+      const borderColors = [
+        '#425a94',
+        '#59936f',
+        '#a37f70',
+        '#d6a74c',
+        '#c75466',
+        '#3a3b40',
+        '#94a3b8'
+      ];
+
+      if (issueChartInstance) issueChartInstance.destroy();
+
+      issueChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: barColors.slice(0, data.length),
+            borderColor: borderColors.slice(0, data.length),
+            borderWidth: 1.5,
+            borderRadius: 6,
+            borderSkipped: false,
+            barPercentage: 0.65,
+            categoryPercentage: 0.8
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { left: 4, right: 12, top: 4, bottom: 4 } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(255,255,255,0.96)',
+              titleColor: '#1e293b',
+              bodyColor: '#475569',
+              borderColor: '#e2e8f0',
+              borderWidth: 1,
+              cornerRadius: 12,
+              padding: 12,
+              titleFont: { family: 'Plus Jakarta Sans, sans-serif', size: 12, weight: 700 },
+              bodyFont: { family: 'Plus Jakarta Sans, sans-serif', size: 11 },
+              callbacks: {
+                title: (items) => list[items[0].dataIndex]?.name || '',
+                label: (item) => {
+                  const entry = list[item.dataIndex];
+                  return `${entry.count} khiếu nại  •  ${entry.pct}% tổng lỗi`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: {
+                font: { family: 'Plus Jakarta Sans, sans-serif', size: 10, weight: 600 },
+                color: '#94a3b8',
+                stepSize: 1
+              }
+            },
+            y: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: {
+                font: { family: 'Plus Jakarta Sans, sans-serif', size: 10, weight: 700 },
+                color: '#334155',
+                mirror: false,
+                padding: 6
+              }
+            }
+          }
+        }
+      });
     }
 
     function renderProductSentiment(stats) {
@@ -763,24 +933,36 @@
       }).sort((a, b) => b.total - a.total);
 
       container.innerHTML = list.map((item, idx) => {
+        // Parse fabric color
+        const colorInfo = getActualProductColorHex(item.name);
+        const borderStyle = colorInfo.hasBorder ? 'border border-slate-200' : 'border border-transparent';
+
+        let badgeColorClass = "bg-[#c75466]/10 text-[#c75466] border border-[#c75466]/20";
+        if (item.posPct >= 80) badgeColorClass = "bg-[#59936f]/10 text-[#59936f] border border-[#59936f]/20";
+        else if (item.posPct >= 60) badgeColorClass = "bg-[#d6a74c]/10 text-[#d6a74c] border border-[#d6a74c]/20";
+
+        // Display format: [Product Name] - [Pill Dot] [Color Name]
+        let prodOnly = item.name;
+        let formattedColor = "Khác";
+
+        const parts = item.name.split(" - ");
+        if (parts.length > 1) {
+          prodOnly = parts[0].trim();
+          const colorVal = parts[1].trim();
+          formattedColor = colorVal.toLowerCase().replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+        }
+
         return `
-          <div class="space-y-1.5 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 hover:border-slate-200/80 transition-colors">
-            <div class="flex justify-between items-center text-xs font-semibold">
-              <span class="text-slate-800 font-bold">${item.name}</span>
-              <span class="text-[11px] text-slate-400 font-medium">Tổng số: ${item.total} đánh giá</span>
+          <div class="bg-white p-2.5 rounded-xl border border-slate-100/80 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:border-slate-200/50 transition-all duration-200 flex justify-between items-center text-[11px] gap-2">
+            <div class="flex items-center gap-1.5 truncate max-w-[200px]">
+              <span class="text-slate-800 font-extrabold truncate" title="${item.name}">${prodOnly}</span>
+              <span class="text-slate-400 font-bold shrink-0">-</span>
+              <span class="w-[22px] h-[10px] rounded-full shrink-0 ${borderStyle} shadow-[0_1px_2px_rgba(0,0,0,0.15)] inline-block self-center mx-0.5" style="background-color: ${colorInfo.hex}"></span>
+              <span class="text-slate-500 font-semibold truncate" title="${formattedColor}">${formattedColor}</span>
             </div>
-            
-            <!-- Double progress bar (Tích cực vs Tiêu cực) -->
-            <div class="w-full bg-slate-100 h-3 rounded-full flex overflow-hidden">
-              <!-- Tích cực 5★ -->
-              <div class="bg-emerald-300 h-full rounded-l-full transition-all duration-1000" style="width: ${item.posPct}%" title="Tích cực: ${item.posPct}%"></div>
-              <!-- Tiêu cực 1-3★ -->
-              <div class="bg-rose-300 h-full rounded-r-full transition-all duration-1000" style="width: ${item.negPct}%" title="Tiêu cực: ${item.negPct}%"></div>
-            </div>
-            
-            <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 px-0.5">
-              <span class="text-emerald-500">Tích cực (5★): ${item.posPct}% (${item.positive} đơn)</span>
-              <span class="text-rose-500">Tiêu cực (1-3★): ${item.negPct}% (${item.negative} đơn)</span>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[9px] text-slate-400 font-semibold">Tích cực ${item.positive}/${item.total}</span>
+              <span class="px-2 py-0.5 rounded-lg text-[9px] font-extrabold ${badgeColorClass}">${item.posPct}% ★</span>
             </div>
           </div>
         `;
@@ -795,9 +977,67 @@
         donutChartInstance.destroy();
       }
 
+      // Update central text nodes and dynamic glow
+      const donutPassValBig = document.getElementById('donutPassValBig');
+      const donutPassSub = document.getElementById('donutPassSub');
+      const donutFailSub = document.getElementById('donutFailSub');
+      const donutQualityBadge = document.getElementById('donutQualityBadge');
+      const donutGlow = document.getElementById('donutGlow');
+
+      const total = positive + negative + neutral;
+      const passPct = total > 0 ? Math.round((positive / total) * 100) : 0;
+      const failPct = total > 0 ? Math.round((negative / total) * 100) : 0;
+
+      if (donutPassValBig) donutPassValBig.textContent = passPct + '%';
+      if (donutPassSub) donutPassSub.textContent = positive + ' đánh giá';
+      if (donutFailSub) donutFailSub.textContent = negative + ' đánh giá';
+
+      if (donutGlow) {
+        if (passPct >= 90) {
+          donutGlow.style.background = 'radial-gradient(circle, rgba(89, 147, 111, 0.45) 0%, rgba(89, 147, 111, 0.15) 50%, rgba(255, 255, 255, 0) 70%)';
+          if (donutPassValBig) {
+            donutPassValBig.style.background = 'linear-gradient(135deg, #59936f 0%, #3e6d4f 100%)';
+            donutPassValBig.style.webkitBackgroundClip = 'text';
+            donutPassValBig.style.webkitTextFillColor = 'transparent';
+          }
+          if (donutQualityBadge) {
+            donutQualityBadge.textContent = 'XUẤT SẮC';
+            donutQualityBadge.style.color = '#59936f';
+            donutQualityBadge.style.background = 'rgba(89, 147, 111, 0.12)';
+            donutQualityBadge.style.borderColor = 'rgba(89, 147, 111, 0.25)';
+          }
+        } else if (passPct >= 75) {
+          donutGlow.style.background = 'radial-gradient(circle, rgba(214, 167, 76, 0.45) 0%, rgba(214, 167, 76, 0.15) 50%, rgba(255, 255, 255, 0) 70%)';
+          if (donutPassValBig) {
+            donutPassValBig.style.background = 'linear-gradient(135deg, #d6a74c 0%, #b38531 100%)';
+            donutPassValBig.style.webkitBackgroundClip = 'text';
+            donutPassValBig.style.webkitTextFillColor = 'transparent';
+          }
+          if (donutQualityBadge) {
+            donutQualityBadge.textContent = 'ĐẠT YÊU CẦU';
+            donutQualityBadge.style.color = '#d6a74c';
+            donutQualityBadge.style.background = 'rgba(214, 167, 76, 0.12)';
+            donutQualityBadge.style.borderColor = 'rgba(214, 167, 76, 0.25)';
+          }
+        } else {
+          donutGlow.style.background = 'radial-gradient(circle, rgba(199, 84, 102, 0.45) 0%, rgba(199, 84, 102, 0.15) 50%, rgba(255, 255, 255, 0) 70%)';
+          if (donutPassValBig) {
+            donutPassValBig.style.background = 'linear-gradient(135deg, #c75466 0%, #9e3d4c 100%)';
+            donutPassValBig.style.webkitBackgroundClip = 'text';
+            donutPassValBig.style.webkitTextFillColor = 'transparent';
+          }
+          if (donutQualityBadge) {
+            donutQualityBadge.textContent = 'CẢNH BÁO';
+            donutQualityBadge.style.color = '#c75466';
+            donutQualityBadge.style.background = 'rgba(199, 84, 102, 0.12)';
+            donutQualityBadge.style.borderColor = 'rgba(199, 84, 102, 0.25)';
+          }
+        }
+      }
+
       if (positive === 0 && negative === 0 && neutral === 0) {
         donutChartInstance = new Chart(ctx, {
-          type: 'doughnut',
+          type: 'pie',
           data: {
             labels: ['Không có dữ liệu'],
             datasets: [{
@@ -809,7 +1049,6 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '75%',
             plugins: {
               legend: { display: false },
               tooltip: { enabled: false }
@@ -820,29 +1059,37 @@
       }
 
       donutChartInstance = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: ['Tích cực (5★)', 'Tiêu cực (1-3★)', 'Khác (4★)'],
           datasets: [{
             data: [positive, negative, neutral],
-            backgroundColor: ['#a7f3d0', '#fca5a5', '#cbd5e1'],
-            hoverBackgroundColor: ['#86efac', '#fda4af', '#cbd5e1'],
-            borderWidth: 0,
-            borderRadius: 6
+            backgroundColor: ['#ffffff', '#ebd7ce', '#cbd5e1'],
+            hoverBackgroundColor: ['#ffffff', '#c75466', '#cbd5e1'],
+            borderWidth: 6,
+            borderColor: '#ffffff',
+            hoverBorderWidth: 6,
+            hoverBorderColor: '#ffffff',
+            hoverOffset: 12
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          cutout: '75%',
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: 'rgba(15, 23, 42, 0.9)',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#0f172a',
+              bodyColor: '#334155',
+              borderColor: 'rgba(226, 232, 240, 0.8)',
+              borderWidth: 1,
               padding: 10,
-              titleFont: { size: 11, weight: 'bold' },
-              bodyFont: { size: 11 },
+              boxPadding: 6,
+              usePointStyle: true,
               cornerRadius: 12,
+              titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: 'bold' },
+              bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
               callbacks: {
                 label: function(context) {
                   let value = context.raw;
@@ -863,7 +1110,7 @@
 
       const channels = Object.keys(channelStats);
       if (channels.length === 0) {
-        container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-medium col-span-3">Chưa có thông số theo kênh.</div>`;
+        container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-medium">Chưa có thông số theo kênh.</div>`;
         return;
       }
 
@@ -871,26 +1118,31 @@
         const stats = channelStats[ch];
         const pct = stats.total > 0 ? Math.round((stats.negative / stats.total) * 100) : 0;
         
-        let colorClass = "text-slate-600 bg-slate-50 border-slate-100";
-        if (pct >= 50) colorClass = "text-rose-600 bg-rose-50 border-rose-100";
-        else if (pct >= 25) colorClass = "text-amber-600 bg-amber-50 border-amber-100";
-        else if (stats.total > 0) colorClass = "text-emerald-600 bg-emerald-50 border-emerald-100";
+        let dotColorClass = "bg-emerald-400";
+        let badgeColorClass = "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20";
+        if (pct >= 50) {
+          dotColorClass = "bg-rose-400";
+          badgeColorClass = "bg-rose-500/10 text-rose-600 border border-rose-500/20";
+        } else if (pct >= 25) {
+          dotColorClass = "bg-amber-400";
+          badgeColorClass = "bg-amber-500/10 text-amber-600 border border-amber-500/20";
+        }
 
         // Tên hiển thị kênh chuẩn hóa
         const displayChName = ch === "SHOPEE" ? "Shopee Mall" : ch === "TIKTOK" ? "Tiktok Shop" : ch;
 
         return `
-          <div class="p-4 rounded-2xl border ${colorClass} flex flex-col justify-between h-[100px] shadow-sm">
-            <div class="flex justify-between items-start">
-              <span class="text-xs font-extrabold tracking-wide uppercase">${displayChName}</span>
-              <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-white shadow-sm border border-black/5">${stats.total} đánh giá</span>
-            </div>
-            <div class="flex items-end justify-between mt-2">
-              <div class="flex flex-col">
-                <span class="text-2xl font-extrabold leading-none">${pct}%</span>
-                <span class="text-[9px] font-semibold text-slate-400 mt-1">Tỷ lệ tiêu cực (1-3★)</span>
+          <div class="bg-white p-2.5 rounded-xl border border-slate-100/80 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:border-slate-200/50 transition-all duration-200 flex justify-between items-center text-[11px] gap-2">
+            <div class="flex items-center gap-2 truncate">
+              <span class="w-2 h-2 rounded-full shrink-0 ${dotColorClass}"></span>
+              <div class="flex flex-col truncate">
+                <span class="text-slate-800 font-extrabold truncate" title="${displayChName}">${displayChName}</span>
+                <span class="text-[9px] text-slate-400 font-semibold">${stats.total} đánh giá</span>
               </div>
-              <span class="text-xs font-bold">${stats.negative} đơn lỗi</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[9px] text-slate-400 font-semibold">${stats.negative} đơn lỗi</span>
+              <span class="px-2 py-0.5 rounded-lg text-[9px] font-extrabold ${badgeColorClass}">${pct}% Tiêu cực</span>
             </div>
           </div>
         `;

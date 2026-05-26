@@ -119,6 +119,14 @@ function doGet(e) {
         return ContentService.createTextOutput(JSON.stringify(getPlanData()))
           .setMimeType(ContentService.MimeType.JSON);
       }
+      if (action === "getScheduleData") {
+        return ContentService.createTextOutput(JSON.stringify(getScheduleData()))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (action === "getFabricTesting") {
+        return ContentService.createTextOutput(JSON.stringify(getFabricTestingRows()))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
     } catch(err) {
       return ContentService.createTextOutput(JSON.stringify({ ok: false, err: err.message }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -131,7 +139,33 @@ function doGet(e) {
 
 function doPost(e) {
   try {
-    const postData = JSON.parse(e.postData.contents);
+    var rawContent = e.postData.contents || "";
+    // Self-healing UTF-8 decoding for Google Apps Script ISO-8859-1 decoding bug
+    try {
+      var isAlreadyUtf8 = false;
+      var hasIsoChars = false;
+      for (var i = 0; i < rawContent.length; i++) {
+        var code = rawContent.charCodeAt(i);
+        if (code > 255) {
+          isAlreadyUtf8 = true;
+          break;
+        }
+        if (code > 127) {
+          hasIsoChars = true;
+        }
+      }
+      if (hasIsoChars && !isAlreadyUtf8) {
+        var bytes = [];
+        for (var i = 0; i < rawContent.length; i++) {
+          bytes.push(rawContent.charCodeAt(i) & 0xFF);
+        }
+        rawContent = Utilities.newBlob(bytes).getDataAsString("UTF-8");
+      }
+    } catch (err) {
+      // Fallback to original contents
+    }
+
+    const postData = JSON.parse(rawContent);
     const action = postData.action;
     const payload = postData.payload;
     let result = { ok: false, err: "Unknown action" };
@@ -147,6 +181,9 @@ function doPost(e) {
     else if (action === "submitPlan") result = submitPlan(payload);
     else if (action === "deletePlan") result = deletePlan(payload);
     else if (action === "updatePlanStatus") result = updatePlanStatus(payload);
+    else if (action === "submitNPL") result = submitNPL(payload);
+    else if (action === "setupNPL") result = setupNPL();
+    else if (action === "submitFabricTesting") result = submitFabricTesting(payload);
 
     return ContentService.createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
@@ -1018,7 +1055,31 @@ function submitOverallSummary(payload) {
       payload.ack_date || ""
     ];
 
-    sh.appendRow(row);
+    // Upsert logic: search for existing general_id row to overwrite
+    let existingRowIdx = -1;
+    try {
+      const data = sh.getDataRange().getValues();
+      if (data.length >= 2) {
+        const header = data[0].map(h => String(h || "").trim().toLowerCase());
+        const idxGid = header.indexOf("general_id");
+        if (idxGid !== -1) {
+          for (let i = 1; i < data.length; i++) {
+            if (String(data[i][idxGid] || "").trim() === String(gid).trim()) {
+              existingRowIdx = i + 1; // 1-indexed row number
+              break;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Fallback if sheet search fails
+    }
+
+    if (existingRowIdx !== -1) {
+      sh.getRange(existingRowIdx, 1, 1, row.length).setValues([row]);
+    } else {
+      sh.appendRow(row);
+    }
 
     try {
       const gsh = ss.getSheetByName("General");
@@ -1227,6 +1288,7 @@ function submitReturnAnalysisBatch(items) {
       const defectType = String(payload.defectType || "").trim();
       const quantity = toNumber_(payload.quantity);
       const description = String(payload.description || "").trim();
+      const note = String(payload.note || "").trim();
 
       const id = buildReturnId_(po, art, size);
       const week = getWeekLabel_(inspectionDate);
@@ -1246,7 +1308,8 @@ function submitReturnAnalysisBatch(items) {
         inspectionDate,// M
         week,          // N
         month,         // O
-        unitPrice      // P
+        unitPrice,     // P
+        note
       ]);
 
       resultItems.push({
@@ -1294,7 +1357,7 @@ function getReturnRows() {
     }
 
     const numRows = lastRow - RETURN_CFG.DATA_START_ROW + 1;
-    const values = ctx.sheet.getRange(RETURN_CFG.DATA_START_ROW, RETURN_CFG.DATA_START_COL, numRows, 14).getValues();
+    const values = ctx.sheet.getRange(RETURN_CFG.DATA_START_ROW, RETURN_CFG.DATA_START_COL, numRows, 15).getValues();
 
     // Map từng dòng thành object để frontend dễ sử dụng
     const rows = [];
@@ -1321,7 +1384,8 @@ function getReturnRows() {
           inspectionDate: row[10],
           week: row[11],
           month: row[12],
-          unitPrice: row[13]
+          unitPrice: row[13],
+          note: row[14] || ""
         });
       }
     }
@@ -1484,7 +1548,8 @@ function getReturnContext_() {
     "Ngày kiểm tra (Inspection Date)",
     "Tuần (Week)",
     "Tháng (Month)",
-    "Đơn giá (Unit Price)"
+    "Đơn giá (Unit Price)",
+    "Ghi chú (Note)"
   ];
 
   let sh = ss.getSheetByName(RETURN_CFG.TARGET_SHEET_NAME);
@@ -1529,7 +1594,7 @@ function getNextWriteRow_(sheet) {
   }
 
   const numRows = lastRow - RETURN_CFG.DATA_START_ROW + 1;
-  const values = sheet.getRange(RETURN_CFG.DATA_START_ROW, RETURN_CFG.DATA_START_COL, numRows, 14).getValues();
+  const values = sheet.getRange(RETURN_CFG.DATA_START_ROW, RETURN_CFG.DATA_START_COL, numRows, 15).getValues();
 
   let lastUsedOffset = -1;
   for (let i = 0; i < values.length; i++) {
@@ -1549,6 +1614,7 @@ function validateReturnPayload_(payload) {
   if (!payload.fabric) throw new Error("Thiếu Fabric.");
   if (!payload.defectType) throw new Error("Thiếu Defect Type.");
   if (!payload.quantity) throw new Error("Thiếu Quantity.");
+  if (!payload.note) throw new Error("Thiếu Ghi chú.");
   if (!payload.inspectionDate) throw new Error("Thiếu Inspection Date.");
 }
 
@@ -1705,10 +1771,41 @@ function deleteRecord(payload) {
     return { ok: false, err: err.message };
   }
 }
-
 /* =====================================================
-   PLANNING / SCHEDULING
+   PLANNING / SCHEDULING (QC SCHEDULES)
    ===================================================== */
+
+/**
+ * GET: Fetch schedule data from Schedule sheet
+ */
+function getScheduleData() {
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sh = ss.getSheetByName("Schedule");
+    let scheduleData = [];
+    if (sh) {
+      const vals = sh.getDataRange().getDisplayValues();
+      if (vals.length >= 2) {
+        const headers = vals[0].map(h => String(h || "").trim().toLowerCase());
+        const rows = vals.slice(1);
+        scheduleData = rows.map(r => {
+          const obj = {};
+          headers.forEach((h, i) => {
+            obj[h] = r[i];
+          });
+          return obj;
+        });
+      }
+    }
+    return { ok: true, data: scheduleData };
+  } catch (e) {
+    return { ok: false, err: e.message };
+  }
+}
+
+/**
+ * POST: Submit a planning record to Schedule sheet
+ */
 function submitPlan(payload) {
   try {
     if (!payload || !payload.date || !payload.type) {
@@ -1716,8 +1813,8 @@ function submitPlan(payload) {
     }
 
     const ss = SpreadsheetApp.getActive();
-    const sh = _getOrCreateSheet_(ss, "Plan", [
-      "timestamp", "plan_id", "date", "type", "factory", "order_no", "color", "quantity", "description", "status"
+    const sh = _getOrCreateSheet_(ss, "Schedule", [
+      "timestamp", "plan_id", "date", "type", "factory", "order_no", "color", "quantity", "description", "status", "creator"
     ]);
 
     const ts = _nowStr_();
@@ -1733,7 +1830,8 @@ function submitPlan(payload) {
       payload.color || "",
       payload.quantity ? _toNumber_(payload.quantity) : "",
       payload.description || "",
-      payload.status || "Pending"
+      payload.status || "Pending",
+      payload.creator || ""
     ];
 
     sh.appendRow(row);
@@ -1743,6 +1841,9 @@ function submitPlan(payload) {
   }
 }
 
+/**
+ * POST: Delete a planning record from Schedule sheet
+ */
 function deletePlan(payload) {
   try {
     if (!payload || !payload.plan_id) {
@@ -1751,8 +1852,8 @@ function deletePlan(payload) {
     const planId = String(payload.plan_id).trim();
 
     const ss = SpreadsheetApp.getActive();
-    const sh = ss.getSheetByName("Plan");
-    if (!sh) return { ok: false, err: "Plan sheet not found" };
+    const sh = ss.getSheetByName("Schedule");
+    if (!sh) return { ok: false, err: "Schedule sheet not found" };
 
     const data = sh.getDataRange().getValues();
     if (data.length <= 1) return { ok: true, count: 0 };
@@ -1760,7 +1861,7 @@ function deletePlan(payload) {
     const headers = data[0].map(h => String(h).trim().toLowerCase());
     const planIdIdx = headers.indexOf("plan_id");
     if (planIdIdx === -1) {
-      return { ok: false, err: "plan_id column not found in Plan sheet" };
+      return { ok: false, err: "plan_id column not found in Schedule sheet" };
     }
 
     let count = 0;
@@ -1777,6 +1878,9 @@ function deletePlan(payload) {
   }
 }
 
+/**
+ * POST: Update status of a planning record in Schedule sheet
+ */
 function updatePlanStatus(payload) {
   try {
     if (!payload || !payload.plan_id || !payload.status) {
@@ -1786,17 +1890,17 @@ function updatePlanStatus(payload) {
     const newStatus = String(payload.status).trim();
 
     const ss = SpreadsheetApp.getActive();
-    const sh = ss.getSheetByName("Plan");
-    if (!sh) return { ok: false, err: "Plan sheet not found" };
+    const sh = ss.getSheetByName("Schedule");
+    if (!sh) return { ok: false, err: "Schedule sheet not found" };
 
     const data = sh.getDataRange().getValues();
-    if (data.length <= 1) return { ok: false, err: "No data in Plan sheet" };
+    if (data.length <= 1) return { ok: false, err: "No data in Schedule sheet" };
 
     const headers = data[0].map(h => String(h).trim().toLowerCase());
     const planIdIdx = headers.indexOf("plan_id");
     const statusIdx = headers.indexOf("status");
     if (planIdIdx === -1 || statusIdx === -1) {
-      return { ok: false, err: "Required columns not found in Plan sheet" };
+      return { ok: false, err: "Required columns not found in Schedule sheet" };
     }
 
     let success = false;
@@ -1817,3 +1921,696 @@ function updatePlanStatus(payload) {
     return { ok: false, err: err.message };
   }
 }
+
+/* =====================================================
+   MATERIALS APPROVAL (NPL) MODULE
+   ===================================================== */
+const NPL_TZ = "Asia/Ho_Chi_Minh";
+
+const NPL_CFG = {
+  DATA_SHEET_NAME: "materials_approval",
+  ROOT_FOLDER_NAME: "NPL_FILES",
+
+  // Sheet nguồn để dò timeline
+  SYNC_SOURCE_SHEET_NAME: "ĐỒNG BỘ NPL Q1/26",
+  SYNC_SOURCE_HEADER_ROW: 15,
+
+  // Header trong sheet nguồn
+  MAP: {
+    MONTH: "THÁNG",
+    PRODUCT_NAME: "TÊN SẢN PHẨM",
+    COLOR: "MÀU",
+    FACTORY: "NHÀ MÁY",
+    TIMELINE: "TIMELINE NHẬP KHO",
+    STATUS: "③ Trạng thái đồng bộ",
+  },
+};
+
+/**
+ * Run 1 lần để tạo tab + folder
+ */
+function setupNPL() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.getActive();
+  if (!ss) {
+    throw new Error("Script không gắn với Spreadsheet. Hãy mở Google Sheet > Extensions > Apps Script.");
+  }
+
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty("CONTAINER_SPREADSHEET_ID", ss.getId());
+  props.setProperty("DATA_SHEET_NAME", NPL_CFG.DATA_SHEET_NAME);
+
+  const sh = getOrCreateNplSheet_(ss, NPL_CFG.DATA_SHEET_NAME);
+  ensureNplHeader_(sh);
+
+  sh.getRange("F:F").setNumberFormat("dd/MM/yyyy"); // Timeline nhập kho
+  sh.getRange("H:H").setNumberFormat("dd/MM/yyyy"); // Ngày duyệt vải
+  sh.getRange("J:J").setNumberFormat("dd/MM/yyyy"); // Ngày duyệt bo
+
+  let folderId = props.getProperty("ROOT_FOLDER_ID");
+  let folder;
+
+  if (!folderId) {
+    folder = DriveApp.createFolder(NPL_CFG.ROOT_FOLDER_NAME);
+    folderId = folder.getId();
+    props.setProperty("ROOT_FOLDER_ID", folderId);
+  } else {
+    try {
+      folder = DriveApp.getFolderById(folderId);
+    } catch(e) {
+      folder = DriveApp.createFolder(NPL_CFG.ROOT_FOLDER_NAME);
+      folderId = folder.getId();
+      props.setProperty("ROOT_FOLDER_ID", folderId);
+    }
+  }
+
+  return {
+    ok: true,
+    spreadsheetUrl: ss.getUrl(),
+    sheetName: sh.getName(),
+    folderUrl: folder.getUrl(),
+  };
+}
+
+/**
+ * Submit từ web app
+ */
+function submitNPL(payload) {
+  try {
+    validateNplPayload_(payload);
+
+    const ctx = getNplContext_();
+    const now = new Date();
+    const monthKey = normalizeNplMonth_(payload.month || Utilities.formatDate(now, NPL_TZ, "yyyy-MM"));
+    const monthFolder = getOrCreateNplFolder_(monthKey, ctx.rootFolder);
+
+    // Luôn auto resolve timeline
+    const resolved = resolveNplTimelineInStock_({
+      spreadsheet: ctx.spreadsheet,
+      month: monthKey,
+      productName: payload.productName,
+      color: payload.color,
+      factory: payload.factory,
+    });
+
+    if (!resolved.ok) {
+      throw new Error(resolved.message);
+    }
+
+    // Save image
+    let fileId = "";
+    let fileUrl = "";
+    let imageFormula = "";
+
+    if (payload.imageDataUrl) {
+      const img = saveNplImage_(payload.imageDataUrl, payload, monthFolder);
+      fileId = img.fileId;
+      fileUrl = img.fileUrl;
+      imageFormula = `=IMAGE("https://drive.google.com/uc?export=view&id=${fileId}")`;
+    } else {
+      throw new Error("Chưa có hình ảnh.");
+    }
+
+    ctx.sheet.appendRow([
+      now,                                      // A Timestamp
+      monthKey,                                 // B Tháng
+      payload.productName || "",                // C Tên sản phẩm
+      payload.color || "",                      // D Màu
+      payload.factory || "",                    // E Nhà máy
+      resolved.timeline,                        // F Timeline nhập kho (auto)
+      payload.approveFabric ? "TRUE" : "FALSE", // G Duyệt vải
+      payload.approveFabricDate || "",          // H Ngày duyệt vải
+      payload.approveRib ? "TRUE" : "FALSE",    // I Duyệt bo
+      payload.approveRibDate || "",             // J Ngày duyệt bo
+      payload.issue || "",                      // K Vấn đề
+      payload.status || "",                     // L Trạng thái
+      fileId,                                   // M ImageFileId
+      fileUrl,                                  // N ImageFileUrl
+      imageFormula,                             // O ImagePreview
+    ]);
+
+    const lastRow = ctx.sheet.getLastRow();
+    ctx.sheet.getRange(lastRow, 6).setNumberFormat("dd/MM/yyyy");
+    ctx.sheet.getRange(lastRow, 8).setNumberFormat("dd/MM/yyyy");
+    ctx.sheet.getRange(lastRow, 10).setNumberFormat("dd/MM/yyyy");
+
+    // SAVE TESTING DATA
+    let testingResultMsg = "";
+    if (payload.hasTesting) {
+      const testSheet = getNplTestingSheet_(ctx.spreadsheet);
+      const testDate = payload.testDate ? parseNplSheetDate_(payload.testDate) : now;
+
+      testSheet.appendRow([
+        testDate,                             // A DATE
+        payload.factory || "",                // B SUP/MILL
+        payload.productName || "",            // C FABRIC NAME/TYPE
+        payload.color || "",                  // D ART/COLOR
+        Number(payload.warpBefore) || 50,     // E WARP/ BEFORE WASH
+        Number(payload.warpAfter) || 0,       // F WARP/ AFTER WASH
+        Number(payload.weftBefore) || 50,     // G WEFT/ BEFORE WASH
+        Number(payload.weftAfter) || 0,       // H WEFT/ AFTER WASH
+        payload.warpShrinkage || "",          // I % Shrinkage (WARP)
+        payload.weftShrinkage || "",          // J % Shrinkage (WEFT)
+        payload.visualResult || "Pass",       // K Visual Appearance / Handfeel Result
+        payload.shrinkageResult || "Pass",    // L Shrinkage Result
+        payload.testingFinalResult || "Pass", // M Final Result
+        payload.testingNote || "",            // N Note
+      ]);
+
+      const lastTestRow = testSheet.getLastRow();
+      testSheet.getRange(lastTestRow, 1).setNumberFormat("dd/MM/yyyy");
+      testingResultMsg = "\nĐã lưu kết quả kiểm thử co rút.";
+    }
+
+    return {
+      ok: true,
+      message: "Đã lưu dữ liệu và tự dò timeline nhập kho." + testingResultMsg,
+      resolvedTimeline: Utilities.formatDate(resolved.timeline, NPL_TZ, "dd/MM/yyyy"),
+      matchedCount: resolved.matchedCount,
+      pickedRow: resolved.pickedRow,
+      fileUrl,
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      message: String(e && e.message ? e.message : e),
+    };
+  }
+}
+
+/* ================= TIMELINE RESOLVER ================= */
+
+function resolveNplTimelineInStock_({ spreadsheet, month, productName, color, factory }) {
+  const sh = spreadsheet.getSheetByName(NPL_CFG.SYNC_SOURCE_SHEET_NAME);
+  if (!sh) {
+    return {
+      ok: false,
+      message: `Không tìm thấy sheet nguồn: ${NPL_CFG.SYNC_SOURCE_SHEET_NAME}`,
+    };
+  }
+
+  const headerRow = NPL_CFG.SYNC_SOURCE_HEADER_ROW;
+  const lastRow = sh.getLastRow();
+  const lastCol = sh.getLastColumn();
+
+  if (lastRow <= headerRow) {
+    return {
+      ok: false,
+      message: `Sheet nguồn chưa có dữ liệu: ${NPL_CFG.SYNC_SOURCE_SHEET_NAME}`,
+    };
+  }
+
+  const headers = sh.getRange(headerRow, 1, 1, lastCol).getDisplayValues()[0];
+  const colMap = buildNplHeaderMap_(headers);
+
+  const monthCol = colMap[normalizeNplHeader_(NPL_CFG.MAP.MONTH)];
+  const productCol = colMap[normalizeNplHeader_(NPL_CFG.MAP.PRODUCT_NAME)];
+  const colorCol = colMap[normalizeNplHeader_(NPL_CFG.MAP.COLOR)];
+  const factoryCol = colMap[normalizeNplHeader_(NPL_CFG.MAP.FACTORY)];
+  const timelineCol = colMap[normalizeNplHeader_(NPL_CFG.MAP.TIMELINE)];
+  const statusCol = colMap[normalizeNplHeader_(NPL_CFG.MAP.STATUS)];
+
+  const missing = [];
+  if (!monthCol) missing.push(NPL_CFG.MAP.MONTH);
+  if (!productCol) missing.push(NPL_CFG.MAP.PRODUCT_NAME);
+  if (!colorCol) missing.push(NPL_CFG.MAP.COLOR);
+  if (!factoryCol) missing.push(NPL_CFG.MAP.FACTORY);
+  if (!timelineCol) missing.push(NPL_CFG.MAP.TIMELINE);
+  if (!statusCol) missing.push(NPL_CFG.MAP.STATUS);
+
+  if (missing.length) {
+    return {
+      ok: false,
+      message: `Thiếu header trong sheet nguồn: ${missing.join(", ")}`,
+    };
+  }
+
+  const values = sh.getRange(headerRow + 1, 1, lastRow - headerRow, lastCol).getValues();
+
+  const targetMonth = normalizeNplMonth_(month);
+  const targetProduct = productName;
+  const targetColor = normalizeNplText_(color);
+  const targetFactory = normalizeNplText_(factory);
+
+  const matches = [];
+
+  for (let i = 0; i < values.length; i++) {
+    const row = values[i];
+
+    const sourceMonth = normalizeNplMonth_(row[monthCol - 1]);
+    const sourceProduct = row[productCol - 1];
+    const sourceColor = normalizeNplText_(row[colorCol - 1]);
+    const sourceFactory = normalizeNplText_(row[factoryCol - 1]);
+    const sourceTimeline = parseNplSheetDate_(row[timelineCol - 1]);
+    const sourceStatus = normalizeNplText_(row[statusCol - 1]);
+
+    if (!sourceTimeline) continue;
+
+    const timelineMonth = Utilities.formatDate(sourceTimeline, NPL_TZ, "yyyy-MM");
+
+    const isSameKey =
+      sourceMonth === targetMonth &&
+      isNplProductMatch_(targetProduct, sourceProduct) &&
+      sourceColor === targetColor &&
+      sourceFactory === targetFactory;
+
+    if (!isSameKey) continue;
+    if (timelineMonth !== targetMonth) continue;
+
+    // Bỏ dòng đã đồng bộ
+    if (isNplSyncedStatus_(sourceStatus)) continue;
+
+    matches.push({
+      rowNumber: headerRow + 1 + i,
+      timeline: sourceTimeline,
+      status: sourceStatus,
+    });
+  }
+
+  if (matches.length === 0) {
+    return {
+      ok: false,
+      message:
+        `Không còn timeline khả dụng trong tháng ${targetMonth} cho: ` +
+        `${productName} | ${color} | ${factory}`,
+    };
+  }
+
+  // Ưu tiên timeline từ bé -> lớn
+  matches.sort((a, b) => stripNplTime_(a.timeline).getTime() - stripNplTime_(b.timeline).getTime());
+
+  const picked = matches[0];
+
+  return {
+    ok: true,
+    timeline: picked.timeline,
+    pickedRow: picked.rowNumber,
+    matchedCount: matches.length,
+  };
+}
+
+function isNplSyncedStatus_(status) {
+  const s = normalizeNplText_(status);
+
+  return [
+    "ĐÃ DUYỆT ĐỒNG BỘ",
+    "DA DUYET DONG BO",
+    "ĐÃ ĐỒNG BỘ",
+    "DA DONG BO",
+    "SYNCED",
+    "DONE",
+    "COMPLETED",
+    "CLOSED",
+  ].includes(s);
+}
+
+/* ================= NPL HELPERS ================= */
+
+function getNplContext_() {
+  const props = PropertiesService.getScriptProperties();
+  let ssId = props.getProperty("CONTAINER_SPREADSHEET_ID");
+  const sheetName = props.getProperty("DATA_SHEET_NAME") || NPL_CFG.DATA_SHEET_NAME;
+  let folderId = props.getProperty("ROOT_FOLDER_ID");
+
+  let ss;
+  if (ssId) {
+    try {
+      ss = SpreadsheetApp.openById(ssId);
+    } catch(e) {
+      ss = SpreadsheetApp.getActive();
+    }
+  } else {
+    ss = SpreadsheetApp.getActive();
+  }
+  
+  if (!ss) {
+    throw new Error("Không thể truy cập Spreadsheet. Hãy chạy setupNPL() trước.");
+  }
+
+  let sh = ss.getSheetByName(sheetName);
+  if (!sh) {
+    sh = ss.insertSheet(sheetName);
+    ensureNplHeader_(sh);
+  }
+
+  let folder;
+  if (folderId) {
+    try {
+      folder = DriveApp.getFolderById(folderId);
+    } catch(e) {
+      // Ignore to recreate/find
+    }
+  }
+  
+  if (!folder) {
+    const rootFolders = DriveApp.getFoldersByName(NPL_CFG.ROOT_FOLDER_NAME);
+    if (rootFolders.hasNext()) {
+      folder = rootFolders.next();
+    } else {
+      folder = DriveApp.createFolder(NPL_CFG.ROOT_FOLDER_NAME);
+    }
+    props.setProperty("ROOT_FOLDER_ID", folder.getId());
+  }
+
+  return { spreadsheet: ss, sheet: sh, rootFolder: folder };
+}
+
+function getOrCreateNplSheet_(ss, name) {
+  let sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  return sh;
+}
+
+function getNplTestingSheet_(ss) {
+  const sheets = ss.getSheets();
+  const target = sheets.find(s => s.getSheetId() === 465977407);
+  if (!target) {
+    throw new Error("Không tìm thấy sheet testing có GID 465977407.");
+  }
+  return target;
+}
+
+function ensureNplHeader_(sh) {
+  const header = [
+    "Timestamp",
+    "Tháng",
+    "Tên sản phẩm",
+    "Màu",
+    "Nhà máy",
+    "Timeline nhập kho",
+    "Duyệt vải",
+    "Ngày duyệt vải",
+    "Duyệt bo",
+    "Ngày duyệt bo",
+    "Vấn đề",
+    "Trạng thái",
+    "ImageFileId",
+    "ImageFileUrl",
+    "ImagePreview",
+  ];
+
+  const first = sh.getRange(1, 1, 1, header.length).getValues()[0];
+  const empty = first.every(c => c === "" || c === null);
+
+  if (empty) {
+    sh.getRange(1, 1, 1, header.length).setValues([header]);
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, 1, header.length).setFontWeight("bold");
+    sh.autoResizeColumns(1, header.length);
+    sh.setColumnWidth(15, 180);
+  }
+}
+
+function getOrCreateNplFolder_(name, parent) {
+  const it = parent.getFoldersByName(name);
+  return it.hasNext() ? it.next() : parent.createFolder(name);
+}
+
+function saveNplImage_(dataUrl, payload, folder) {
+  const match = dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+  if (!match) throw new Error("Image data invalid.");
+
+  const mime = match[1];
+  const bytes = Utilities.base64Decode(match[2]);
+
+  const safeName = [
+    normalizeNplMonth_(payload.month || Utilities.formatDate(new Date(), NPL_TZ, "yyyy-MM")),
+    payload.productName || "product",
+    payload.color || "color",
+    payload.factory || "factory",
+    Date.now(),
+  ]
+    .join("_")
+    .replace(/[^\w\-]+/g, "_");
+
+  const ext = mime.includes("png") ? "png" : "jpg";
+  const file = folder.createFile(
+    Utilities.newBlob(bytes, mime, `NPL_${safeName}.${ext}`)
+  );
+
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  return {
+    fileId: file.getId(),
+    fileUrl: file.getUrl(),
+  };
+}
+
+function validateNplPayload_(payload) {
+  if (!payload) throw new Error("Payload rỗng.");
+  if (!payload.month) throw new Error("Thiếu tháng.");
+  if (!payload.productName) throw new Error("Thiếu tên sản phẩm.");
+  if (!payload.color) throw new Error("Thiếu màu.");
+  if (!payload.factory) throw new Error("Thiếu nhà máy.");
+  if (!payload.status) throw new Error("Thiếu trạng thái.");
+  if (!payload.imageDataUrl) throw new Error("Chưa có hình ảnh.");
+
+  if (payload.hasTesting) {
+    if (payload.warpBefore === undefined || payload.warpBefore === "") throw new Error("Thiếu WARP trước giặt.");
+    if (payload.warpAfter === undefined || payload.warpAfter === "") throw new Error("Thiếu WARP sau giặt.");
+    if (payload.weftBefore === undefined || payload.weftBefore === "") throw new Error("Thiếu WEFT trước giặt.");
+    if (payload.weftAfter === undefined || payload.weftAfter === "") throw new Error("Thiếu WEFT sau giặt.");
+  }
+}
+
+function buildNplHeaderMap_(headers) {
+  const map = {};
+  headers.forEach((h, i) => {
+    const key = normalizeNplHeader_(h);
+    if (key) map[key] = i + 1;
+  });
+  return map;
+}
+
+function normalizeNplHeader_(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toUpperCase();
+}
+
+function normalizeNplText_(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toUpperCase();
+}
+
+function normalizeNplProductKey_(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\b(basic|classic|new|ao|so mi|somi|tee|t shirt|t-shirt|shirt)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isNplProductMatch_(inputProduct, sourceProduct) {
+  const exactA = normalizeNplText_(inputProduct);
+  const exactB = normalizeNplText_(sourceProduct);
+
+  if (exactA && exactB && exactA === exactB) return true;
+
+  const a = normalizeNplProductKey_(inputProduct);
+  const b = normalizeNplProductKey_(sourceProduct);
+
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.includes(b) || b.includes(a)) return true;
+
+  const aTokens = a.split(" ").filter(Boolean);
+  const bTokens = b.split(" ").filter(Boolean);
+  const overlap = aTokens.filter(t => bTokens.includes(t));
+
+  return overlap.length >= Math.min(2, Math.max(1, Math.min(aTokens.length, bTokens.length)));
+}
+
+function normalizeNplMonth_(value) {
+  if (value instanceof Date && !isNaN(value)) {
+    return Utilities.formatDate(value, NPL_TZ, "yyyy-MM");
+  }
+
+  const s = String(value || "").trim();
+
+  if (/^\d{4}-\d{2}$/.test(s)) return s;
+
+  if (/^\d{4}-\d{1}$/.test(s)) {
+    const [y, m] = s.split("-");
+    return `${y}-${String(Number(m)).padStart(2, "0")}`;
+  }
+
+  const viMonth = s.match(/tháng\s*(\d{1,2})/i);
+  if (viMonth) {
+    const year = new Date().getFullYear();
+    const month = String(Number(viMonth[1])).padStart(2, "0");
+    return `${year}-${month}`;
+  }
+
+  const dt = new Date(s);
+  if (!isNaN(dt)) {
+    return Utilities.formatDate(dt, NPL_TZ, "yyyy-MM");
+  }
+
+  return s;
+}
+
+function parseNplSheetDate_(value) {
+  if (value instanceof Date && !isNaN(value)) {
+    return value;
+  }
+
+  const s = String(value || "").trim();
+  if (!s || s === "/") return null;
+
+  const vn = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (vn) {
+    const d = Number(vn[1]);
+    const m = Number(vn[2]) - 1;
+    const y = Number(vn[3]);
+    return new Date(y, m, d);
+  }
+
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (iso) {
+    const y = Number(iso[1]);
+    const m = Number(iso[2]) - 1;
+    const d = Number(iso[3]);
+    return new Date(y, m, d);
+  }
+
+  const dt = new Date(s);
+  return isNaN(dt) ? null : dt;
+}
+
+function stripNplTime_(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/**
+ * Backend function to submit fabric shrinkage & appearance test results directly to tab with GID 465977407
+ */
+function submitFabricTesting(payload) {
+  try {
+    if (!payload) throw new Error("Payload rỗng.");
+    if (!payload.date) throw new Error("Thiếu ngày kiểm thử.");
+    if (!payload.supMill) throw new Error("Thiếu SUP/MILL.");
+    if (!payload.fabricArticle) throw new Error("Thiếu Fabric Article.");
+    if (!payload.color) throw new Error("Thiếu Color.");
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.getActive();
+    if (!ss) throw new Error("Không thể truy cập Spreadsheet.");
+
+    const sheets = ss.getSheets();
+    const testSheet = sheets.find(s => s.getSheetId() === 465977407);
+    if (!testSheet) {
+      throw new Error("Không tìm thấy sheet testing có GID 465977407.");
+    }
+
+    const testDate = parseNplSheetDate_(payload.date);
+
+    testSheet.appendRow([
+      testDate || new Date(),                  // A DATE
+      payload.supMill || "",                   // B SUP/MILL
+      payload.fabricArticle || "",             // C FABRIC NAME/TYPE
+      payload.color || "",                     // D ART/COLOR
+      Number(payload.warpBefore) || 50,        // E WARP/ BEFORE WASH
+      Number(payload.warpAfter) || 0,          // F WARP/ AFTER WASH
+      Number(payload.weftBefore) || 50,        // G WEFT/ BEFORE WASH
+      Number(payload.weftAfter) || 0,          // H WEFT/ AFTER WASH
+      payload.warpShrinkage || "",             // I % Shrinkage (WARP)
+      payload.weftShrinkage || "",             // J % Shrinkage (WEFT)
+      payload.visualResult || "Pass",          // K Visual Appearance / Handfeel Result
+      payload.shrinkageResult || "Pass",       // L Shrinkage Result
+      payload.finalResult || "Pass",           // M Final Result
+      payload.note || "",                      // N Note
+    ]);
+
+    const lastTestRow = testSheet.getLastRow();
+    testSheet.getRange(lastTestRow, 1).setNumberFormat("dd/MM/yyyy");
+
+    return {
+      ok: true,
+      message: "Đã lưu kết quả kiểm thử co rút thành công vào hệ thống.",
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      message: String(e && e.message ? e.message : e),
+    };
+  }
+}
+
+/**
+ * Backend function to retrieve historical fabric testing reports from sheet GID 465977407
+ */
+function getFabricTestingRows() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.getActive();
+    if (!ss) throw new Error("Không thể truy cập Spreadsheet.");
+
+    const sheets = ss.getSheets();
+    const testSheet = sheets.find(s => s.getSheetId() === 465977407);
+    if (!testSheet) {
+      throw new Error("Không tìm thấy sheet testing có GID 465977407.");
+    }
+
+    const data = testSheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return { ok: true, rows: [] };
+    }
+
+    const rows = [];
+    // Column mappings:
+    // 0: Date, 1: Sup/Mill, 2: Fabric Name, 3: Color, 4: Warp Before, 5: Warp After, 
+    // 6: Weft Before, 7: Weft After, 8: Warp Shrinkage, 9: Weft Shrinkage, 
+    // 10: Visual Result, 11: Shrinkage Result, 12: Final Result, 13: Note
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      let formattedDate = "";
+      if (row[0] instanceof Date) {
+        const yr = row[0].getFullYear();
+        const mo = String(row[0].getMonth() + 1).padStart(2, '0');
+        const dy = String(row[0].getDate()).padStart(2, '0');
+        formattedDate = `${yr}-${mo}-${dy}`;
+      } else if (row[0]) {
+        try {
+          const d = new Date(row[0]);
+          if (!isNaN(d.getTime())) {
+            const yr = d.getFullYear();
+            const mo = String(d.getMonth() + 1).padStart(2, '0');
+            const dy = String(d.getDate()).padStart(2, '0');
+            formattedDate = `${yr}-${mo}-${dy}`;
+          } else {
+            formattedDate = String(row[0]);
+          }
+        } catch(e) {
+          formattedDate = String(row[0]);
+        }
+      }
+
+      rows.push({
+        date: formattedDate,
+        supMill: String(row[1] || ""),
+        fabricArticle: String(row[2] || ""),
+        color: String(row[3] || ""),
+        warpBefore: row[4] !== undefined && row[4] !== "" ? String(row[4]) : "50",
+        warpAfter: row[5] !== undefined && row[5] !== "" ? String(row[5]) : "",
+        weftBefore: row[6] !== undefined && row[6] !== "" ? String(row[6]) : "50",
+        weftAfter: row[7] !== undefined && row[7] !== "" ? String(row[7]) : "",
+        warpShrinkage: String(row[8] || ""),
+        weftShrinkage: String(row[9] || ""),
+        visualResult: String(row[10] || "Pass"),
+        shrinkageResult: String(row[11] || "Pass"),
+        finalResult: String(row[12] || "Pass"),
+        note: String(row[13] || "")
+      });
+    }
+
+    return { ok: true, rows: rows.reverse() }; // Newest entries first
+  } catch (e) {
+    return { ok: false, err: e.message || String(e) };
+  }
+}

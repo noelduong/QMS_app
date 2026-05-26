@@ -1,0 +1,54 @@
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Total Quantity KPI -->
+        <div class="bg-white p-5 rounded-[20px] border border-[#f1f5f9] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.02)] flex items-center justify-between min-h-[110px] transition-all hover:translate-y-[-2px] hover:shadow-[0_20px_35px_-10px_rgba(0,0,0,0.05)] hover:border-[rgba(99,102,241,0.2)]">
+          <div class="flex flex-col justify-between h-[72px]">
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Tổng sản phẩm lỗi</span>
+            <div class="text-2xl font-extrabold text-slate-800" id="stat-total-qty">0</div>
+            <span class="text-[10px] text-slate-400 font-semibold">Sản phẩm bị lỗi trả về</span>
+          </div>
+          <div class="w-12 h-12 rounded-[14px] bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0 border border-indigo-100/50">
+            <i data-feather="package" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Total Financial Value KPI -->
+        <div class="bg-white p-5 rounded-[20px] border border-[#f1f5f9] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.02)] flex items-center justify-between min-h-[110px] transition-all hover:translate-y-[-2px] hover:shadow-[0_20px_35px_-10px_rgba(0,0,0,0.05)] hover:border-[rgba(99,102,241,0.2)]">
+          <div class="flex flex-col justify-between h-[72px]">
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Thiệt hại tài chính</span>
+            <div class="text-xl font-extrabold text-slate-800" id="stat-total-val">0 ₫</div>
+            <span class="text-[10px] text-slate-400 font-semibold">Theo đơn giá sản phẩm</span>
+          </div>
+          <div class="w-12 h-12 rounded-[14px] bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 border border-rose-100/50">
+            <i data-feather="dollar-sign" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Defect Ratio KPI -->
+        <div class="bg-white p-5 rounded-[20px] border border-[#f1f5f9] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.02)] flex items-center justify-between min-h-[110px] transition-all hover:translate-y-[-2px] hover:shadow-[0_20px_35px_-10px_rgba(0,0,0,0.05)] hover:border-[rgba(99,102,241,0.2)]">
+          <div class="flex flex-col justify-between h-[72px]">
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Tổng Lỗi Sản Xuất</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-extrabold text-slate-800" id="stat-prod-defects">0 pcs</span>
+              <span class="text-[10px] font-bold text-emerald-500" id="stat-defect-rate-sub">Rate: 0%</span>
+            </div>
+            <span class="text-[9px] font-black tracking-wide block text-emerald-500" id="stat-defect-alert-sub">✓ Đang tính toán...</span>
+          </div>
+          <div class="w-12 h-12 rounded-[14px] bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-100/50 transition-all duration-300" id="stat-defect-icon-container">
+            <i data-feather="alert-circle" id="stat-defect-icon" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Top Defective Factory KPI -->
+        <div class="bg-white p-5 rounded-[20px] border border-[#f1f5f9] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.02)] flex items-center justify-between min-h-[110px] transition-all hover:translate-y-[-2px] hover:shadow-[0_20px_35px_-10px_rgba(0,0,0,0.05)] hover:border-[rgba(99,102,241,0.2)]" id="stat-top-supplier-card">
+          <div class="flex flex-col justify-between h-[72px] min-w-0 flex-1 pr-2">
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block truncate">Nhà máy lỗi nhiều nhất</span>
+            <div class="text-xl font-extrabold text-slate-800 truncate" id="stat-top-supplier">N/A</div>
+            <span class="text-[10px] text-slate-400 font-semibold truncate" id="stat-top-supplier-sub">Chưa có dữ liệu</span>
+          </div>
+          <div class="w-12 h-12 rounded-[14px] bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 border border-slate-200/50" id="stat-top-supplier-icon-container">
+            <i data-feather="home" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+      </div>

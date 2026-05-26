@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -7,23 +7,14 @@
   <meta name="description" content="Ứng dụng kiểm hàng QC với AQL tự động, đo lường, ghi nhận lỗi và xuất PDF biên bản">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=2.0.3">
 </head>
 <body class="h-screen overflow-y-auto">
 
   <!-- Floating Pill Navigation (Apple Glassmorphism style) -->
-  <div class="no-print sticky top-4 z-50 mx-auto w-full max-w-6xl px-4 md:px-8 mb-6">
-    <div class="bg-white/60 backdrop-blur-2xl border border-white/60 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-full px-6 py-3 flex justify-between items-center transition-all">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
-          <i data-feather="check-square" class="w-5 h-5"></i>
-        </div>
-        <div>
-          <h1 class="text-[17px] font-bold text-slate-800 tracking-tight leading-tight">QC INSPECTION</h1>
-          <p class="text-[11px] font-medium text-slate-500 uppercase tracking-[0.1em]">Polo Manor</p>
-        </div>
-      </div>
+  <div class="no-print sticky top-4 z-50 mx-auto w-full max-w-full px-4 md:px-8 mb-6">
+    <div class="bg-white/60 backdrop-blur-2xl border border-white/60 shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-full px-6 py-3 flex justify-end items-center transition-all">
       <div>
         <button onclick="if(confirm('Xóa toàn bộ dữ liệu?')){location.reload()}" class="nav-btn nav-btn-secondary text-xs !py-2 !px-4 !rounded-full hover:bg-slate-200/50">
           <i data-feather="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
@@ -33,7 +24,7 @@
   </div>
 
   <!-- APP AREA (hidden when printing) -->
-  <div class="no-print px-4 md:px-8 pb-12 flex flex-col h-full max-w-6xl mx-auto">
+  <div class="no-print px-4 md:px-8 pb-12 flex flex-col h-full max-w-full mx-auto">
     <!-- Main Card -->
     <div class="main-card relative z-10">
       
