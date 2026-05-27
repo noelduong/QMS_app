@@ -74,4 +74,40 @@ function loadModule(moduleId) {
       }
     };
   }
+
+  // Automatically close sidebar on mobile navigation
+  if (window.closeSidebarMobile) {
+    window.closeSidebarMobile();
+  }
 }
+
+/* ---- Mobile Sidebar Toggle Logic ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+  const openBtn = document.getElementById('open-sidebar');
+  const closeBtn = document.getElementById('close-sidebar');
+
+  function openSidebar() {
+    if (sidebar && sidebarBackdrop) {
+      sidebar.classList.remove('-translate-x-full');
+      sidebarBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+      sidebarBackdrop.classList.add('opacity-100');
+    }
+  }
+
+  function closeSidebar() {
+    if (sidebar && sidebarBackdrop) {
+      sidebar.classList.add('-translate-x-full');
+      sidebarBackdrop.classList.remove('opacity-100');
+      sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+    }
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+
+  // Expose closeSidebar globally so it can be called when a module is loaded
+  window.closeSidebarMobile = closeSidebar;
+});
